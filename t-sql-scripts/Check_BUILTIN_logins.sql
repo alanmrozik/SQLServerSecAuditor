@@ -1,0 +1,26 @@
+/*
+Description:
+Prior	to	SQL	Server	2008,	the	BUILTIN\Administrators group	was	added	as	a	SQL	Server	
+login	with	sysadmin	privileges	during	installation	by	default.	Best	practices	promote	
+creating	an	Active	Directory	level	group	containing	approved	DBA	staff	accounts	and	using	
+this	controlled	AD	group	as	the	login	with	sysadmin	privileges.	The	AD	group	should	be	
+specified	during	SQL	Server	installation	and	the	BUILTIN\Administrators group	would	
+therefore	have	no	need	to	be	a	login.
+Rationale:
+The	BUILTIN groups	(Administrators,	Everyone,	Authenticated	Users,	Guests,	etc.)	generally	
+contain	very	broad	memberships	which	would	not	meet	the	best	practice	of	ensuring	only	
+the	necessary	users	have	been	granted	access	to	a	SQL	Server	instance.	These	groups	
+should	not	be	used	for	any	level	of	access	into	a	SQL	Server	Database	Engine	instance.
+*/
+SELECT pr.[name], pe.[permission_name], pe.[state_desc]
+FROM sys.server_principals pr
+JOIN sys.server_permissions pe
+ON pr.principal_id = pe.grantee_principal_id
+WHERE pr.name like 'BUILTIN%';
+/* or */
+SELECT pr.[name] AS LocalGroupName, pe.[permission_name], pe.[state_desc]
+FROM sys.server_principals pr
+JOIN sys.server_permissions pe
+ON pr.[principal_id] = pe.[grantee_principal_id]
+WHERE pr.[type_desc] = 'WINDOWS_GROUP'
+AND pr.[name] like CAST(SERVERPROPERTY('MachineName') AS nvarchar) + '%';
