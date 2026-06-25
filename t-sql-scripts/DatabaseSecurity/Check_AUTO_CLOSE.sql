@@ -8,6 +8,11 @@ Because	authentication	of	users	for	contained	databases	occurs	within	the	databa
 the	server\instance	level,	the	database	must	be	opened	every	time	to	authenticate	a	user.	
 The	frequent	opening/closing	of	the	database consumes additional server resources and may contribute to a denial of service.
 */
-SELECT name, containment, containment_desc, is_auto_close_on
-FROM sys.databases
-WHERE containment <> 0 and is_auto_close_on = 1;
+SELECT 
+    name, 
+    CASE
+    WHEN is_auto_close_on = 1 THEN 'Enabled'
+    WHEN is_auto_close_on = 0 THEN 'Disabled'
+    END AS [Status]
+    FROM sys.databases
+    WHERE is_auto_close_on = 1;

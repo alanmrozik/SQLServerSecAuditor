@@ -7,7 +7,11 @@ Rationale:
 Enforcing	this	control	reduces	the	probability	of	an	attacker	executing	brute	force	attacks	
 against	a	well-known	principal.
 */
-SELECT name, is_disabled
-FROM sys.server_principals
-WHERE sid = 0x01
-AND is_disabled = 0;
+SELECT 
+    name, 
+    CASE 
+    WHEN is_disabled = 1 THEN 'Disabled'
+    WHEN is_disabled = 0 THEN 'Enabled'
+    END as [Status]
+    FROM sys.server_principals
+    WHERE sid = 0x01;

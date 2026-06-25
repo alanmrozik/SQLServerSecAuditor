@@ -6,8 +6,11 @@ Rationale:
 Disabling	the	Database Mail XPs option	reduces	the	SQL	Server	surface,	eliminates	a	DOS	
 attack	vector	and	channel	to	exfiltrate	data	from	the	database	server	to	a	remote host
 */
-SELECT name,
- CAST(value as int) as value_configured,
- CAST(value_in_use as int) as value_in_use
-FROM sys.configurations
-WHERE name = 'Database Mail XPs';
+SELECT 
+    name, 
+    CASE
+    WHEN value_in_use = 0 THEN 'Disabled'
+    WHEN value_in_use = 1 THEN 'Enabled'
+    END AS [Status]
+    FROM sys.configurations 
+    WHERE name = 'Database Mail XPs';

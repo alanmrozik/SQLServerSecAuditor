@@ -10,5 +10,5 @@ JOIN sys.server_principals sp
     ON rm.member_principal_id = sp.principal_id
 JOIN sys.server_principals rp 
     ON rm.role_principal_id = rp.principal_id
-WHERE rp.name = 'sysadmin'
+WHERE rp.name IN ('sysadmin','securityadmin','serveradmin','setupadmin')
 ORDER BY sp.name;

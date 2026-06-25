@@ -11,3 +11,12 @@ databases	by	using	the	ALTER DATABASE<database_name>SET DB_CHAINING ON command.
 This	database	option	may	not	be	changed	on	the	master,	model,	or	tempdb system	
 databases.
 */
+SELECT    
+    name AS Configuration_Name,    
+    value_in_use AS Current_Value,    
+    CASE        
+    WHEN value_in_use = 0 THEN 'Disabled'        
+    WHEN value_in_use = 1 THEN 'Enabled'    
+    END AS Status
+    FROM sys.configurations
+    WHERE name = 'cross db ownership chaining';

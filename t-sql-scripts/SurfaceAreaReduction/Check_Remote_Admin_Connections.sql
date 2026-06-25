@@ -13,9 +13,12 @@ be	enabled	(1) for SQL Server failover clusters;otherwise, it should be disabled
 */
 USE master;
 GO
-SELECT name, 
-CAST(value as int) as value_configured,
-CAST(value_in_use as int) as value_in_use
-FROM sys.configurations
-WHERE name = 'remote admin connections'
-AND SERVERPROPERTY('IsClustered') = 0;
+SELECT 
+    name, 
+    CASE
+    WHEN value_in_use = 0 THEN 'Disabled'
+    WHEN value_in_use = 1 THEN 'Enabled'
+    END AS [Status]
+    FROM sys.configurations 
+    WHERE name = 'remote admin connections'
+    AND SERVERPROPERTY('IsClustered') = 0;

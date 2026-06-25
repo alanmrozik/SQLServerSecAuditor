@@ -6,8 +6,11 @@ Rationale:
 Functionality	can	be	abused	to	launch	a	Denial-of-Service	(DoS)	attack	on	remote	servers	
 by	off-loading	query	processing	to	a	target.
 */
-SELECT name,
- CAST(value as int) as value_configured,
- CAST(value_in_use as int) as value_in_use
-FROM sys.configurations
-WHERE name = 'remote access';
+SELECT 
+    name, 
+    CASE
+    WHEN value_in_use = 0 THEN 'Disabled'
+    WHEN value_in_use = 1 THEN 'Enabled'
+    END AS [Status]
+    FROM sys.configurations 
+    WHERE name = 'remote access';

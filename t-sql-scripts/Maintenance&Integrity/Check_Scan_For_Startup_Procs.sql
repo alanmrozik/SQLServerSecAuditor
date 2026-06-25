@@ -6,8 +6,11 @@ Rationale:
 Enforcing	this	control	reduces	the	threat	of	an	entity	leveraging	these	facilities	for	
 malicious	purposes.
 */
-SELECT name,
- CAST(value as int) as value_configured,
- CAST(value_in_use as int) as value_in_use
-FROM sys.configurations
-WHERE name = 'scan for startup procs';
+SELECT 
+    name, 
+    CASE
+    WHEN value_in_use = 0 THEN 'Disabled'
+    WHEN value_in_use = 1 THEN 'Enabled'
+    END AS [Status]
+    FROM sys.configurations 
+    WHERE name = 'scan for startup procs';
