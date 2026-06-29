@@ -1,0 +1,39 @@
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\MainWindow.baml
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\MainWindow.g.cs
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\App.g.cs
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor_MarkupCompile.cache
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.g.resources
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.AssemblyInfoInputs.cache
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.AssemblyInfo.cs
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.csproj.CoreCompileInputs.cache
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.exe
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.deps.json
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.runtimeconfig.json
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.dll
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.pdb
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.dll
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\refint\SQLSecAuditor.dll
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.pdb
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.genruntimeconfig.cache
+C:\Users\alan.mrozik\source\repos\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\ref\SQLSecAuditor.dll
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.exe
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.deps.json
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.runtimeconfig.json
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.dll
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\bin\Debug\net10.0-windows\SQLSecAuditor.pdb
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\MainWindow.baml
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\MainWindow.g.cs
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\App.g.cs
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor_MarkupCompile.cache
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.g.resources
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.AssemblyInfoInputs.cache
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.AssemblyInfo.cs
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.csproj.CoreCompileInputs.cache
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.sourcelink.json
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.dll
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\refint\SQLSecAuditor.dll
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.pdb
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\SQLSecAuditor.genruntimeconfig.cache
+C:\Users\alan.mrozik\OneDrive - summ-it s.a\Dokumenty\GitHub\SQLServerSecAuditor\SQLSecAuditor\SQLSecAuditor\obj\Debug\net10.0-windows\ref\SQLSecAuditor.dll
