@@ -3,42 +3,78 @@ using System.Windows;
 
 namespace SqlSecAuditor
 {
-    // 1. Klasa reprezentująca dane pojedynczego SQL Servera
+    // Klasa reprezentująca pełne dane audytowe pojedynczego SQL Servera
     public class SqlInstance
     {
         public string ServerName { get; set; }
-        public string GeneralInfo { get; set; }
-        public string PermissionsInfo { get; set; }
+        public string GenMachineName { get; set; }
+        public string GenInstanceName { get; set; }
+        public string GenEdition { get; set; }
+        public string GenProductVersion { get; set; }
+        public string GenProductLevel { get; set; }
+        public string GenUptime { get; set; }
+        public string GenLastUpdate { get; set; }
+        public string AuthPermissionsInfo { get; set; }
+        public string AuthenAccessControlInfo { get; set; }
+        public string DatabaseSecurityInfo { get; set; }
+        public string SurfaceAreaReductionInfo { get; set; }
+        public string NetworkConnectivityInfo { get; set; }
+        public string HighAvailabilityInfo { get; set; }
+        public string MaintenanceIntegrityInfo { get; set; }
     }
 
     public partial class MainWindow : Window
     {
-        // 2. Dynamiczna lista, którą obserwuje nasz XAML
         public ObservableCollection<SqlInstance> Instances { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-
-            // Inicjalizujemy listę
             Instances = new ObservableCollection<SqlInstance>();
-
-            // 3. Mówimy oknu, skąd ma brać dane do bindowania ({Binding ...})
             this.DataContext = this;
 
-            // Testowe dodanie elementów na start (symulacja połączenia)
-            DodajNowaInstancje("LOCALHOST\\SQLEXPRESS", "Wersja: SQL Server 2022. Status: Online.", "Znaleziono 3 podatności w rolach sysadmin.");
-            DodajNowaInstancje("192.168.1.50,1433", "Wersja: SQL Server 2019. Połączenie szyfrowane.", "Brak krytycznych błędów uprawnień.");
-        }
-
-        // 4. Tę metodę wywołasz np. po kliknięciu w menu "Połącz z bazą" i podaniu danych przez użytkownika
-        public void DodajNowaInstancje(string nazwa, string infoOgolne, string uprawnienia)
-        {
+            // Dodanie przykładowych danych na podstawie Twojego skryptu T-SQL
             Instances.Add(new SqlInstance
             {
-                ServerName = nazwa,
-                GeneralInfo = infoOgolne,
-                PermissionsInfo = uprawnienia
+                ServerName = "LOCALHOST\\SQLEXPRESS",
+
+                // Dane do ładnej listy w sekcji General
+                GenMachineName = "DESKTOP-PRO-01",
+                GenInstanceName = "SQLEXPRESS",
+                GenEdition = "Express Edition (64-bit)",
+                GenProductVersion = "16.0.1000.6",
+                GenProductLevel = "RTM",
+                GenUptime = "2026-07-01 08:34:12", // Symulacja daty utworzenia tempdb
+                GenLastUpdate = "2026-05-15 14:20:00",
+
+                AuthPermissionsInfo = "SELECT * FROM sys.server_principals WHERE is_disabled = 0;\nZnaleziono 3 konta z uprawnieniami sysadmin.",
+                AuthenAccessControlInfo = "SELECT name, is_policy_checked FROM sys.sql_logins;",
+                DatabaseSecurityInfo = "SELECT name, containment FROM sys.databases;",
+                SurfaceAreaReductionInfo = "EXEC sp_configure 'show advanced options', 1;",
+                NetworkConnectivityInfo = "SELECT protocol_name FROM sys.endpoints;",
+                HighAvailabilityInfo = "SELECT recovery_model_desc FROM sys.databases;",
+                MaintenanceIntegrityInfo = "DBCC CHECKDB WITH NO_INFOMSGS;"
+            });
+            Instances.Add(new SqlInstance
+            {
+                ServerName = "VM2-TEST",
+
+                // Dane do ładnej listy w sekcji General
+                GenMachineName = "VM2-TEST",
+                GenInstanceName = "MSSQLSERVER",
+                GenEdition = "Standard Edition (64-bit)",
+                GenProductVersion = "16.0.1000.6",
+                GenProductLevel = "RTM-CU25",
+                GenUptime = "2026-07-01 08:34:12", // Symulacja daty utworzenia tempdb
+                GenLastUpdate = "2026-05-15 14:20:00",
+
+                AuthPermissionsInfo = "SELECT * FROM sys.server_principals WHERE is_disabled = 0;\nZnaleziono 3 konta z uprawnieniami sysadmin.",
+                AuthenAccessControlInfo = "SELECT name, is_policy_checked FROM sys.sql_logins;",
+                DatabaseSecurityInfo = "SELECT name, containment FROM sys.databases;",
+                SurfaceAreaReductionInfo = "EXEC sp_configure 'show advanced options', 1;",
+                NetworkConnectivityInfo = "SELECT protocol_name FROM sys.endpoints;",
+                HighAvailabilityInfo = "SELECT recovery_model_desc FROM sys.databases;",
+                MaintenanceIntegrityInfo = "DBCC CHECKDB WITH NO_INFOMSGS;"
             });
         }
     }

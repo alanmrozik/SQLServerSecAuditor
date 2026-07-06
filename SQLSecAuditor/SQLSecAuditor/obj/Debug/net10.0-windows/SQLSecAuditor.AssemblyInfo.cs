@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SQLSecAuditor")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+445a71a3ca39c6835c8f300f3780feba13492ae0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+668696df1c77c4d606daecba68964d1429b80838")]
 [assembly: System.Reflection.AssemblyProductAttribute("SQLSecAuditor")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SQLSecAuditor")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
