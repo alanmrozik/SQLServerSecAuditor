@@ -1,6 +1,6 @@
 # Visual Studio
 .vs/
 
-# Build
-bin/
-obj/
+# Build output
+**/bin/
+**/obj/
