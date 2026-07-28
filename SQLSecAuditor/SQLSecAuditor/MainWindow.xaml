@@ -2,8 +2,15 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SQLSecAuditor" Height="800" Width="1000"
-        Background="#F4F4F4"
+        Background="#ECF0F1"
         WindowStartupLocation="CenterScreen">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="35"
+                      CornerRadius="0"
+                      GlassFrameThickness="0"
+                      UseAeroCaptionButtons="False" />
+    </WindowChrome.WindowChrome>
 
     <Window.Resources>
         <Style x:Key="ReportBorderStyle" TargetType="Border">
@@ -62,91 +69,265 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Menu Grid.Row="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="5,2">
-            <MenuItem Header="_Plik">
-                <MenuItem Header="_Zakończ" />
+        <!-- Własny systemowy pasek tytułu (Window Chrome) -->
+        <Grid Grid.Row="0" Background="#1E2B3C" Height="35">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Tytuł aplikacji -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0,0,0">
+                <!-- Można tu dodać logo/ikonkę, jeśli będzie -->
+                <TextBlock Text="SQLServerSecAuditor" Foreground="White" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Przyciski z kontrolkami okna systemowego (z obsługą w Code-Behind) -->
+            <StackPanel Grid.Column="1" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button Content="—" Width="45" FontSize="14" FontFamily="Consolas" Click="Minimize_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#34495E"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="[ ]" Width="45" FontSize="12" FontFamily="Consolas" Click="Maximize_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#34495E"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Content="X" Width="45" FontSize="14" FontFamily="Consolas" Click="Close_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border Background="{TemplateBinding Background}">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                            <Style.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#E74C3C"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Menu Grid.Row="1" Background="#2C3E50" Foreground="White" BorderThickness="0" Padding="5,2" WindowChrome.IsHitTestVisibleInChrome="True">
+            <MenuItem Header="_Plik" Padding="10,5">
+                <MenuItem Header="_Połącz z nową bazą..." Command="{Binding ConnectNewDatabaseCommand}" Foreground="Black"/>
+                <Separator/>
+                <MenuItem Header="_Zakończ" Foreground="Black" Click="Close_Click"/>
             </MenuItem>
-            <MenuItem Header="_Edycja"/>
-            <MenuItem Header="_Widok"/>
-            <MenuItem Header="P_omoc"/>
+            <MenuItem Header="_Edycja" Padding="10,5"/>
+            <MenuItem Header="_Widok" Padding="10,5"/>
+            <MenuItem Header="P_omoc" Padding="10,5"/>
         </Menu>
 
-        <TabControl Grid.Row="1" 
-            TabStripPlacement="Left" 
-            Background="Transparent" 
-            BorderThickness="0" 
-            Padding="0"
-            ItemsSource="{Binding Instances}">
-            <TabControl.Template>
-                <ControlTemplate TargetType="TabControl">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1*"/>
-                            <ColumnDefinition Width="3*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="White" BorderBrush="#DCDCDC" BorderThickness="1" CornerRadius="3" Margin="10">
-                            <StackPanel IsItemsHost="True" Margin="0,20,0,0"/>
-                        </Border>
-                        <ContentPresenter Grid.Column="1" ContentSource="SelectedContent" />
-                    </Grid>
-                </ControlTemplate>
-            </TabControl.Template>
+        <Grid Grid.Row="2" Background="#ECF0F1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-            <TabControl.ItemContainerStyle>
-                <Style TargetType="TabItem" BasedOn="{StaticResource SidebarTabItemStyle}">
-                    <Setter Property="Header" Value="{Binding ServerName}"/>
-                </Style>
-            </TabControl.ItemContainerStyle>
+            <!-- Boczny panel jako nagłówek z przyciskiem z boku zamiast po prostu TabControl -->
+            <Border Grid.Column="0" Background="#34495E" Padding="10">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-            <TabControl.ContentTemplate>
-                <DataTemplate>
-                    <Border Style="{StaticResource ReportBorderStyle}">
+                    <TextBlock Text="Zbadane Instancje" Foreground="White" FontWeight="Bold" FontSize="16" Margin="0,10,0,20" HorizontalAlignment="Center"/>
+
+                    <!-- Przycisk do połączeń bazy będzie tu dla wygody użytkownika (oprócz menu) -->
+                    <Button Grid.Row="2" Content="+ Połącz z nową bazą" 
+                            Command="{Binding ConnectNewDatabaseCommand}"
+                            Background="#27AE60" Foreground="White" FontWeight="Bold" 
+                            BorderThickness="0" Padding="10" Cursor="Hand" Margin="0,10,0,10">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="4"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <!-- Taby -->
+            <TabControl Grid.Column="0" Grid.ColumnSpan="2"
+                TabStripPlacement="Left" 
+                Background="Transparent" 
+                BorderThickness="0" 
+                Padding="0"
+                ItemsSource="{Binding Instances}">
+                <TabControl.Template>
+                    <ControlTemplate TargetType="TabControl">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Boczna strefa zakładek "nakłada" się na nasz panel w tle -->
+                            <StackPanel Grid.Column="0" IsItemsHost="True" Margin="0,50,0,80"/>
+
+                            <Border Grid.Column="1" Background="White" BorderBrush="#BDC3C7" BorderThickness="1" CornerRadius="8" Margin="15" Padding="10">
+                                <ContentPresenter ContentSource="SelectedContent" />
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </TabControl.Template>
+
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Height" Value="45"/>
+                        <Setter Property="Margin" Value="10,0,10,5"/>
+                        <Setter Property="FontFamily" Value="Segoe UI"/>
+                        <Setter Property="FontSize" Value="13"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="Border" Background="#2C3E50" BorderThickness="0" CornerRadius="4">
+                                        <ContentPresenter x:Name="ContentSite"
+                                                          VerticalAlignment="Center"
+                                                          HorizontalAlignment="Left"
+                                                          ContentSource="Header"
+                                                          Margin="15,0,0,0"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="Background" Value="#2980B9" />
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter Property="Foreground" Value="#BDC3C7"/>
+                                        </Trigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                <Condition Property="IsSelected" Value="False"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter TargetName="Border" Property="Background" Value="#3D566E" />
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </MultiTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Header" Value="{Binding ServerName}"/>
+                    </Style>
+                </TabControl.ItemContainerStyle>
+
+                <!-- Szablon samego kontentu po prawej (widok wybranej bazy) -->
+                <TabControl.ContentTemplate>
+                    <DataTemplate>
                         <Grid Margin="15">
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                                <Label Content="Raport dla: " FontSize="18" FontFamily="Arial" FontWeight="Bold"/>
-                                <Label Content="{Binding ServerName}" FontSize="18" FontFamily="Arial" FontWeight="Bold" Foreground="DarkBlue"/>
+                            <TextBlock Grid.Row="0" Text="Raport Audytu" FontSize="24" FontFamily="Segoe UI" FontWeight="Light" Foreground="#7F8C8D"/>
+
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,20">
+                                <TextBlock Text="Instancja: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                                <TextBlock Text="{Binding ServerName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#E74C3C"/>
                             </StackPanel>
 
-                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                                 <StackPanel>
-                                    <Expander IsExpanded="True" BorderBrush="#DCDCDC" BorderThickness="1" Margin="0,0,0,10">
-                                        <Expander.Header>
-                                            <Label Content="General" FontSize="16" Padding="10,5,0,5"/>
-                                        </Expander.Header>
-                                        <TextBlock Text="{Binding GeneralInfo}" Margin="10" TextWrapping="Wrap"/>
-                                    </Expander>
+                                    <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <TextBlock Text="Informacje Ogólne" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" Margin="0,0,0,10"/>
+                                            <TextBlock Text="{Binding GeneralInfo}" TextWrapping="Wrap" LineHeight="20" Foreground="#566573"/>
+                                        </StackPanel>
+                                    </Border>
 
-                                    <Expander IsExpanded="True" BorderBrush="#DCDCDC" BorderThickness="1" Margin="0,0,0,10">
-                                        <Expander.Header>
-                                            <Label Content="Permissions" FontSize="16" Padding="10,5,0,5"/>
-                                        </Expander.Header>
-                                        <StackPanel Margin="10">
-                                            <TextBlock Text="Wykryte błędy uprawnień:" Margin="0,0,0,5" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding PermissionsInfo}" Margin="0,0,0,10" TextWrapping="Wrap"/>
+                                    <Border Background="#FDEDEC" BorderBrush="#FADBD8" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                                        <StackPanel>
+                                            <TextBlock Text="Problemy z Uprawnieniami" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#C0392B" Margin="0,0,0,10"/>
+                                            <TextBlock Text="{Binding PermissionsInfo}" TextWrapping="Wrap" LineHeight="20" Foreground="#7B241C" Margin="0,0,0,15"/>
                                             <WrapPanel Orientation="Horizontal">
-                                                <Button Content="1" Style="{StaticResource NumberButtonStyle}"/>
-                                                <Button Content="2" Style="{StaticResource NumberButtonStyle}"/>
-                                                <Button Content="3" Style="{StaticResource NumberButtonStyle}"/>
+                                                <Button Content="Zarządzaj" Padding="15,5" Background="#E74C3C" Foreground="White" BorderThickness="0">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                        </Style>
+                                                    </Button.Resources>
+                                                </Button>
                                             </WrapPanel>
                                         </StackPanel>
-                                    </Expander>
+                                    </Border>
                                 </StackPanel>
                             </ScrollViewer>
 
-                            <Button Grid.Row="2" Content="EXPORT" Width="100" Height="30" HorizontalAlignment="Right" Background="White" BorderBrush="#C0C0C0"/>
+                            <Button Grid.Row="3" Content="EKSPORTUJ RAPORT (.PDF)" 
+                                    HorizontalAlignment="Right" Padding="15,8" 
+                                    Background="#2980B9" Foreground="White" FontWeight="Bold" 
+                                    BorderThickness="0" Cursor="Hand" Margin="0,15,0,0">
+                                <Button.Resources>
+                                    <Style TargetType="Border">
+                                        <Setter Property="CornerRadius" Value="4"/>
+                                    </Style>
+                                </Button.Resources>
+                            </Button>
                         </Grid>
-                    </Border>
-                </DataTemplate>
-            </TabControl.ContentTemplate>
-        </TabControl>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
+        </Grid>
     </Grid>
 </Window>
