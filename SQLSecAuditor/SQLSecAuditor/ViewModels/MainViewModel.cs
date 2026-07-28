@@ -1,6 +1,8 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Input;
 using SqlSecAuditor.Models;
+using SqlSecAuditor.Views;
 
 namespace SqlSecAuditor.ViewModels
 {
@@ -24,9 +26,12 @@ namespace SqlSecAuditor.ViewModels
 
         private void ExecuteConnectNewDatabase(object obj)
         {
-            // Placeholder: po kliknięciu symulujemy "połączenie"
-            // Tutaj docelowo wywołasz np. okienko typu "ConnectWindow" by podać poświadczenia
-            AddNewInstance($"NEW_SERVER_{Instances.Count + 1}", "Wersja: SQL Server 2022. Status: Oczekujący.", "Brak danych, rozpocznij skanowanie.");
+            var dialog = new ConnectionWindow
+            {
+                Owner = Application.Current?.MainWindow
+            };
+
+            dialog.ShowDialog();
         }
 
         public void AddNewInstance(string name, string generalInfo, string permissionsInfo)

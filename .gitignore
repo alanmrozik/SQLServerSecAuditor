@@ -4,3 +4,6 @@
 # Build output
 **/bin/
 **/obj/
+
+#agents
+.github/
