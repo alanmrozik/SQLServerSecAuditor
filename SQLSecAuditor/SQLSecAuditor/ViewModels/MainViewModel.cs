@@ -18,10 +18,6 @@ namespace SqlSecAuditor.ViewModels
             Instances = new ObservableCollection<SqlInstance>();
 
             ConnectNewDatabaseCommand = new RelayCommand(ExecuteConnectNewDatabase);
-
-            // Testowe dodanie elementów na start
-            AddNewInstance("LOCALHOST\\SQLEXPRESS", "Wersja: SQL Server 2022. Status: Online.", "Znaleziono 3 podatności w rolach sysadmin.");
-            AddNewInstance("192.168.1.50,1433", "Wersja: SQL Server 2019. Połączenie szyfrowane.", "Brak krytycznych błędów uprawnień.");
         }
 
         private void ExecuteConnectNewDatabase(object obj)
@@ -31,7 +27,10 @@ namespace SqlSecAuditor.ViewModels
                 Owner = Application.Current?.MainWindow
             };
 
-            dialog.ShowDialog();
+            if (dialog.ShowDialog() == true && dialog.ResultInstance is not null)
+            {
+                Instances.Add(dialog.ResultInstance);
+            }
         }
 
         public void AddNewInstance(string name, string generalInfo, string permissionsInfo)

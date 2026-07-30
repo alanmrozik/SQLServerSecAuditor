@@ -1,16 +1,22 @@
 using Microsoft.Data.SqlClient;
+using SqlSecAuditor.Models;
+using SqlSecAuditor.ViewModels;
+using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Shell;
-using SqlSecAuditor.ViewModels;
 
 namespace SqlSecAuditor.Views
 {
     public class ConnectionWindow : Window
     {
+        private FrameworkElement? _interactiveRoot;
+
         public ConnectionWindow()
         {
             Title = "New Connection";
@@ -31,6 +37,8 @@ namespace SqlSecAuditor.Views
 
             Content = BuildLayout();
         }
+
+        public SqlInstance? ResultInstance { get; private set; }
 
         private UIElement BuildLayout()
         {
@@ -105,6 +113,8 @@ namespace SqlSecAuditor.Views
                 CornerRadius = new CornerRadius(8),
                 Padding = new Thickness(20)
             };
+
+            _interactiveRoot = surface;
 
             var content = new Grid();
             content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
@@ -391,13 +401,18 @@ namespace SqlSecAuditor.Views
                 return;
             }
 
+            _interactiveRoot!.IsEnabled = false;
+            Cursor = Cursors.Wait;
+
             try
             {
+                var dataSource = string.IsNullOrWhiteSpace(viewModel.Port)
+                    ? viewModel.ServerName
+                    : $"{viewModel.ServerName},{viewModel.Port}";
+
                 var builder = new SqlConnectionStringBuilder
                 {
-                    DataSource = string.IsNullOrWhiteSpace(viewModel.Port)
-                        ? viewModel.ServerName
-                        : $"{viewModel.ServerName},{viewModel.Port}",
+                    DataSource = dataSource,
                     InitialCatalog = string.IsNullOrWhiteSpace(viewModel.DatabaseName) ? "master" : viewModel.DatabaseName,
                     Encrypt = viewModel.EncryptConnection,
                     TrustServerCertificate = viewModel.TrustServerCertificate,
@@ -418,12 +433,42 @@ namespace SqlSecAuditor.Views
                 await using var connection = new SqlConnection(builder.ConnectionString);
                 await connection.OpenAsync();
 
-                MessageBox.Show(this, "Połączenie zostało nawiązane.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
-                Close();
+                await using var command = connection.CreateCommand();
+                command.CommandText = "SELECT CAST(SERVERPROPERTY('ProductVersion') AS nvarchar(128)), CAST(SERVERPROPERTY('Edition') AS nvarchar(128)), CAST(@@SERVERNAME AS nvarchar(128))";
+                await using var reader = await command.ExecuteReaderAsync();
+
+                string productVersion = string.Empty;
+                string edition = string.Empty;
+                string serverName = string.Empty;
+                if (await reader.ReadAsync())
+                {
+                    productVersion = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+                    edition = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+                    serverName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                }
+
+                var resolvedServerName = string.IsNullOrWhiteSpace(serverName)
+                    ? viewModel.ServerName
+                    : serverName;
+
+                ResultInstance = new SqlInstance
+                {
+                    ServerName = resolvedServerName,
+                    GeneralInfo = $"Wersja: {productVersion}. Edycja: {edition}.",
+                    PermissionsInfo = "Brak danych o uprawnieniach."
+                };
+
+                MessageBox.Show(this, $"Połączenie zostało nawiązane.\n\n{ResultInstance.GeneralInfo}", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
+                DialogResult = true;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(this, $"Nie udało się nawiązać połączenia:\n\n{ex.Message}", "Connection test", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                Cursor = Cursors.Arrow;
+                _interactiveRoot.IsEnabled = true;
             }
         }
 
