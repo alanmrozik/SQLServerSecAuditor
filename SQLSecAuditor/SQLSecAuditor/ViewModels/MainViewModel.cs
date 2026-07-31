@@ -33,13 +33,12 @@ namespace SqlSecAuditor.ViewModels
             }
         }
 
-        public void AddNewInstance(string name, string generalInfo, string permissionsInfo)
+        public void AddNewInstance(string name, string generalInfo)
         {
             Instances.Add(new SqlInstance
             {
                 ServerName = name,
-                GeneralInfo = generalInfo,
-                PermissionsInfo = permissionsInfo
+                GeneralInfo = generalInfo
             });
         }
     }

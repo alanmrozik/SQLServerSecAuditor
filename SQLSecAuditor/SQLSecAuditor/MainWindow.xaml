@@ -295,22 +295,6 @@
                                             <TextBlock Text="{Binding GeneralInfo}" TextWrapping="Wrap" LineHeight="20" Foreground="#566573"/>
                                         </StackPanel>
                                     </Border>
-
-                                    <Border Background="#FDEDEC" BorderBrush="#FADBD8" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
-                                        <StackPanel>
-                                            <TextBlock Text="Problemy z Uprawnieniami" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#C0392B" Margin="0,0,0,10"/>
-                                            <TextBlock Text="{Binding PermissionsInfo}" TextWrapping="Wrap" LineHeight="20" Foreground="#7B241C" Margin="0,0,0,15"/>
-                                            <WrapPanel Orientation="Horizontal">
-                                                <Button Content="Zarządzaj" Padding="15,5" Background="#E74C3C" Foreground="White" BorderThickness="0">
-                                                    <Button.Resources>
-                                                        <Style TargetType="Border">
-                                                            <Setter Property="CornerRadius" Value="3"/>
-                                                        </Style>
-                                                    </Button.Resources>
-                                                </Button>
-                                            </WrapPanel>
-                                        </StackPanel>
-                                    </Border>
                                 </StackPanel>
                             </ScrollViewer>
 

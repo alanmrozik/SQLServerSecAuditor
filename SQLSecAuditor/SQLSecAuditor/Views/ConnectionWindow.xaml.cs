@@ -454,8 +454,7 @@ namespace SqlSecAuditor.Views
                 ResultInstance = new SqlInstance
                 {
                     ServerName = resolvedServerName,
-                    GeneralInfo = $"Wersja: {productVersion}. Edycja: {edition}.",
-                    PermissionsInfo = "Brak danych o uprawnieniach."
+                    GeneralInfo = $"Wersja: {productVersion}. Edycja: {edition}."
                 };
 
                 MessageBox.Show(this, $"Połączenie zostało nawiązane.\n\n{ResultInstance.GeneralInfo}", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
