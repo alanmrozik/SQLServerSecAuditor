@@ -4,6 +4,51 @@
              xmlns:local="clr-namespace:SQLSecAuditor"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#ECF0F1" />
+        <SolidColorBrush x:Key="AppHeaderBackgroundBrush" Color="#1E2B3C" />
+        <SolidColorBrush x:Key="AppHeaderHoverBrush" Color="#34495E" />
+        <SolidColorBrush x:Key="AppPanelBackgroundBrush" Color="White" />
+        <SolidColorBrush x:Key="AppPanelBorderBrush" Color="#DCDCDC" />
+        <SolidColorBrush x:Key="AppAccentBorderBrush" Color="#BDC3C7" />
+        <SolidColorBrush x:Key="AppMutedTextBrush" Color="#556677" />
+
+        <Style x:Key="AppChromeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AppHeaderHoverBrush}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="AppSectionBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource AppPanelBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AppPanelBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="3" />
+            <Setter Property="Margin" Value="10" />
+        </Style>
+
+        <Style x:Key="AppPageTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="22" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource AppHeaderBackgroundBrush}" />
+        </Style>
+
+        <Style x:Key="AppGroupBoxStyle" TargetType="GroupBox">
+            <Setter Property="Margin" Value="0,18,0,0" />
+            <Setter Property="Padding" Value="12" />
+        </Style>
     </Application.Resources>
 </Application>
