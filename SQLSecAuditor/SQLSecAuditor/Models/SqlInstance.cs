@@ -15,6 +15,16 @@ namespace SqlSecAuditor.Models
         private string? _networkConnectivityError;
         private bool _isSurfaceAreaReductionRunning;
         private string? _surfaceAreaReductionError;
+        private bool _isAuditingMonitoringRunning;
+        private string? _auditingMonitoringError;
+        private bool _isAuthenticationAccessControlRunning;
+        private string? _authenticationAccessControlError;
+        private bool _isAuthorizationPermissionsRunning;
+        private string? _authorizationPermissionsError;
+        private bool _isDatabaseSecurityRunning;
+        private string? _databaseSecurityError;
+        private bool _isHighAvailabilityDisasterRecoveryRunning;
+        private string? _highAvailabilityDisasterRecoveryError;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -33,6 +43,16 @@ namespace SqlSecAuditor.Models
         public ObservableCollection<ScriptExecutionResult> NetworkConnectivityResults { get; } = new();
 
         public ObservableCollection<ScriptExecutionResult> SurfaceAreaReductionResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> AuditingMonitoringResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> AuthenticationAccessControlResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> AuthorizationPermissionsResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> DatabaseSecurityResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> HighAvailabilityDisasterRecoveryResults { get; } = new();
 
         public bool IsGeneralInfoLoaded
         {
@@ -86,6 +106,66 @@ namespace SqlSecAuditor.Models
         {
             get => _surfaceAreaReductionError;
             set => SetProperty(ref _surfaceAreaReductionError, value);
+        }
+
+        public bool IsAuditingMonitoringRunning
+        {
+            get => _isAuditingMonitoringRunning;
+            set => SetProperty(ref _isAuditingMonitoringRunning, value);
+        }
+
+        public string? AuditingMonitoringError
+        {
+            get => _auditingMonitoringError;
+            set => SetProperty(ref _auditingMonitoringError, value);
+        }
+
+        public bool IsAuthenticationAccessControlRunning
+        {
+            get => _isAuthenticationAccessControlRunning;
+            set => SetProperty(ref _isAuthenticationAccessControlRunning, value);
+        }
+
+        public string? AuthenticationAccessControlError
+        {
+            get => _authenticationAccessControlError;
+            set => SetProperty(ref _authenticationAccessControlError, value);
+        }
+
+        public bool IsAuthorizationPermissionsRunning
+        {
+            get => _isAuthorizationPermissionsRunning;
+            set => SetProperty(ref _isAuthorizationPermissionsRunning, value);
+        }
+
+        public string? AuthorizationPermissionsError
+        {
+            get => _authorizationPermissionsError;
+            set => SetProperty(ref _authorizationPermissionsError, value);
+        }
+
+        public bool IsDatabaseSecurityRunning
+        {
+            get => _isDatabaseSecurityRunning;
+            set => SetProperty(ref _isDatabaseSecurityRunning, value);
+        }
+
+        public string? DatabaseSecurityError
+        {
+            get => _databaseSecurityError;
+            set => SetProperty(ref _databaseSecurityError, value);
+        }
+
+        public bool IsHighAvailabilityDisasterRecoveryRunning
+        {
+            get => _isHighAvailabilityDisasterRecoveryRunning;
+            set => SetProperty(ref _isHighAvailabilityDisasterRecoveryRunning, value);
+        }
+
+        public string? HighAvailabilityDisasterRecoveryError
+        {
+            get => _highAvailabilityDisasterRecoveryError;
+            set => SetProperty(ref _highAvailabilityDisasterRecoveryError, value);
         }
 
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

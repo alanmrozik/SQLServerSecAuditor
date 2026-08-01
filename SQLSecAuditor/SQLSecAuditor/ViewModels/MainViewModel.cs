@@ -336,6 +336,406 @@ namespace SqlSecAuditor.ViewModels
             }
         }
 
+        public async Task RunAuditingMonitoringAsync(SqlInstance instance)
+        {
+            if (instance.IsAuditingMonitoringRunning)
+            {
+                return;
+            }
+
+            instance.IsAuditingMonitoringRunning = true;
+            instance.AuditingMonitoringError = null;
+            instance.AuditingMonitoringResults.Clear();
+
+            try
+            {
+                var scriptsDirectory = ResolveScriptsDirectoryPath("Auditing&Monitoring");
+                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (scriptFiles.Length == 0)
+                {
+                    instance.AuditingMonitoringError = "Brak skryptów SQL w kategorii Audyt i monitoring.";
+                    return;
+                }
+
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+
+                foreach (var scriptFile in scriptFiles)
+                {
+                    var result = new ScriptExecutionResult
+                    {
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
+                    };
+
+                    try
+                    {
+                        var script = await File.ReadAllTextAsync(scriptFile);
+                        var commandText = RemoveBatchSeparators(script);
+
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+
+                        await using var reader = await command.ExecuteReaderAsync();
+                        var hasAnyRow = false;
+
+                        do
+                        {
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
+                            {
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
+                            }
+                        }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Error = ex.Message;
+                    }
+
+                    instance.AuditingMonitoringResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                instance.AuditingMonitoringError = $"Nie udało się uruchomić kategorii Audyt i monitoring: {ex.Message}";
+            }
+            finally
+            {
+                instance.IsAuditingMonitoringRunning = false;
+            }
+        }
+
+        public async Task RunAuthenticationAccessControlAsync(SqlInstance instance)
+        {
+            if (instance.IsAuthenticationAccessControlRunning)
+            {
+                return;
+            }
+
+            instance.IsAuthenticationAccessControlRunning = true;
+            instance.AuthenticationAccessControlError = null;
+            instance.AuthenticationAccessControlResults.Clear();
+
+            try
+            {
+                var scriptsDirectory = ResolveScriptsDirectoryPath("Authentication&AccessControl");
+                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (scriptFiles.Length == 0)
+                {
+                    instance.AuthenticationAccessControlError = "Brak skryptów SQL w kategorii Uwierzytelnianie i kontrola dostępu.";
+                    return;
+                }
+
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+
+                foreach (var scriptFile in scriptFiles)
+                {
+                    var result = new ScriptExecutionResult
+                    {
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
+                    };
+
+                    try
+                    {
+                        var script = await File.ReadAllTextAsync(scriptFile);
+                        var commandText = RemoveBatchSeparators(script);
+
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+
+                        await using var reader = await command.ExecuteReaderAsync();
+                        var hasAnyRow = false;
+
+                        do
+                        {
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
+                            {
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
+                            }
+                        }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Error = ex.Message;
+                    }
+
+                    instance.AuthenticationAccessControlResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                instance.AuthenticationAccessControlError = $"Nie udało się uruchomić kategorii Uwierzytelnianie i kontrola dostępu: {ex.Message}";
+            }
+            finally
+            {
+                instance.IsAuthenticationAccessControlRunning = false;
+            }
+        }
+
+        public async Task RunAuthorizationPermissionsAsync(SqlInstance instance)
+        {
+            if (instance.IsAuthorizationPermissionsRunning)
+            {
+                return;
+            }
+
+            instance.IsAuthorizationPermissionsRunning = true;
+            instance.AuthorizationPermissionsError = null;
+            instance.AuthorizationPermissionsResults.Clear();
+
+            try
+            {
+                var scriptsDirectory = ResolveScriptsDirectoryPath("Authorization&Permissions");
+                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (scriptFiles.Length == 0)
+                {
+                    instance.AuthorizationPermissionsError = "Brak skryptów SQL w kategorii Autoryzacja i uprawnienia.";
+                    return;
+                }
+
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+
+                foreach (var scriptFile in scriptFiles)
+                {
+                    var result = new ScriptExecutionResult
+                    {
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
+                    };
+
+                    try
+                    {
+                        var script = await File.ReadAllTextAsync(scriptFile);
+                        var commandText = RemoveBatchSeparators(script);
+
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+
+                        await using var reader = await command.ExecuteReaderAsync();
+                        var hasAnyRow = false;
+
+                        do
+                        {
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
+                            {
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
+                            }
+                        }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Error = ex.Message;
+                    }
+
+                    instance.AuthorizationPermissionsResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                instance.AuthorizationPermissionsError = $"Nie udało się uruchomić kategorii Autoryzacja i uprawnienia: {ex.Message}";
+            }
+            finally
+            {
+                instance.IsAuthorizationPermissionsRunning = false;
+            }
+        }
+
+        public async Task RunDatabaseSecurityAsync(SqlInstance instance)
+        {
+            if (instance.IsDatabaseSecurityRunning)
+            {
+                return;
+            }
+
+            instance.IsDatabaseSecurityRunning = true;
+            instance.DatabaseSecurityError = null;
+            instance.DatabaseSecurityResults.Clear();
+
+            try
+            {
+                var scriptsDirectory = ResolveScriptsDirectoryPath("DatabaseSecurity");
+                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (scriptFiles.Length == 0)
+                {
+                    instance.DatabaseSecurityError = "Brak skryptów SQL w kategorii Bezpieczeństwo baz danych.";
+                    return;
+                }
+
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+
+                foreach (var scriptFile in scriptFiles)
+                {
+                    var result = new ScriptExecutionResult
+                    {
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
+                    };
+
+                    try
+                    {
+                        var script = await File.ReadAllTextAsync(scriptFile);
+                        var commandText = RemoveBatchSeparators(script);
+
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+
+                        await using var reader = await command.ExecuteReaderAsync();
+                        var hasAnyRow = false;
+
+                        do
+                        {
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
+                            {
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
+                            }
+                        }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Error = ex.Message;
+                    }
+
+                    instance.DatabaseSecurityResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                instance.DatabaseSecurityError = $"Nie udało się uruchomić kategorii Bezpieczeństwo baz danych: {ex.Message}";
+            }
+            finally
+            {
+                instance.IsDatabaseSecurityRunning = false;
+            }
+        }
+
+        public async Task RunHighAvailabilityDisasterRecoveryAsync(SqlInstance instance)
+        {
+            if (instance.IsHighAvailabilityDisasterRecoveryRunning)
+            {
+                return;
+            }
+
+            instance.IsHighAvailabilityDisasterRecoveryRunning = true;
+            instance.HighAvailabilityDisasterRecoveryError = null;
+            instance.HighAvailabilityDisasterRecoveryResults.Clear();
+
+            try
+            {
+                var scriptsDirectory = ResolveScriptsDirectoryPath("HighAvailability&DisasterRecovery");
+                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (scriptFiles.Length == 0)
+                {
+                    instance.HighAvailabilityDisasterRecoveryError = "Brak skryptów SQL w kategorii Wysoka dostępność i odzyskiwanie po awarii.";
+                    return;
+                }
+
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+
+                foreach (var scriptFile in scriptFiles)
+                {
+                    var result = new ScriptExecutionResult
+                    {
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
+                    };
+
+                    try
+                    {
+                        var script = await File.ReadAllTextAsync(scriptFile);
+                        var commandText = RemoveBatchSeparators(script);
+
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+
+                        await using var reader = await command.ExecuteReaderAsync();
+                        var hasAnyRow = false;
+
+                        do
+                        {
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
+                            {
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
+                            }
+                        }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Error = ex.Message;
+                    }
+
+                    instance.HighAvailabilityDisasterRecoveryResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                instance.HighAvailabilityDisasterRecoveryError = $"Nie udało się uruchomić kategorii Wysoka dostępność i odzyskiwanie po awarii: {ex.Message}";
+            }
+            finally
+            {
+                instance.IsHighAvailabilityDisasterRecoveryRunning = false;
+            }
+        }
+
 
         private static string ResolveScriptFilePath(string category, string scriptFileName)
         {

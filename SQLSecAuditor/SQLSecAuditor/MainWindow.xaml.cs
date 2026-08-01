@@ -81,6 +81,91 @@ namespace SqlSecAuditor
             await viewModel.RunSurfaceAreaReductionAsync(instance);
         }
 
+        private async void AuditingMonitoringRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunAuditingMonitoringAsync(instance);
+        }
+
+        private async void AuthenticationAccessControlRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunAuthenticationAccessControlAsync(instance);
+        }
+
+        private async void AuthorizationPermissionsRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunAuthorizationPermissionsAsync(instance);
+        }
+
+        private async void DatabaseSecurityRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunDatabaseSecurityAsync(instance);
+        }
+
+        private async void HighAvailabilityDisasterRecoveryRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
+        }
+
         // Public helper to display script results in the main UI.
         // The method will render the provided DataTable according to the rules:
         // - If table has exactly 2 columns and one column is named 'name' (case-insensitive):
