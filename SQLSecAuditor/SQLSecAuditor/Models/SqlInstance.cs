@@ -13,6 +13,8 @@ namespace SqlSecAuditor.Models
         private string? _maintenanceIntegrityError;
         private bool _isNetworkConnectivityRunning;
         private string? _networkConnectivityError;
+        private bool _isSurfaceAreaReductionRunning;
+        private string? _surfaceAreaReductionError;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -29,6 +31,8 @@ namespace SqlSecAuditor.Models
         public ObservableCollection<ScriptExecutionResult> MaintenanceIntegrityResults { get; } = new();
 
         public ObservableCollection<ScriptExecutionResult> NetworkConnectivityResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> SurfaceAreaReductionResults { get; } = new();
 
         public bool IsGeneralInfoLoaded
         {
@@ -70,6 +74,18 @@ namespace SqlSecAuditor.Models
         {
             get => _networkConnectivityError;
             set => SetProperty(ref _networkConnectivityError, value);
+        }
+
+        public bool IsSurfaceAreaReductionRunning
+        {
+            get => _isSurfaceAreaReductionRunning;
+            set => SetProperty(ref _isSurfaceAreaReductionRunning, value);
+        }
+
+        public string? SurfaceAreaReductionError
+        {
+            get => _surfaceAreaReductionError;
+            set => SetProperty(ref _surfaceAreaReductionError, value);
         }
 
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

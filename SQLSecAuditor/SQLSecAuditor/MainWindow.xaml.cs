@@ -62,6 +62,23 @@ namespace SqlSecAuditor
             await viewModel.RunNetworkConnectivityAsync(instance);
         }
 
+        private async void SurfaceAreaReductionRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunSurfaceAreaReductionAsync(instance);
+        }
+
         private void Minimize_Click(object sender, RoutedEventArgs e)
         {
             WindowState = WindowState.Minimized;

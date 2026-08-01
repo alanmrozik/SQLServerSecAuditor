@@ -247,6 +247,84 @@ namespace SqlSecAuditor.ViewModels
             }
         }
 
+        public async Task RunSurfaceAreaReductionAsync(SqlInstance instance)
+        {
+            if (instance.IsSurfaceAreaReductionRunning)
+            {
+                return;
+            }
+
+            instance.IsSurfaceAreaReductionRunning = true;
+            instance.SurfaceAreaReductionError = null;
+            instance.SurfaceAreaReductionResults.Clear();
+
+            try
+            {
+                var scriptsDirectory = ResolveScriptsDirectoryPath("SurfaceAreaReduction");
+                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
+                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+                    .ToArray();
+
+                if (scriptFiles.Length == 0)
+                {
+                    instance.SurfaceAreaReductionError = "Brak skryptów SQL w kategorii Redukcja powierzchni ataku.";
+                    return;
+                }
+
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+
+                foreach (var scriptFile in scriptFiles)
+                {
+                    var result = new ScriptExecutionResult
+                    {
+                        ScriptName = Path.GetFileName(scriptFile)
+                    };
+
+                    try
+                    {
+                        var script = await File.ReadAllTextAsync(scriptFile);
+                        var commandText = RemoveBatchSeparators(script);
+
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = commandText;
+
+                        await using var reader = await command.ExecuteReaderAsync();
+                        var hasAnyRow = false;
+
+                        do
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                hasAnyRow = true;
+                                result.Rows.Add(FormatReaderRow(reader));
+                            }
+                        }
+                        while (await reader.NextResultAsync());
+
+                        if (!hasAnyRow)
+                        {
+                            result.Rows.Add("Brak wierszy wynikowych.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Error = ex.Message;
+                    }
+
+                    instance.SurfaceAreaReductionResults.Add(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                instance.SurfaceAreaReductionError = $"Nie udało się uruchomić kategorii Redukcja powierzchni ataku: {ex.Message}";
+            }
+            finally
+            {
+                instance.IsSurfaceAreaReductionRunning = false;
+            }
+        }
+
 
         private static string ResolveScriptFilePath(string category, string scriptFileName)
         {
