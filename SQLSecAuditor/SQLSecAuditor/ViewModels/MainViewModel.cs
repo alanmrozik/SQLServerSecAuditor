@@ -6,6 +6,8 @@ using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using System.Data;
+using System.Threading.Tasks;
 
 namespace SqlSecAuditor.ViewModels
 {
@@ -120,9 +122,11 @@ namespace SqlSecAuditor.ViewModels
 
                 foreach (var scriptFile in scriptFiles)
                 {
-                    var result = new ScriptExecutionResult
+                var result = new ScriptExecutionResult
                     {
-                        ScriptName = Path.GetFileName(scriptFile)
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
                     };
 
                     try
@@ -138,18 +142,21 @@ namespace SqlSecAuditor.ViewModels
 
                         do
                         {
-                            while (await reader.ReadAsync())
+                            // Load current result set into DataTable using async reader
+                            var table = await ReadDataTableAsync(reader);
+
+                            // Always add the table (even if it has zero rows) so UI can present an empty table
+                            if (table != null)
                             {
-                                hasAnyRow = true;
-                                result.Rows.Add(FormatReaderRow(reader));
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
                             }
                         }
                         while (await reader.NextResultAsync());
-
-                        if (!hasAnyRow)
-                        {
-                            result.Rows.Add("Brak wierszy wynikowych.");
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -200,7 +207,9 @@ namespace SqlSecAuditor.ViewModels
                 {
                     var result = new ScriptExecutionResult
                     {
-                        ScriptName = Path.GetFileName(scriptFile)
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
                     };
 
                     try
@@ -216,18 +225,18 @@ namespace SqlSecAuditor.ViewModels
 
                         do
                         {
-                            while (await reader.ReadAsync())
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
                             {
-                                hasAnyRow = true;
-                                result.Rows.Add(FormatReaderRow(reader));
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
                             }
                         }
                         while (await reader.NextResultAsync());
-
-                        if (!hasAnyRow)
-                        {
-                            result.Rows.Add("Brak wierszy wynikowych.");
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -278,7 +287,9 @@ namespace SqlSecAuditor.ViewModels
                 {
                     var result = new ScriptExecutionResult
                     {
-                        ScriptName = Path.GetFileName(scriptFile)
+                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
+                            ? Path.GetFileNameWithoutExtension(scriptFile)
+                            : (Path.GetFileName(scriptFile) ?? scriptFile)
                     };
 
                     try
@@ -294,18 +305,18 @@ namespace SqlSecAuditor.ViewModels
 
                         do
                         {
-                            while (await reader.ReadAsync())
+                            var table = await ReadDataTableAsync(reader);
+                            if (table != null)
                             {
-                                hasAnyRow = true;
-                                result.Rows.Add(FormatReaderRow(reader));
+                                if (table.Rows.Count > 0)
+                                {
+                                    hasAnyRow = true;
+                                }
+
+                                result.Tables.Add(table);
                             }
                         }
                         while (await reader.NextResultAsync());
-
-                        if (!hasAnyRow)
-                        {
-                            result.Rows.Add("Brak wierszy wynikowych.");
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -373,6 +384,46 @@ namespace SqlSecAuditor.ViewModels
             }
 
             return string.Join(" | ", values);
+        }
+
+        private static async Task<DataTable> ReadDataTableAsync(SqlDataReader reader)
+        {
+            var table = new DataTable();
+
+            // Define columns
+            for (var i = 0; i < reader.FieldCount; i++)
+            {
+                var columnType = typeof(object);
+                try
+                {
+                    columnType = reader.GetFieldType(i) ?? typeof(object);
+                }
+                catch
+                {
+                    // ignore and use object
+                }
+
+                var columnName = reader.GetName(i);
+                if (string.IsNullOrWhiteSpace(columnName))
+                {
+                    columnName = $"Column{ i + 1 }";
+                }
+                table.Columns.Add(columnName, columnType);
+            }
+
+            // Read rows asynchronously
+            while (await reader.ReadAsync())
+            {
+                var values = new object[reader.FieldCount];
+                for (var i = 0; i < reader.FieldCount; i++)
+                {
+                    values[i] = reader.IsDBNull(i) ? DBNull.Value : reader.GetValue(i);
+                }
+
+                table.Rows.Add(values);
+            }
+
+            return table;
         }
 
         private static string RemoveBatchSeparators(string script)

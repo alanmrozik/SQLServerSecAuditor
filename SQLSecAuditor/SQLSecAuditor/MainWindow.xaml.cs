@@ -1,7 +1,9 @@
-using SqlSecAuditor.Models;
-using SqlSecAuditor.ViewModels;
 using System.Windows;
 using System.Windows.Controls;
+using System.Data;
+using SqlSecAuditor.Views;
+using SqlSecAuditor.Models;
+using SqlSecAuditor.ViewModels;
 
 namespace SqlSecAuditor
 {
@@ -77,6 +79,46 @@ namespace SqlSecAuditor
             }
 
             await viewModel.RunSurfaceAreaReductionAsync(instance);
+        }
+
+        // Public helper to display script results in the main UI.
+        // The method will render the provided DataTable according to the rules:
+        // - If table has exactly 2 columns and one column is named 'name' (case-insensitive):
+        //   create a set of Expanders where the header is the 'name' value and the content is the second column value.
+        // - Otherwise render the DataTable as a read-only DataGrid.
+        public void ShowScriptResults(DataTable table)
+        {
+            // ResultsPanel is defined inside a DataTemplate, so we need to find the instantiated element in the visual tree.
+            var panel = FindResultsPanel();
+            if (panel == null)
+                return;
+
+            panel.Children.Clear();
+            var control = new ScriptResultsControl { Results = table };
+            panel.Children.Add(control);
+        }
+
+        private StackPanel? FindResultsPanel()
+        {
+            return FindChildByName<StackPanel>(this, "ResultsPanel");
+        }
+
+        private static T? FindChildByName<T>(DependencyObject parent, string name) where T : DependencyObject
+        {
+            if (parent == null) return null;
+
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is FrameworkElement fe && fe.Name == name && child is T t)
+                    return t;
+
+                var result = FindChildByName<T>(child, name);
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
         private void Minimize_Click(object sender, RoutedEventArgs e)

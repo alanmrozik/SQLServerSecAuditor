@@ -1,6 +1,7 @@
 <Window x:Class="SqlSecAuditor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:SqlSecAuditor.Views"
         Title="SQLSecAuditor" Height="800" Width="1000"
         Background="{StaticResource AppWindowBackgroundBrush}"
         WindowStartupLocation="CenterScreen">
@@ -301,7 +302,7 @@
                             </StackPanel>
 
                             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
-                                <StackPanel>
+                                <StackPanel x:Name="ResultsPanel">
                                     <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
                                         <Expander IsExpanded="False" HorizontalContentAlignment="Stretch" Expanded="GeneralInfoExpander_Expanded">
                                             <Expander.Header>
@@ -420,7 +421,7 @@
                                                         <DataTemplate>
                                                             <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -436,10 +437,11 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                                    <!-- If script produced DataTable(s) show them using ScriptResultsControl; otherwise show textual rows -->
+                                                                    <ItemsControl ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#566573" Margin="0,0,0,4"/>
+                                                                                <views:ScriptResultsControl Results="{Binding}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -515,7 +517,7 @@
                                                         <DataTemplate>
                                                             <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -531,10 +533,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                                    <ItemsControl ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#566573" Margin="0,0,0,4"/>
+                                                                                <views:ScriptResultsControl Results="{Binding}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -610,7 +612,7 @@
                                                         <DataTemplate>
                                                             <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -626,10 +628,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                                    <ItemsControl ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#566573" Margin="0,0,0,4"/>
+                                                                                <views:ScriptResultsControl Results="{Binding}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>

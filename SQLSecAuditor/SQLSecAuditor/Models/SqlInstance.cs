@@ -114,6 +114,9 @@ namespace SqlSecAuditor.Models
 
         public ObservableCollection<string> Rows { get; } = new();
 
+        // Kolekcja DataTable — jeden element na każdy zestaw wynikowy zwrócony przez skrypt
+        public ObservableCollection<System.Data.DataTable> Tables { get; } = new();
+
         public string? Error { get; set; }
     }
 }
