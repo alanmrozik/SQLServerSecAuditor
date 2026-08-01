@@ -1,4 +1,4 @@
-﻿<Window x:Class="SqlSecAuditor.MainWindow"
+<Window x:Class="SqlSecAuditor.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="SQLSecAuditor" Height="800" Width="1000"
@@ -173,12 +173,13 @@
 
         <Grid Grid.Row="2" Background="{StaticResource AppWindowBackgroundBrush}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
+                <ColumnDefinition Width="250" MinWidth="250"/>
+                <ColumnDefinition Width="6"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
             <!-- Boczny panel jako nagłówek z przyciskiem z boku zamiast po prostu TabControl -->
-            <Border Grid.Column="0" Background="{StaticResource AppHeaderHoverBrush}" Padding="10">
+            <Border x:Name="InstancesSidebar" Grid.Column="0" Background="{StaticResource AppHeaderHoverBrush}" Padding="10">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -202,8 +203,18 @@
                 </Grid>
             </Border>
 
+            <GridSplitter Grid.Column="1"
+                          Width="6"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch"
+                          Background="#34495E"
+                          ShowsPreview="True"
+                          ResizeDirection="Columns"
+                          ResizeBehavior="PreviousAndNext"/>
+
             <!-- Taby -->
-            <TabControl Grid.Column="0" Grid.ColumnSpan="2"
+            <TabControl Grid.Column="0" Grid.ColumnSpan="3"
+                Tag="{Binding ElementName=InstancesSidebar, Path=ActualWidth}"
                 TabStripPlacement="Left" 
                 Background="Transparent" 
                 BorderThickness="0" 
@@ -213,7 +224,7 @@
                     <ControlTemplate TargetType="TabControl">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
@@ -265,7 +276,7 @@
                                 </ControlTemplate>
                             </Setter.Value>
                         </Setter>
-                        <Setter Property="Header" Value="{Binding ServerName}"/>
+                        <Setter Property="Header" Value="{Binding DisplayName}"/>
                     </Style>
                 </TabControl.ItemContainerStyle>
 
@@ -285,15 +296,255 @@
                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,20">
                                 <TextBlock Text="Instancja: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50"/>
                                 <TextBlock Text="{Binding ServerName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#E74C3C"/>
+                                <TextBlock Text="  |  Baza: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50" Margin="8,0,0,0"/>
+                                <TextBlock Text="{Binding DatabaseName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#2980B9"/>
                             </StackPanel>
 
                             <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
                                 <StackPanel>
                                     <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
-                                        <StackPanel>
-                                            <TextBlock Text="Informacje Ogólne" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" Margin="0,0,0,10"/>
-                                            <TextBlock Text="{Binding GeneralInfo}" TextWrapping="Wrap" LineHeight="20" Foreground="#566573"/>
-                                        </StackPanel>
+                                        <Expander IsExpanded="False" HorizontalContentAlignment="Stretch" Expanded="GeneralInfoExpander_Expanded">
+                                            <Expander.Header>
+                                                <Grid Margin="0,0,16,0" HorizontalAlignment="Stretch">
+                                                    <TextBlock Text="Informacje Ogólne" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                </Grid>
+                                            </Expander.Header>
+                                            <StackPanel Margin="0,10,0,0">
+                                                <TextBlock Text="Ładowanie danych..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsGeneralInfoLoading}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <TextBlock Text="{Binding GeneralInfoError}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding GeneralInfoError}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding GeneralInfoError}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <ItemsControl ItemsSource="{Binding GeneralInfoEntries}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Grid Margin="0,0,0,6">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="260"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <TextBlock Grid.Column="0" Text="{Binding Label}" FontWeight="SemiBold" Foreground="#34495E" TextWrapping="Wrap"/>
+                                                                <TextBlock Grid.Column="1" Text="{Binding Value}" Foreground="#566573" TextWrapping="Wrap" Margin="10,0,0,0"/>
+                                                            </Grid>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Expander>
+                                    </Border>
+
+                                    <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                                        <Expander IsExpanded="False" HorizontalContentAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid Margin="0,0,16,0" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" Text="Utrzymanie i integralność" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+
+                                                    <Button Grid.Column="1" Content="Uruchom" Click="MaintenanceIntegrityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="IsEnabled" Value="True"/>
+                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsMaintenanceIntegrityRunning}" Value="True">
+                                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+                                                </Grid>
+                                            </Expander.Header>
+
+                                            <StackPanel Margin="0,10,0,0">
+                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsMaintenanceIntegrityRunning}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <TextBlock Text="{Binding MaintenanceIntegrityError}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding MaintenanceIntegrityError}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding MaintenanceIntegrityError}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <ItemsControl ItemsSource="{Binding MaintenanceIntegrityResults}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Error}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#566573" Margin="0,0,0,4"/>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Expander>
+                                    </Border>
+
+                                    <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                                        <Expander IsExpanded="False" HorizontalContentAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid Margin="0,0,16,0" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <TextBlock Grid.Column="0" Text="Sieć i łączność" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+
+                                                    <Button Grid.Column="1" Content="Uruchom" Click="NetworkConnectivityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                        <Button.Style>
+                                                            <Style TargetType="Button">
+                                                                <Setter Property="IsEnabled" Value="True"/>
+                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsNetworkConnectivityRunning}" Value="True">
+                                                                        <Setter Property="IsEnabled" Value="False"/>
+                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </Button.Style>
+                                                    </Button>
+                                                </Grid>
+                                            </Expander.Header>
+
+                                            <StackPanel Margin="0,10,0,0">
+                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsNetworkConnectivityRunning}" Value="True">
+                                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <TextBlock Text="{Binding NetworkConnectivityError}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding NetworkConnectivityError}" Value="{x:Null}">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding NetworkConnectivityError}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+
+                                                <ItemsControl ItemsSource="{Binding NetworkConnectivityResults}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                <StackPanel>
+                                                                    <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
+                                                                        <TextBlock.Style>
+                                                                            <Style TargetType="TextBlock">
+                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Error}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </TextBlock.Style>
+                                                                    </TextBlock>
+                                                                    <ItemsControl ItemsSource="{Binding Rows}">
+                                                                        <ItemsControl.ItemTemplate>
+                                                                            <DataTemplate>
+                                                                                <TextBlock Text="{Binding}" TextWrapping="Wrap" Foreground="#566573" Margin="0,0,0,4"/>
+                                                                            </DataTemplate>
+                                                                        </ItemsControl.ItemTemplate>
+                                                                    </ItemsControl>
+                                                                </StackPanel>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </Expander>
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>

@@ -434,30 +434,27 @@ namespace SqlSecAuditor.Views
                 await connection.OpenAsync();
 
                 await using var command = connection.CreateCommand();
-                command.CommandText = "SELECT CAST(SERVERPROPERTY('ProductVersion') AS nvarchar(128)), CAST(SERVERPROPERTY('Edition') AS nvarchar(128)), CAST(@@SERVERNAME AS nvarchar(128))";
-                await using var reader = await command.ExecuteReaderAsync();
+                command.CommandText = "SELECT CAST(@@SERVERNAME AS nvarchar(128))";
+                var serverNameResult = await command.ExecuteScalarAsync();
+                var resolvedServerName = serverNameResult as string;
 
-                string productVersion = string.Empty;
-                string edition = string.Empty;
-                string serverName = string.Empty;
-                if (await reader.ReadAsync())
+                if (string.IsNullOrWhiteSpace(resolvedServerName))
                 {
-                    productVersion = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
-                    edition = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-                    serverName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                    resolvedServerName = viewModel.ServerName;
                 }
 
-                var resolvedServerName = string.IsNullOrWhiteSpace(serverName)
-                    ? viewModel.ServerName
-                    : serverName;
+                var databaseName = string.IsNullOrWhiteSpace(viewModel.DatabaseName)
+                    ? "master"
+                    : viewModel.DatabaseName;
 
                 ResultInstance = new SqlInstance
                 {
                     ServerName = resolvedServerName,
-                    GeneralInfo = $"Wersja: {productVersion}. Edycja: {edition}."
+                    DatabaseName = databaseName,
+                    ConnectionString = builder.ConnectionString
                 };
 
-                MessageBox.Show(this, $"Połączenie zostało nawiązane.\n\n{ResultInstance.GeneralInfo}", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(this, "Połączenie zostało nawiązane.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
                 DialogResult = true;
             }
             catch (Exception ex)

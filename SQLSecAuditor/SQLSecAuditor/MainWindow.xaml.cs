@@ -1,6 +1,7 @@
-﻿using System.Windows;
 using SqlSecAuditor.Models;
 using SqlSecAuditor.ViewModels;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace SqlSecAuditor
 {
@@ -9,25 +10,78 @@ namespace SqlSecAuditor
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new MainViewModel();
+            DataContext = new MainViewModel();
+        }
+
+        private async void GeneralInfoExpander_Expanded(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Expander { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.LoadGeneralInfoAsync(instance);
+        }
+
+        private async void MaintenanceIntegrityRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunMaintenanceIntegrityAsync(instance);
+        }
+
+        private async void NetworkConnectivityRun_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            if (sender is not Button { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            await viewModel.RunNetworkConnectivityAsync(instance);
         }
 
         private void Minimize_Click(object sender, RoutedEventArgs e)
         {
-            this.WindowState = WindowState.Minimized;
+            WindowState = WindowState.Minimized;
         }
 
         private void Maximize_Click(object sender, RoutedEventArgs e)
         {
-            if (this.WindowState == WindowState.Maximized)
-                this.WindowState = WindowState.Normal;
+            if (WindowState == WindowState.Maximized)
+            {
+                WindowState = WindowState.Normal;
+            }
             else
-                this.WindowState = WindowState.Maximized;
+            {
+                WindowState = WindowState.Maximized;
+            }
         }
 
         private void Close_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Close();
         }
     }
 }

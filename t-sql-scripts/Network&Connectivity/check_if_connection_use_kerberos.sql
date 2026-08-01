@@ -36,3 +36,4 @@ SELECT
     WHEN @tcpEnabled = 0 THEN 'NO'        
     ELSE 'IDK'    
     END AS 'Answer'
+    */
