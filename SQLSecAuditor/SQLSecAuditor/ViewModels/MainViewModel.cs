@@ -1,13 +1,14 @@
 using Microsoft.Data.SqlClient;
+using SqlSecAuditor.Infrastructure;
 using SqlSecAuditor.Models;
 using SqlSecAuditor.Views;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.IO;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
-using System.Data;
-using System.Threading.Tasks;
 
 namespace SqlSecAuditor.ViewModels
 {
@@ -49,8 +50,7 @@ namespace SqlSecAuditor.ViewModels
 
             try
             {
-                var scriptPath = ResolveScriptFilePath("General", "GeneralInfoAboutServer.sql");
-                var script = await File.ReadAllTextAsync(scriptPath);
+                var script = await SqlScriptLoader.LoadScriptAsync("General", "GeneralInfoAboutServer.sql");
                 var commandText = RemoveBatchSeparators(script);
 
                 await using var connection = new SqlConnection(instance.ConnectionString);
@@ -95,683 +95,187 @@ namespace SqlSecAuditor.ViewModels
 
         public async Task RunMaintenanceIntegrityAsync(SqlInstance instance)
         {
-            if (instance.IsMaintenanceIntegrityRunning)
-            {
-                return;
-            }
-
-            instance.IsMaintenanceIntegrityRunning = true;
-            instance.MaintenanceIntegrityError = null;
-            instance.MaintenanceIntegrityResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("Maintenance&Integrity");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.MaintenanceIntegrityError = "Brak skryptów SQL w kategorii Utrzymanie i integralność.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            // Load current result set into DataTable using async reader
-                            var table = await ReadDataTableAsync(reader);
-
-                            // Always add the table (even if it has zero rows) so UI can present an empty table
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.MaintenanceIntegrityResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.MaintenanceIntegrityError = $"Nie udało się uruchomić kategorii Utrzymanie i integralność: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsMaintenanceIntegrityRunning = false;
-            }
+            if (instance.IsMaintenanceIntegrityRunning) return;
+            await RunCategoryAsync(instance, "Maintenance&Integrity",
+                instance.MaintenanceIntegrityResults,
+                r => instance.IsMaintenanceIntegrityRunning = r,
+                e => instance.MaintenanceIntegrityError = e);
         }
 
         public async Task RunNetworkConnectivityAsync(SqlInstance instance)
         {
-            if (instance.IsNetworkConnectivityRunning)
-            {
-                return;
-            }
-
-            instance.IsNetworkConnectivityRunning = true;
-            instance.NetworkConnectivityError = null;
-            instance.NetworkConnectivityResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("Network&Connectivity");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.NetworkConnectivityError = "Brak skryptów SQL w kategorii Sieć i łączność.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                    var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.NetworkConnectivityResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.NetworkConnectivityError = $"Nie udało się uruchomić kategorii Sieć i łączność: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsNetworkConnectivityRunning = false;
-            }
+            if (instance.IsNetworkConnectivityRunning) return;
+            await RunCategoryAsync(instance, "Network&Connectivity",
+                instance.NetworkConnectivityResults,
+                r => instance.IsNetworkConnectivityRunning = r,
+                e => instance.NetworkConnectivityError = e);
         }
 
         public async Task RunSurfaceAreaReductionAsync(SqlInstance instance)
         {
-            if (instance.IsSurfaceAreaReductionRunning)
-            {
-                return;
-            }
+            if (instance.IsSurfaceAreaReductionRunning) return;
+            await RunCategoryAsync(instance, "SurfaceAreaReduction",
+                instance.SurfaceAreaReductionResults,
+                r => instance.IsSurfaceAreaReductionRunning = r,
+                e => instance.SurfaceAreaReductionError = e);
+        }
 
-            instance.IsSurfaceAreaReductionRunning = true;
-            instance.SurfaceAreaReductionError = null;
-            instance.SurfaceAreaReductionResults.Clear();
+        // Scripts that must be executed per-database (they query database-level objects)
+        private static readonly HashSet<string> PerDatabaseScripts = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Check_CLR_Enabled",
+            "Check_Orphaned_Users",
+            "Check_GUEST_permissions"
+        };
+
+        private async Task RunCategoryAsync(
+            SqlInstance instance,
+            string category,
+            ObservableCollection<ScriptExecutionResult> results,
+            Action<bool> setRunning,
+            Action<string?> setError)
+        {
+            setRunning(true);
+            setError(null);
+            results.Clear();
 
             try
             {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("SurfaceAreaReduction");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.SurfaceAreaReductionError = "Brak skryptów SQL w kategorii Redukcja powierzchni ataku.";
-                    return;
-                }
+                var scripts = await SqlScriptLoader.LoadCategoryScriptsAsync(category);
 
                 await using var connection = new SqlConnection(instance.ConnectionString);
                 await connection.OpenAsync();
 
-                foreach (var scriptFile in scriptFiles)
+                foreach (var (fileName, sql) in scripts)
                 {
-                    var result = new ScriptExecutionResult
+                    var scriptName = Path.GetFileNameWithoutExtension(fileName);
+                    if (string.IsNullOrWhiteSpace(scriptName))
+                        scriptName = fileName;
+
+                    if (PerDatabaseScripts.Contains(scriptName))
                     {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
+                        // Run per-database: collect all database names then execute on each
+                        var perDbResult = new ScriptExecutionResult { ScriptName = scriptName };
+                        try
                         {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
+                            var databases = await GetDatabaseNamesAsync(instance.ConnectionString);
+                            foreach (var dbName in databases)
                             {
-                                if (table.Rows.Count > 0)
+                                var csBuilder = new SqlConnectionStringBuilder(instance.ConnectionString)
                                 {
-                                    hasAnyRow = true;
+                                    InitialCatalog = dbName
+                                };
+                                await using var dbConnection = new SqlConnection(csBuilder.ConnectionString);
+                                try
+                                {
+                                    await dbConnection.OpenAsync();
+                                    await using var cmd = dbConnection.CreateCommand();
+                                    cmd.CommandText = RemoveBatchSeparators(sql);
+                                    await using var rdr = await cmd.ExecuteReaderAsync();
+                                    do
+                                    {
+                                        var tbl = await ReadDataTableAsync(rdr);
+                                        tbl.TableName = dbName;
+                                        perDbResult.Tables.Add(tbl);
+                                    }
+                                    while (await rdr.NextResultAsync());
                                 }
-
-                                result.Tables.Add(table);
+                                catch (Exception dbEx)
+                                {
+                                    // Add an error table for this database
+                                    var errTable = new DataTable { TableName = dbName };
+                                    errTable.Columns.Add("Błąd");
+                                    errTable.Rows.Add(dbEx.Message);
+                                    perDbResult.Tables.Add(errTable);
+                                }
                             }
                         }
-                        while (await reader.NextResultAsync());
+                        catch (Exception ex)
+                        {
+                            perDbResult.Error = ex.Message;
+                        }
+                        results.Add(perDbResult);
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        result.Error = ex.Message;
+                        var result = new ScriptExecutionResult { ScriptName = scriptName };
+                        try
+                        {
+                            var commandText = RemoveBatchSeparators(sql);
+                            await using var command = connection.CreateCommand();
+                            command.CommandText = commandText;
+                            await using var reader = await command.ExecuteReaderAsync();
+                            do
+                            {
+                                var table = await ReadDataTableAsync(reader);
+                                result.Tables.Add(table);
+                            }
+                            while (await reader.NextResultAsync());
+                        }
+                        catch (Exception ex)
+                        {
+                            result.Error = ex.Message;
+                        }
+                        results.Add(result);
                     }
-
-                    instance.SurfaceAreaReductionResults.Add(result);
                 }
             }
             catch (Exception ex)
             {
-                instance.SurfaceAreaReductionError = $"Nie udało się uruchomić kategorii Redukcja powierzchni ataku: {ex.Message}";
+                setError(ex.Message);
             }
             finally
             {
-                instance.IsSurfaceAreaReductionRunning = false;
+                setRunning(false);
             }
         }
 
+
         public async Task RunAuditingMonitoringAsync(SqlInstance instance)
         {
-            if (instance.IsAuditingMonitoringRunning)
-            {
-                return;
-            }
-
-            instance.IsAuditingMonitoringRunning = true;
-            instance.AuditingMonitoringError = null;
-            instance.AuditingMonitoringResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("Auditing&Monitoring");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.AuditingMonitoringError = "Brak skryptów SQL w kategorii Audyt i monitoring.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                    var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.AuditingMonitoringResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.AuditingMonitoringError = $"Nie udało się uruchomić kategorii Audyt i monitoring: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsAuditingMonitoringRunning = false;
-            }
+            if (instance.IsAuditingMonitoringRunning) return;
+            await RunCategoryAsync(instance, "Auditing&Monitoring",
+                instance.AuditingMonitoringResults,
+                r => instance.IsAuditingMonitoringRunning = r,
+                e => instance.AuditingMonitoringError = e);
         }
 
         public async Task RunAuthenticationAccessControlAsync(SqlInstance instance)
         {
-            if (instance.IsAuthenticationAccessControlRunning)
-            {
-                return;
-            }
-
-            instance.IsAuthenticationAccessControlRunning = true;
-            instance.AuthenticationAccessControlError = null;
-            instance.AuthenticationAccessControlResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("Authentication&AccessControl");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.AuthenticationAccessControlError = "Brak skryptów SQL w kategorii Uwierzytelnianie i kontrola dostępu.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                    var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.AuthenticationAccessControlResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.AuthenticationAccessControlError = $"Nie udało się uruchomić kategorii Uwierzytelnianie i kontrola dostępu: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsAuthenticationAccessControlRunning = false;
-            }
+            if (instance.IsAuthenticationAccessControlRunning) return;
+            await RunCategoryAsync(instance, "Authentication&AccessControl",
+                instance.AuthenticationAccessControlResults,
+                r => instance.IsAuthenticationAccessControlRunning = r,
+                e => instance.AuthenticationAccessControlError = e);
         }
 
         public async Task RunAuthorizationPermissionsAsync(SqlInstance instance)
         {
-            if (instance.IsAuthorizationPermissionsRunning)
-            {
-                return;
-            }
-
-            instance.IsAuthorizationPermissionsRunning = true;
-            instance.AuthorizationPermissionsError = null;
-            instance.AuthorizationPermissionsResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("Authorization&Permissions");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.AuthorizationPermissionsError = "Brak skryptów SQL w kategorii Autoryzacja i uprawnienia.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                    var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.AuthorizationPermissionsResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.AuthorizationPermissionsError = $"Nie udało się uruchomić kategorii Autoryzacja i uprawnienia: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsAuthorizationPermissionsRunning = false;
-            }
+            if (instance.IsAuthorizationPermissionsRunning) return;
+            await RunCategoryAsync(instance, "Authorization&Permissions",
+                instance.AuthorizationPermissionsResults,
+                r => instance.IsAuthorizationPermissionsRunning = r,
+                e => instance.AuthorizationPermissionsError = e);
         }
 
         public async Task RunDatabaseSecurityAsync(SqlInstance instance)
         {
-            if (instance.IsDatabaseSecurityRunning)
-            {
-                return;
-            }
-
-            instance.IsDatabaseSecurityRunning = true;
-            instance.DatabaseSecurityError = null;
-            instance.DatabaseSecurityResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("DatabaseSecurity");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.DatabaseSecurityError = "Brak skryptów SQL w kategorii Bezpieczeństwo baz danych.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                    var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.DatabaseSecurityResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.DatabaseSecurityError = $"Nie udało się uruchomić kategorii Bezpieczeństwo baz danych: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsDatabaseSecurityRunning = false;
-            }
+            if (instance.IsDatabaseSecurityRunning) return;
+            await RunCategoryAsync(instance, "DatabaseSecurity",
+                instance.DatabaseSecurityResults,
+                r => instance.IsDatabaseSecurityRunning = r,
+                e => instance.DatabaseSecurityError = e);
         }
 
         public async Task RunHighAvailabilityDisasterRecoveryAsync(SqlInstance instance)
         {
-            if (instance.IsHighAvailabilityDisasterRecoveryRunning)
-            {
-                return;
-            }
-
-            instance.IsHighAvailabilityDisasterRecoveryRunning = true;
-            instance.HighAvailabilityDisasterRecoveryError = null;
-            instance.HighAvailabilityDisasterRecoveryResults.Clear();
-
-            try
-            {
-                var scriptsDirectory = ResolveScriptsDirectoryPath("HighAvailability&DisasterRecovery");
-                var scriptFiles = Directory.GetFiles(scriptsDirectory, "*.sql")
-                    .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-
-                if (scriptFiles.Length == 0)
-                {
-                    instance.HighAvailabilityDisasterRecoveryError = "Brak skryptów SQL w kategorii Wysoka dostępność i odzyskiwanie po awarii.";
-                    return;
-                }
-
-                await using var connection = new SqlConnection(instance.ConnectionString);
-                await connection.OpenAsync();
-
-                foreach (var scriptFile in scriptFiles)
-                {
-                    var result = new ScriptExecutionResult
-                    {
-                        ScriptName = !string.IsNullOrWhiteSpace(Path.GetFileNameWithoutExtension(scriptFile))
-                            ? Path.GetFileNameWithoutExtension(scriptFile)
-                            : (Path.GetFileName(scriptFile) ?? scriptFile)
-                    };
-
-                    try
-                    {
-                        var script = await File.ReadAllTextAsync(scriptFile);
-                        var commandText = RemoveBatchSeparators(script);
-
-                        await using var command = connection.CreateCommand();
-                        command.CommandText = commandText;
-
-                        await using var reader = await command.ExecuteReaderAsync();
-                        var hasAnyRow = false;
-
-                        do
-                        {
-                            var table = await ReadDataTableAsync(reader);
-                            if (table != null)
-                            {
-                                if (table.Rows.Count > 0)
-                                {
-                                    hasAnyRow = true;
-                                }
-
-                                result.Tables.Add(table);
-                            }
-                        }
-                        while (await reader.NextResultAsync());
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Error = ex.Message;
-                    }
-
-                    instance.HighAvailabilityDisasterRecoveryResults.Add(result);
-                }
-            }
-            catch (Exception ex)
-            {
-                instance.HighAvailabilityDisasterRecoveryError = $"Nie udało się uruchomić kategorii Wysoka dostępność i odzyskiwanie po awarii: {ex.Message}";
-            }
-            finally
-            {
-                instance.IsHighAvailabilityDisasterRecoveryRunning = false;
-            }
+            if (instance.IsHighAvailabilityDisasterRecoveryRunning) return;
+            await RunCategoryAsync(instance, "HighAvailability&DisasterRecovery",
+                instance.HighAvailabilityDisasterRecoveryResults,
+                r => instance.IsHighAvailabilityDisasterRecoveryRunning = r,
+                e => instance.HighAvailabilityDisasterRecoveryError = e);
         }
 
-
-        private static string ResolveScriptFilePath(string category, string scriptFileName)
-        {
-            var current = new DirectoryInfo(AppContext.BaseDirectory);
-
-            while (current is not null)
-            {
-                var candidate = Path.Combine(current.FullName, "t-sql-scripts", category, scriptFileName);
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-
-                current = current.Parent;
-            }
-
-            throw new FileNotFoundException($"Nie znaleziono pliku skryptu: t-sql-scripts/{category}/{scriptFileName}");
-        }
-
-        private static string ResolveScriptsDirectoryPath(string category)
-        {
-            var current = new DirectoryInfo(AppContext.BaseDirectory);
-
-            while (current is not null)
-            {
-                var candidate = Path.Combine(current.FullName, "t-sql-scripts", category);
-                if (Directory.Exists(candidate))
-                {
-                    return candidate;
-                }
-
-                current = current.Parent;
-            }
-
-            throw new DirectoryNotFoundException($"Nie znaleziono katalogu skryptów: t-sql-scripts/{category}");
-        }
 
         private static string FormatReaderRow(SqlDataReader reader)
         {
@@ -843,6 +347,19 @@ namespace SqlSecAuditor.ViewModels
             }
 
             return builder.ToString();
+        }
+
+        private static async Task<List<string>> GetDatabaseNamesAsync(string connectionString)
+        {
+            var names = new List<string>();
+            await using var conn = new SqlConnection(connectionString);
+            await conn.OpenAsync();
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT name FROM sys.databases WHERE state_desc = 'ONLINE' AND name NOT IN ('master','tempdb','model','msdb') ORDER BY name";
+            await using var rdr = await cmd.ExecuteReaderAsync();
+            while (await rdr.ReadAsync())
+                names.Add(rdr.GetString(0));
+            return names;
         }
     }
 }
