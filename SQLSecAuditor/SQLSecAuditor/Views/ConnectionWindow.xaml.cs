@@ -1,4 +1,5 @@
 using Microsoft.Data.SqlClient;
+using SqlSecAuditor.Infrastructure;
 using SqlSecAuditor.Models;
 using SqlSecAuditor.ViewModels;
 using System;
@@ -16,6 +17,7 @@ namespace SqlSecAuditor.Views
     public class ConnectionWindow : Window
     {
         private FrameworkElement? _interactiveRoot;
+        private ComboBox? _recentCombo;
 
         public ConnectionWindow()
         {
@@ -121,6 +123,7 @@ namespace SqlSecAuditor.Views
             content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
             content.Children.Add(new TextBlock
             {
@@ -128,18 +131,81 @@ namespace SqlSecAuditor.Views
                 Style = (Style)Application.Current.FindResource("AppPageTitleStyle")
             });
 
-            content.Children.Add(CreateConnectionGroup());
+            var recentRow = CreateRecentConnectionsRow();
+            content.Children.Add(recentRow);
             Grid.SetRow(content.Children[1], 1);
 
-            content.Children.Add(CreateAuthenticationGroup());
+            content.Children.Add(CreateConnectionGroup());
             Grid.SetRow(content.Children[2], 2);
 
-            content.Children.Add(CreateButtonsPanel());
+            content.Children.Add(CreateAuthenticationGroup());
             Grid.SetRow(content.Children[3], 3);
+
+            content.Children.Add(CreateButtonsPanel());
+            Grid.SetRow(content.Children[4], 4);
 
             surface.Child = content;
             shell.Child = surface;
             return shell;
+        }
+
+        private UIElement CreateRecentConnectionsRow()
+        {
+            var recent = RecentConnectionsStore.Load();
+
+            var panel = new Grid { Margin = new Thickness(0, 0, 0, 8) };
+            panel.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            panel.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Recent connections:",
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 10, 0)
+            });
+
+            _recentCombo = new ComboBox
+            {
+                IsEditable = false,
+                DisplayMemberPath = nameof(SavedConnection.DisplayLabel),
+                IsEnabled = recent.Count > 0
+            };
+
+            if (recent.Count > 0)
+            {
+                foreach (var c in recent)
+                    _recentCombo.Items.Add(c);
+                _recentCombo.SelectedIndex = -1;
+            }
+            else
+            {
+                _recentCombo.Items.Add("(Brak zapisanych połączeń)");
+                _recentCombo.SelectedIndex = 0;
+            }
+
+            _recentCombo.SelectionChanged += RecentConnectionSelected;
+
+            Grid.SetColumn(_recentCombo, 1);
+            panel.Children.Add(_recentCombo);
+
+            return panel;
+        }
+
+        private void RecentConnectionSelected(object sender, SelectionChangedEventArgs e)
+        {
+            if (_recentCombo?.SelectedItem is not SavedConnection saved)
+                return;
+            if (DataContext is not ConnectionWindowViewModel vm)
+                return;
+
+            vm.ServerName = saved.ServerName;
+            vm.Port = saved.Port;
+            vm.DatabaseName = saved.DatabaseName;
+            vm.UseWindowsAuthentication = saved.UseWindowsAuthentication;
+            vm.UseSqlAuthentication = !saved.UseWindowsAuthentication;
+            vm.SqlUserName = saved.SqlUserName;
+            vm.EncryptConnection = saved.EncryptConnection;
+            vm.TrustServerCertificate = saved.TrustServerCertificate;
         }
 
         private GroupBox CreateConnectionGroup()
@@ -434,30 +500,38 @@ namespace SqlSecAuditor.Views
                 await connection.OpenAsync();
 
                 await using var command = connection.CreateCommand();
-                command.CommandText = "SELECT CAST(SERVERPROPERTY('ProductVersion') AS nvarchar(128)), CAST(SERVERPROPERTY('Edition') AS nvarchar(128)), CAST(@@SERVERNAME AS nvarchar(128))";
-                await using var reader = await command.ExecuteReaderAsync();
+                command.CommandText = "SELECT CAST(@@SERVERNAME AS nvarchar(128))";
+                var serverNameResult = await command.ExecuteScalarAsync();
+                var resolvedServerName = serverNameResult as string;
 
-                string productVersion = string.Empty;
-                string edition = string.Empty;
-                string serverName = string.Empty;
-                if (await reader.ReadAsync())
+                if (string.IsNullOrWhiteSpace(resolvedServerName))
                 {
-                    productVersion = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
-                    edition = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-                    serverName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
+                    resolvedServerName = viewModel.ServerName;
                 }
 
-                var resolvedServerName = string.IsNullOrWhiteSpace(serverName)
-                    ? viewModel.ServerName
-                    : serverName;
+                var databaseName = string.IsNullOrWhiteSpace(viewModel.DatabaseName)
+                    ? "master"
+                    : viewModel.DatabaseName;
 
                 ResultInstance = new SqlInstance
                 {
                     ServerName = resolvedServerName,
-                    GeneralInfo = $"Wersja: {productVersion}. Edycja: {edition}."
+                    DatabaseName = databaseName,
+                    ConnectionString = builder.ConnectionString
                 };
 
-                MessageBox.Show(this, $"Połączenie zostało nawiązane.\n\n{ResultInstance.GeneralInfo}", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
+                RecentConnectionsStore.Save(new SavedConnection
+                {
+                    ServerName = viewModel.ServerName,
+                    Port = viewModel.Port,
+                    DatabaseName = viewModel.DatabaseName,
+                    UseWindowsAuthentication = viewModel.UseWindowsAuthentication,
+                    SqlUserName = viewModel.SqlUserName,
+                    EncryptConnection = viewModel.EncryptConnection,
+                    TrustServerCertificate = viewModel.TrustServerCertificate
+                });
+
+                MessageBox.Show(this, "Połączenie zostało nawiązane.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
                 DialogResult = true;
             }
             catch (Exception ex)
