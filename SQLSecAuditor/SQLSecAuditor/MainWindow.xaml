@@ -1121,17 +1121,43 @@
                                 </StackPanel>
                             </ScrollViewer>
 
-                            <Button Grid.Row="3" Content="EKSPORTUJ RAPORT (.PDF)" 
-                                    HorizontalAlignment="Right" Padding="15,8" 
-                                    Background="#2980B9" Foreground="White" FontWeight="Bold" 
-                                    BorderThickness="0" Cursor="Hand" Margin="0,15,0,0"
-                                    Click="ExportReport_Click">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="4"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
+                            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                                <Button Content="ZAPISZ SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#16A085" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"
+                                        Click="SaveSnapshot_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <Button Content="PORÓWNAJ ZE SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#8E44AD" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"
+                                        Click="CompareSnapshot_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <Button Content="EKSPORTUJ RAPORT (.PDF)" 
+                                        Padding="15,8" 
+                                        Background="#2980B9" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand"
+                                        Click="ExportReport_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
                         </Grid>
                     </DataTemplate>
                 </TabControl.ContentTemplate>

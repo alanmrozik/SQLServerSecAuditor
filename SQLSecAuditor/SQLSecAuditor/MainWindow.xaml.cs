@@ -168,22 +168,87 @@ namespace SqlSecAuditor
             await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
         }
 
-        private void ExportReport_Click(object sender, RoutedEventArgs e)
+        private void SaveSnapshot_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
             if (sender is not FrameworkElement { DataContext: SqlInstance instance })
             {
                 return;
             }
 
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var safeServer = SanitizeFileNamePart(instance.ServerName);
+            var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
+
+            var dialog = new SaveFileDialog
+            {
+                Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json",
+                FileName = $"Snapshot_{safeServer}_{safeDatabase}_{dateStamp}"
+            };
+
+            if (dialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            ReportSnapshotService.SaveSnapshot(dialog.FileName, instance);
+            MessageBox.Show(this, "Snapshot został zapisany.", "Snapshot", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void CompareSnapshot_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            var openDialog = new OpenFileDialog
+            {
+                Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
+            };
+
+            if (openDialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            var other = ReportSnapshotService.LoadSnapshot(openDialog.FileName);
+            var current = ReportSnapshotService.BuildSnapshot(instance);
+            var diff = ReportSnapshotService.Compare(current, other);
+
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var safeServer = SanitizeFileNamePart(instance.ServerName);
+            var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
+
+            var saveDialog = new SaveFileDialog
+            {
+                Filter = "Text files (*.txt)|*.txt",
+                FileName = $"SnapshotDiff_{safeServer}_{safeDatabase}_{dateStamp}.txt"
+            };
+
+            if (saveDialog.ShowDialog(this) == true)
+            {
+                System.IO.File.WriteAllText(saveDialog.FileName, diff);
+            }
+
+            var preview = diff.Length > 3000 ? diff.Substring(0, 3000) + "\n..." : diff;
+            MessageBox.Show(this, preview, "Snapshot Compare", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void ExportReport_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var safeServer = SanitizeFileNamePart(instance.ServerName);
+            var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
+
             var dialog = new SaveFileDialog
             {
                 Filter = "PDF files (*.pdf)|*.pdf",
-                FileName = $"Raport_Audytu_{instance.ServerName}_{instance.DatabaseName}.pdf"
+                FileName = $"Raport_Audytu_{safeServer}_{safeDatabase}_{dateStamp}.pdf"
             };
 
             if (dialog.ShowDialog(this) != true)
@@ -215,6 +280,18 @@ namespace SqlSecAuditor
         private StackPanel? FindResultsPanel()
         {
             return FindChildByName<StackPanel>(this, "ResultsPanel");
+        }
+
+        private static string SanitizeFileNamePart(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return "unknown";
+            }
+
+            var invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            var sanitized = new string(value.Select(ch => invalidChars.Contains(ch) ? '_' : ch).ToArray());
+            return sanitized.Trim();
         }
 
         private static T? FindChildByName<T>(DependencyObject parent, string name) where T : DependencyObject
