@@ -1124,7 +1124,8 @@
                             <Button Grid.Row="3" Content="EKSPORTUJ RAPORT (.PDF)" 
                                     HorizontalAlignment="Right" Padding="15,8" 
                                     Background="#2980B9" Foreground="White" FontWeight="Bold" 
-                                    BorderThickness="0" Cursor="Hand" Margin="0,15,0,0">
+                                    BorderThickness="0" Cursor="Hand" Margin="0,15,0,0"
+                                    Click="ExportReport_Click">
                                 <Button.Resources>
                                     <Style TargetType="Border">
                                         <Setter Property="CornerRadius" Value="4"/>

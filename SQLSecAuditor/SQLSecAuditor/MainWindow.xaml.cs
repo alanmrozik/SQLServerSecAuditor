@@ -1,6 +1,8 @@
+using Microsoft.Win32;
 using System.Windows;
 using System.Windows.Controls;
 using System.Data;
+using SqlSecAuditor.Infrastructure;
 using SqlSecAuditor.Views;
 using SqlSecAuditor.Models;
 using SqlSecAuditor.ViewModels;
@@ -164,6 +166,33 @@ namespace SqlSecAuditor
             }
 
             await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
+        }
+
+        private void ExportReport_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            var dialog = new SaveFileDialog
+            {
+                Filter = "PDF files (*.pdf)|*.pdf",
+                FileName = $"Raport_Audytu_{instance.ServerName}_{instance.DatabaseName}.pdf"
+            };
+
+            if (dialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            PdfReportExporter.Export(dialog.FileName, instance);
+            MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         // Public helper to display script results in the main UI.
