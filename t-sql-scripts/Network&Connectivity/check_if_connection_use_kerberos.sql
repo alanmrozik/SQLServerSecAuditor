@@ -1,4 +1,4 @@
-SELECT auth_scheme 
+SELECT auth_scheme as [Authentication scheme]
 FROM sys.dm_exec_connections 
 WHERE session_id = @@SPID;
 --output

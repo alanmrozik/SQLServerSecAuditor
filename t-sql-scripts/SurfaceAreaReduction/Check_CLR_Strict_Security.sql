@@ -7,7 +7,7 @@ Enabling use	of	CLR	assemblies	widens	the	attack	surface	of	SQL	Server	and	puts	
 from	both	inadvertent	and	malicious	assemblies.
 */
 SELECT 
-    name, 
+    name as [Name], 
     CASE
     WHEN value_in_use = 0 THEN 'Disabled'
     WHEN value_in_use = 1 THEN 'Enabled'

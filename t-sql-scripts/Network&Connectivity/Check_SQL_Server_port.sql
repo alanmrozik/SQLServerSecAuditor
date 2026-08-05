@@ -9,9 +9,9 @@ Rationale:
 Using	a	non-default	port	helps	protect	the	database	from	attacks	directed	to	the	default	
 port.
 */
-SELECT TOP(1) local_tcp_port FROM sys.dm_exec_connections
+SELECT TOP(1) local_tcp_port as [Local TCP port] AS FROM sys.dm_exec_connections
 WHERE local_tcp_port IS NOT NULL;
-/* or */
+/* or 
 SELECT local_tcp_port
 FROM sys.dm_exec_connections
-WHERE session_id = @@SPID
+WHERE session_id = @@SPID */

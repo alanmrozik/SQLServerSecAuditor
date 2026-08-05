@@ -12,7 +12,9 @@ contain	very	broad	memberships	which	would	not	meet	the	best	practice	of	ensurin
 the	necessary	users	have	been	granted	access	to	a	SQL	Server	instance.	These	groups	
 should	not	be	used	for	any	level	of	access	into	a	SQL	Server	Database	Engine	instance.
 */
-SELECT pr.[name], pe.[permission_name], pe.[state_desc]
+SELECT pr.[name] as [Name],
+ pe.[permission_name] as [Permission name],
+  pe.[state_desc] as [Status]
 FROM sys.server_principals pr
 JOIN sys.server_permissions pe
 ON pr.principal_id = pe.grantee_principal_id

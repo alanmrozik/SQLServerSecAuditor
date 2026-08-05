@@ -9,8 +9,8 @@ user	account.	Revoking	the	CONNECT permission	for	the	guest user	will	ensure tha
 */
 USE <database_name>;
 GO
-SELECT DB_NAME() AS DatabaseName, 'guest' AS Database_User, 
-[permission_name], [state_desc]
+SELECT DB_NAME() AS [Database Name], 'guest' AS [Database user], 
+[permission_name] AS [Permission name], [state_desc] as [Status]
 FROM sys.database_permissions 
 WHERE [grantee_principal_id] = DATABASE_PRINCIPAL_ID('guest') 
 AND [state_desc] LIKE 'GRANT%' 
