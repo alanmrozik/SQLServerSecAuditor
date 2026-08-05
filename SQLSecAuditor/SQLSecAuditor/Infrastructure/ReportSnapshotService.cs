@@ -180,6 +180,154 @@ namespace SqlSecAuditor.Infrastructure
                 sb.AppendLine($"    - ... {removed.Count - 20} more rows");
         }
 
+        public static List<SnapshotComparisonRow> CompareRows(ReportSnapshot current, ReportSnapshot other)
+        {
+            var rows = new List<SnapshotComparisonRow>();
+
+            var currentCategories = current.Categories.ToDictionary(c => c.Name, StringComparer.OrdinalIgnoreCase);
+            var otherCategories = other.Categories.ToDictionary(c => c.Name, StringComparer.OrdinalIgnoreCase);
+            var categoryNames = currentCategories.Keys.Union(otherCategories.Keys, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var categoryName in categoryNames)
+            {
+                var hasCurrent = currentCategories.TryGetValue(categoryName, out var currentCategory);
+                var hasOther = otherCategories.TryGetValue(categoryName, out var otherCategory);
+
+                if (!hasOther)
+                {
+                    rows.Add(CreateDiffRow($"Category/{categoryName}", "exists", "", "Added"));
+                    continue;
+                }
+
+                if (!hasCurrent)
+                {
+                    rows.Add(CreateDiffRow($"Category/{categoryName}", "", "exists", "Removed"));
+                    continue;
+                }
+
+                CompareScripts(rows, categoryName, currentCategory!, otherCategory!);
+            }
+
+            return rows;
+        }
+
+        public static string BuildComparisonSummary(IReadOnlyCollection<SnapshotComparisonRow> rows)
+        {
+            if (rows.Count == 0)
+                return "Brak różnic.";
+
+            var added = rows.Count(r => r.ChangeType == "Added");
+            var removed = rows.Count(r => r.ChangeType == "Removed");
+            var changed = rows.Count(r => r.ChangeType == "Changed");
+
+            return $"Różnice: +{added} / -{removed} / ~{changed} (razem: {rows.Count})";
+        }
+
+        private static void CompareScripts(List<SnapshotComparisonRow> rows, string categoryName, SnapshotCategory current, SnapshotCategory other)
+        {
+            var currentScripts = current.Scripts.ToDictionary(s => s.Name, StringComparer.OrdinalIgnoreCase);
+            var otherScripts = other.Scripts.ToDictionary(s => s.Name, StringComparer.OrdinalIgnoreCase);
+            var scriptNames = currentScripts.Keys.Union(otherScripts.Keys, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var scriptName in scriptNames)
+            {
+                var hasCurrent = currentScripts.TryGetValue(scriptName, out var currentScript);
+                var hasOther = otherScripts.TryGetValue(scriptName, out var otherScript);
+
+                if (!hasOther)
+                {
+                    rows.Add(CreateDiffRow($"{categoryName}/{scriptName}", "exists", "", "Added"));
+                    continue;
+                }
+
+                if (!hasCurrent)
+                {
+                    rows.Add(CreateDiffRow($"{categoryName}/{scriptName}", "", "exists", "Removed"));
+                    continue;
+                }
+
+                CompareTables(rows, categoryName, currentScript!, otherScript!);
+            }
+        }
+
+        private static void CompareTables(List<SnapshotComparisonRow> rows, string categoryName, SnapshotScript current, SnapshotScript other)
+        {
+            var currentTables = current.Tables.ToDictionary(t => t.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var otherTables = other.Tables.ToDictionary(t => t.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase);
+            var tableNames = currentTables.Keys.Union(otherTables.Keys, StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var tableName in tableNames)
+            {
+                var hasCurrent = currentTables.TryGetValue(tableName, out var currentTable);
+                var hasOther = otherTables.TryGetValue(tableName, out var otherTable);
+                var path = $"{categoryName}/{current.Name}/{tableName}";
+
+                if (!hasOther)
+                {
+                    rows.Add(CreateDiffRow(path, "exists", "", "Added"));
+                    continue;
+                }
+
+                if (!hasCurrent)
+                {
+                    rows.Add(CreateDiffRow(path, "", "exists", "Removed"));
+                    continue;
+                }
+
+                CompareTableRows(rows, path, currentTable!, otherTable!);
+            }
+        }
+
+        private static void CompareTableRows(List<SnapshotComparisonRow> rows, string path, SnapshotTable current, SnapshotTable other)
+        {
+            var currentRows = current.Rows.Select(r => string.Join(" | ", r)).ToList();
+            var otherRows = other.Rows.Select(r => string.Join(" | ", r)).ToList();
+
+            var added = currentRows.Except(otherRows, StringComparer.Ordinal).ToList();
+            var removed = otherRows.Except(currentRows, StringComparer.Ordinal).ToList();
+
+            // Pair one added row with one removed row as a single "Changed" line (side-by-side)
+            var pairedCount = Math.Min(added.Count, removed.Count);
+            for (var i = 0; i < pairedCount; i++)
+            {
+                rows.Add(CreateDiffRow(path, added[i], removed[i], "Changed"));
+            }
+
+            // Remaining unmatched rows are pure additions/removals
+            for (var i = pairedCount; i < added.Count; i++)
+            {
+                rows.Add(CreateDiffRow(path, added[i], "", "Added"));
+            }
+
+            for (var i = pairedCount; i < removed.Count; i++)
+            {
+                rows.Add(CreateDiffRow(path, "", removed[i], "Removed"));
+            }
+        }
+
+        private static SnapshotComparisonRow CreateDiffRow(string path, string currentValue, string snapshotValue, string changeType)
+        {
+            var marker = changeType switch
+            {
+                "Added" => "→",
+                "Removed" => "←",
+                "Changed" => "↔",
+                _ => "="
+            };
+
+            return new SnapshotComparisonRow
+            {
+                Path = path,
+                CurrentValue = currentValue,
+                SnapshotValue = snapshotValue,
+                Marker = marker,
+                ChangeType = changeType
+            };
+        }
+
         private static void AddCategory(ReportSnapshot snapshot, string categoryName, IEnumerable<ScriptExecutionResult> results, string? error)
         {
             var resultList = results.ToList();

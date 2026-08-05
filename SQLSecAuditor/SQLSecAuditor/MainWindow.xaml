@@ -301,8 +301,16 @@
                                 <TextBlock Text="{Binding DatabaseName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#2980B9"/>
                             </StackPanel>
 
-                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
-                                <StackPanel x:Name="ResultsPanel">
+                            <TabControl Grid.Row="2" Grid.RowSpan="2" Margin="0,0,0,0">
+                                <TabItem Header="Audit">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                                            <StackPanel x:Name="ResultsPanel">
                                     <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
                                         <Expander IsExpanded="False" HorizontalContentAlignment="Stretch" Expanded="GeneralInfoExpander_Expanded">
                                             <Expander.Header>
@@ -1134,18 +1142,6 @@
                                     </Button.Resources>
                                 </Button>
 
-                                <Button Content="PORÓWNAJ ZE SNAPSHOT" 
-                                        Padding="15,8" 
-                                        Background="#8E44AD" Foreground="White" FontWeight="Bold" 
-                                        BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"
-                                        Click="CompareSnapshot_Click">
-                                    <Button.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="4"/>
-                                        </Style>
-                                    </Button.Resources>
-                                </Button>
-
                                 <Button Content="EKSPORTUJ RAPORT (.PDF)" 
                                         Padding="15,8" 
                                         Background="#2980B9" Foreground="White" FontWeight="Bold" 
@@ -1159,9 +1155,49 @@
                                 </Button>
                             </StackPanel>
                         </Grid>
-                    </DataTemplate>
-                </TabControl.ContentTemplate>
-            </TabControl>
-        </Grid>
-    </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Snapshots">
+                        <Grid Margin="0,5,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                <Button Content="PORÓWNAJ ZE SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#8E44AD" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand"
+                                        Click="CompareSnapshot_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="1" Text="{Binding SnapshotComparisonSummary}" Foreground="#34495E" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                            <ListView Grid.Row="2" ItemsSource="{Binding SnapshotComparisonRows}" BorderBrush="#D5DBDB" BorderThickness="1" Background="White">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Path" Width="320" DisplayMemberBinding="{Binding Path}"/>
+                                        <GridViewColumn Header="Aktualny (Audit)" Width="300" DisplayMemberBinding="{Binding CurrentValue}"/>
+                                        <GridViewColumn Header="" Width="40" DisplayMemberBinding="{Binding Marker}"/>
+                                        <GridViewColumn Header="Snapshot" Width="300" DisplayMemberBinding="{Binding SnapshotValue}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </DataTemplate>
+    </TabControl.ContentTemplate>
+</TabControl>
+</Grid>
+</Grid>
 </Window>

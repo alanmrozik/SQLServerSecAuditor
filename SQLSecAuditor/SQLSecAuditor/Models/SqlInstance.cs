@@ -25,6 +25,7 @@ namespace SqlSecAuditor.Models
         private string? _databaseSecurityError;
         private bool _isHighAvailabilityDisasterRecoveryRunning;
         private string? _highAvailabilityDisasterRecoveryError;
+        private string? _snapshotComparisonSummary;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -53,6 +54,8 @@ namespace SqlSecAuditor.Models
         public ObservableCollection<ScriptExecutionResult> DatabaseSecurityResults { get; } = new();
 
         public ObservableCollection<ScriptExecutionResult> HighAvailabilityDisasterRecoveryResults { get; } = new();
+
+        public ObservableCollection<SnapshotComparisonRow> SnapshotComparisonRows { get; } = new();
 
         public bool IsGeneralInfoLoaded
         {
@@ -166,6 +169,12 @@ namespace SqlSecAuditor.Models
         {
             get => _highAvailabilityDisasterRecoveryError;
             set => SetProperty(ref _highAvailabilityDisasterRecoveryError, value);
+        }
+
+        public string? SnapshotComparisonSummary
+        {
+            get => _snapshotComparisonSummary;
+            set => SetProperty(ref _snapshotComparisonSummary, value);
         }
 
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

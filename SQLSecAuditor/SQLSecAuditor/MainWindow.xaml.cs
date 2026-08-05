@@ -211,27 +211,29 @@ namespace SqlSecAuditor
                 return;
             }
 
-            var other = ReportSnapshotService.LoadSnapshot(openDialog.FileName);
-            var current = ReportSnapshotService.BuildSnapshot(instance);
-            var diff = ReportSnapshotService.Compare(current, other);
-
-            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
-            var safeServer = SanitizeFileNamePart(instance.ServerName);
-            var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
-
-            var saveDialog = new SaveFileDialog
+            try
             {
-                Filter = "Text files (*.txt)|*.txt",
-                FileName = $"SnapshotDiff_{safeServer}_{safeDatabase}_{dateStamp}.txt"
-            };
+                var other = ReportSnapshotService.LoadSnapshot(openDialog.FileName);
+                var current = ReportSnapshotService.BuildSnapshot(instance);
+                var rows = ReportSnapshotService.CompareRows(current, other);
 
-            if (saveDialog.ShowDialog(this) == true)
-            {
-                System.IO.File.WriteAllText(saveDialog.FileName, diff);
+                instance.SnapshotComparisonRows.Clear();
+                foreach (var row in rows)
+                {
+                    instance.SnapshotComparisonRows.Add(row);
+                }
+
+                instance.SnapshotComparisonSummary = ReportSnapshotService.BuildComparisonSummary(rows);
+
+                if (rows.Count == 0)
+                {
+                    instance.SnapshotComparisonSummary = "Brak różnic.";
+                }
             }
-
-            var preview = diff.Length > 3000 ? diff.Substring(0, 3000) + "\n..." : diff;
-            MessageBox.Show(this, preview, "Snapshot Compare", MessageBoxButton.OK, MessageBoxImage.Information);
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Nie udało się porównać snapshotu:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void ExportReport_Click(object sender, RoutedEventArgs e)
@@ -248,7 +250,7 @@ namespace SqlSecAuditor
             var dialog = new SaveFileDialog
             {
                 Filter = "PDF files (*.pdf)|*.pdf",
-                FileName = $"Raport_Audytu_{safeServer}_{safeDatabase}_{dateStamp}.pdf"
+                FileName = $"Raport_Audytu_{safeServer}_{safeDatabase}_{dateStamp}"
             };
 
             if (dialog.ShowDialog(this) != true)
