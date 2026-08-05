@@ -219,6 +219,11 @@ namespace SqlSecAuditor.ViewModels
                         results.Add(result);
                     }
                 }
+
+                if (string.Equals(category, "HighAvailability&DisasterRecovery", StringComparison.OrdinalIgnoreCase))
+                {
+                    ApplyHighAvailabilityContext(results);
+                }
             }
             catch (Exception ex)
             {
@@ -276,6 +281,35 @@ namespace SqlSecAuditor.ViewModels
                 e => instance.HighAvailabilityDisasterRecoveryError = e);
         }
 
+
+        private static void ApplyHighAvailabilityContext(IEnumerable<ScriptExecutionResult> results)
+        {
+            var allTables = results.SelectMany(r => r.Tables).ToList();
+            var hasAnyEnabled = allTables.Any(TableHasExactOneValue);
+
+            foreach (var table in allTables)
+            {
+                table.ExtendedProperties["HaDrAnyEnabled"] = hasAnyEnabled;
+            }
+        }
+
+        private static bool TableHasExactOneValue(DataTable table)
+        {
+            foreach (DataRow row in table.Rows)
+            {
+                foreach (var cell in row.ItemArray)
+                {
+                    if (cell != null
+                        && cell != DBNull.Value
+                        && string.Equals(cell.ToString()?.Trim(), "1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
 
         private static string FormatReaderRow(SqlDataReader reader)
         {
