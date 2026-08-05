@@ -1,13 +1,19 @@
-SELECT SERVERPROPERTY('IsHadrEnabled')
-
+IF CAST(SERVERPROPERTY('IsClustered') AS INT)=1
+BEGIN
 SELECT
-    ag.name,
-    ar.replica_server_name,
-    ars.role_desc,
-    ars.connected_state_desc,
-    ars.synchronization_health_desc
-FROM sys.availability_groups ag
-JOIN sys.availability_replicas ar
-    ON ag.group_id = ar.group_id
-JOIN sys.dm_hadr_availability_replica_states ars
-    ON ar.replica_id = ars.replica_id;
+	NodeName as [Node name],
+	status_description [Status],
+	CASE
+	WHEN is_current_owner = 1 THEN 'YES'
+	WHEN is_current_owner = 0 THEN 'NO'
+	END AS [Is current owner]
+FROM sys.dm_os_cluster_nodes
+ORDER BY nodename;
+
+SELECT *
+FROM sys.dm_os_cluster_properties;
+END
+ELSE
+BEGIN
+	SELECT 'Brak SQL Server Failvoer Cluster' as [Status];
+END;

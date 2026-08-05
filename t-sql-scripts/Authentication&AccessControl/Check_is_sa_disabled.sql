@@ -8,7 +8,7 @@ Enforcing	this	control	reduces	the	probability	of	an	attacker	executing	brute	fo
 against	a	well-known	principal.
 */
 SELECT 
-    name, 
+    name as [Name], 
     CASE 
     WHEN is_disabled = 1 THEN 'Disabled'
     WHEN is_disabled = 0 THEN 'Enabled'
