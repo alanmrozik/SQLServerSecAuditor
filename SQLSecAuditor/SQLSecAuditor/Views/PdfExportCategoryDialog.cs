@@ -3,6 +3,8 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 
 namespace SqlSecAuditor.Views
 {
@@ -74,12 +76,17 @@ namespace SqlSecAuditor.Views
                 var cb = new CheckBox
                 {
                     Content = option.Name,
-                    IsChecked = option.IsSelected,
                     Margin = new Thickness(0, 0, 0, 8),
-                    FontSize = 13
+                    FontSize = 13,
+                    DataContext = option
                 };
-                cb.Checked += (_, __) => option.IsSelected = true;
-                cb.Unchecked += (_, __) => option.IsSelected = false;
+
+                cb.SetBinding(ToggleButton.IsCheckedProperty, new Binding(nameof(PdfExportCategoryOption.IsSelected))
+                {
+                    Mode = BindingMode.TwoWay,
+                    UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+                });
+
                 optionsPanel.Children.Add(cb);
             }
 
