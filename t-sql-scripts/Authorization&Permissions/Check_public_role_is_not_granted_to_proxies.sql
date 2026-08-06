@@ -9,7 +9,7 @@ privileges.
 */
 USE [msdb]
 GO
-SELECT sp.name AS proxyname
+SELECT sp.name AS [proxyname]
 FROM dbo.sysproxylogin spl
 JOIN sys.database_principals dp
 ON dp.sid = spl.sid

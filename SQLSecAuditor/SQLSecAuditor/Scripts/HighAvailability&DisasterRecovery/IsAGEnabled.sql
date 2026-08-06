@@ -1,3 +1,6 @@
+/*Description:
+Zalecane jest zaimplementowanie conajmniej jednej z poniższych opcji HA/DR.
+*/
 IF CAST(SERVERPROPERTY('IsHadrEnabled') AS INT) = 1
 BEGIN
     SELECT

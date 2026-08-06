@@ -55,12 +55,25 @@ namespace SqlSecAuditor.Infrastructure
                                     col.Item().Text(category.Error).FontColor(Colors.Red.Darken2);
                                 }
 
-                                foreach (var script in category.Scripts)
+                foreach (var script in category.Scripts)
                                 {
                                     col.Item().PaddingTop(4).Column(scriptCol =>
                                     {
                                         scriptCol.Spacing(5);
-                                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+
+                        if (!string.IsNullOrWhiteSpace(script.Error))
+                        {
+                            // leave error handling below
+                        }
+
+                        // include script description if present
+                        if (!string.IsNullOrWhiteSpace(script is ExportScript es ? es.Description : null))
+                        {
+                            scriptCol.Item().Text((script as ExportScript)?.Description ?? string.Empty)
+                                .FontSize(9)
+                                .FontColor(Colors.Grey.Darken2);
+                        }
 
                                         if (!string.IsNullOrWhiteSpace(script.Error))
                                         {
@@ -138,7 +151,8 @@ namespace SqlSecAuditor.Infrastructure
                 {
                     ScriptName = script.ScriptName,
                     Error = script.Error,
-                    Tables = script.Tables.Cast<DataTable>().ToArray()
+                    Tables = script.Tables.Cast<DataTable>().ToArray(),
+                    Description = script.Description
                 }).ToArray()
             });
         }
@@ -353,6 +367,7 @@ namespace SqlSecAuditor.Infrastructure
             public string ScriptName { get; set; } = string.Empty;
             public string? Error { get; set; }
             public IReadOnlyList<DataTable> Tables { get; set; } = Array.Empty<DataTable>();
+            public string? Description { get; set; }
         }
     }
 }

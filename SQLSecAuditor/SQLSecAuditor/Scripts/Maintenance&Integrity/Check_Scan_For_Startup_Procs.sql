@@ -1,7 +1,8 @@
+
+
 /*
 Description:
-The	scan for startup procs option,	if	enabled,	causes	SQL	Server	to	scan	for	and	
-automatically	run	all	stored procedures	that	are	set	to	execute	upon	service	startup.
+Egzekwowanie tego mechanizmu kontroli ogranicza ryzyko wykorzystania tych zasobów przez podmiot do celów szkodliwych.
 Rationale:
 Enforcing	this	control	reduces	the	threat	of	an	entity	leveraging	these	facilities	for	
 malicious	purposes.
@@ -14,3 +15,7 @@ SELECT
     END AS [Status]
     FROM sys.configurations 
     WHERE name = 'scan for startup procs';
+        /*
+
+
+*/

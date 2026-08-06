@@ -1,9 +1,7 @@
 /*
 Description:
-The	clr enabled option	specifies	whether	user	assemblies	can	be	run	by	SQL	Server.
-Rationale:
-Enabling	use	of	CLR	assemblies	widens	the	attack	surface	of	SQL	Server	and	puts	it	at	risk	
-from	both	inadvertent	and	malicious	assemblies.
+Włączenie obsługi zestawów CLR zwiększa powierzchnię ataku serwera SQL Server i naraża go na zagrożenia związane zarówno z przypadkowymi, jak i złośliwymi zestawami.
+
 */
 --USE [<database_name>]
 --GO
@@ -23,3 +21,7 @@ ELSE
 BEGIN
     SELECT 'CLR nie jest włączony' AS [Status];
 END;
+/*
+Rationale:
+Enabling	use	of	CLR	assemblies	widens	the	attack	surface	of	SQL	Server	and	puts	it	at	risk	
+from	both	inadvertent	and	malicious	assemblies.*/

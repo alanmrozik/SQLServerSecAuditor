@@ -180,10 +180,25 @@ namespace SqlSecAuditor
                 return;
             }
 
+            // sanitize default file name (server or database may contain characters invalid in file names)
+            string Sanitize(string s)
+            {
+                if (string.IsNullOrEmpty(s)) return string.Empty;
+                var invalid = System.IO.Path.GetInvalidFileNameChars();
+                var sb = new System.Text.StringBuilder(s.Length);
+                foreach (var ch in s)
+                {
+                    sb.Append(Array.IndexOf(invalid, ch) >= 0 ? '_' : ch);
+                }
+                return sb.ToString();
+            }
+
+            var suggestedName = $"Raport_Audytu_{Sanitize(instance.ServerName)}_{Sanitize(instance.DatabaseName)}.pdf";
+
             var dialog = new SaveFileDialog
             {
                 Filter = "PDF files (*.pdf)|*.pdf",
-                FileName = $"Raport_Audytu_{instance.ServerName}_{instance.DatabaseName}.pdf"
+                FileName = suggestedName
             };
 
             if (dialog.ShowDialog(this) != true)
@@ -191,8 +206,15 @@ namespace SqlSecAuditor
                 return;
             }
 
-            PdfReportExporter.Export(dialog.FileName, instance);
-            MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                PdfReportExporter.Export(dialog.FileName, instance);
+                MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Nie udało się wyeksportować raportu: {ex.Message}", "Export error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         // Public helper to display script results in the main UI.

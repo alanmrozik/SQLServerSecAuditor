@@ -1,3 +1,7 @@
+/*
+Description:
+Liczba użytkowników przypisanych do roli sysadmin powinna być minimalna, ograniczona do administratora serwera lub baz danych. Pozostali użytkownicy powinni zostać zweryfikowani.
+*/
 SELECT 
 	rp.name as [Role name],
     sp.name AS [Login name],
