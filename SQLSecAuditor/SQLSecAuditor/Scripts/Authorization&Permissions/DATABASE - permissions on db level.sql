@@ -1,3 +1,7 @@
+/*
+Description:
+Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi teskt Baaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi tesktBaaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi tesktBaaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi tesktBaaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi tesktBaaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi tesktBaaaaaaaaaaaaaaaaaaaaaaaaaaaaaardzo długi teskt 
+*/
 ;WITH Permissions AS
 (
     ------------------------------------------------------------------------

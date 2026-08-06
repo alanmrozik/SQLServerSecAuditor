@@ -1,3 +1,6 @@
+/*Description:
+Warto jest mieć AG
+*/
 IF CAST(SERVERPROPERTY('IsHadrEnabled') AS INT) = 1
 BEGIN
     SELECT
