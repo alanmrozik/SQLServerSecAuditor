@@ -9,7 +9,7 @@ the	server\instance	level,	the	database	must	be	opened	every	time	to	authenticat
 The	frequent	opening/closing	of	the	database consumes additional server resources and may contribute to a denial of service.
 */
 SELECT 
-    name, 
+    name as [Name], 
     CASE
     WHEN is_auto_close_on = 1 THEN 'Enabled'
     WHEN is_auto_close_on = 0 THEN 'Disabled'

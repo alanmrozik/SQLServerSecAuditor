@@ -7,11 +7,12 @@ port	assignment	should	be	changed.	In	a	multi-instance	scenario,	each	instance	m
 assigned	its	own	dedicated	TCP/IP	port.
 Rationale:
 Using	a	non-default	port	helps	protect	the	database	from	attacks	directed	to	the	default	
-port.
-*/
-SELECT TOP(1) local_tcp_port FROM sys.dm_exec_connections
+port.*/
+/*
+SELECT TOP(1) local_tcp_port as [Local TCP port] FROM sys.dm_exec_connections
 WHERE local_tcp_port IS NOT NULL;
-/* or */
+*/ 
+
 SELECT local_tcp_port
 FROM sys.dm_exec_connections
 WHERE session_id = @@SPID
