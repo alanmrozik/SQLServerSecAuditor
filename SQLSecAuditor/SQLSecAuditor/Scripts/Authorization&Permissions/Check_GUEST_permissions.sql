@@ -5,13 +5,31 @@ Odebranie uprawnienia CONNECT użytkownikowi typu „guest” gwarantuje, że lo
 */
 --USE <database_name>;
 --GO
-SELECT DB_NAME() AS [Database Name], 'guest' AS [Database user], 
-[permission_name] AS [Permission name], [state_desc] as [Status]
-FROM sys.database_permissions 
-WHERE [grantee_principal_id] = DATABASE_PRINCIPAL_ID('guest') 
-AND [state_desc] LIKE 'GRANT%' 
-AND [permission_name] = 'CONNECT'
-AND DB_NAME() NOT IN ('master','tempdb','msdb');
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.database_permissions 
+    WHERE [grantee_principal_id] = DATABASE_PRINCIPAL_ID('guest') 
+      AND [state_desc] LIKE 'GRANT%' 
+      AND [permission_name] = 'CONNECT'
+      AND DB_NAME() NOT IN ('master','tempdb','msdb')
+)
+BEGIN
+    SELECT 
+        DB_NAME() AS [Database Name], 
+        'guest' AS [Database user], 
+        [permission_name] AS [Permission name], 
+        [state_desc] AS [Status]
+    FROM sys.database_permissions 
+    WHERE [grantee_principal_id] = DATABASE_PRINCIPAL_ID('guest') 
+      AND [state_desc] LIKE 'GRANT%' 
+      AND [permission_name] = 'CONNECT'
+      AND DB_NAME() NOT IN ('master','tempdb','msdb');
+END
+ELSE
+BEGIN
+    SELECT 'Użytkownik guest nie posiada nadanych uprawnień CONNECT w bazie danych' AS [Status];
+END;
 /*
 Rationale:
 A	login	assumes	the	identity	of	the	guest user	when	a	login	has	access	to	SQL	Server	but	
