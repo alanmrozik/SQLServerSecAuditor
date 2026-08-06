@@ -1,7 +1,6 @@
 /*
 Description:
-The	TRUSTWORTHY database	option	allows	database	objects	to	access	objects	in	other	
-databases	under	certain	circumstances.
+Opcja bazy danych TRUSTWORTHY umożliwia obiektom bazy danych uzyskiwanie dostępu do obiektów w innych bazach danych w określonych okolicznościach.
 */
 SELECT 
 	name as [Name],

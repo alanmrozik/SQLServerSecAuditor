@@ -1,6 +1,6 @@
 /*
 Description:
-Service accounts
+Konta serwisowe zalogowane do usług SQL Server powinny być kontami domenowymi z wyłączoną możliwością logowania do innych usług.
 */
 SELECT 
     servicename as [Service name],

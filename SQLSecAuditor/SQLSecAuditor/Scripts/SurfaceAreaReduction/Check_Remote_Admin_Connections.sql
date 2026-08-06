@@ -1,7 +1,6 @@
 /*
 Description:
-The	remote admin connections option	controls	whether	a	client	application	on	a	remote	
-computer	can	use	the	Dedicated	Administrator	Connection	(DAC).
+Dedykowane połączenie administratora (DAC) umożliwia administratorowi uzyskanie dostępu do działającego serwera w celu wykonania funkcji diagnostycznych lub instrukcji języka Transact-SQL, bądź też rozwiązania problemów z serwerem – nawet jeśli jest on zablokowany, działa w nietypowym stanie lub nie odpowiada na standardowe próby nawiązania połączenia z aparatem bazy danych SQL Server. 
 */
 USE master;
 GO

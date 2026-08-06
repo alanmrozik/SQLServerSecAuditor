@@ -1,7 +1,6 @@
 /*
 Description:
-Enabling	Ad	Hoc	Distributed	Queries	allows	users	to	query	data	and	execute	statements	on	
-external	data	sources.	This	functionality	should	be	disabled.
+Funkcja ta może zostać wykorzystana do zdalnego uzyskiwania dostępu i eksploatacji luk w zabezpieczeniach zdalnych instancji serwera SQL oraz do uruchamiania niebezpiecznych funkcji języka Visual Basic for Applications.
 */
 SELECT 
     name, 

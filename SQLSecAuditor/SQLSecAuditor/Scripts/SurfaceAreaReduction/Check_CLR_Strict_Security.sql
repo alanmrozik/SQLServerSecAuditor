@@ -1,7 +1,5 @@
 /*
 Description:
-The	clr strict security option	specifies	whether	the	engine	applies	the	PERMISSION_SET
-on	the	assemblies.
 */
 SELECT 
     name as [Name], 

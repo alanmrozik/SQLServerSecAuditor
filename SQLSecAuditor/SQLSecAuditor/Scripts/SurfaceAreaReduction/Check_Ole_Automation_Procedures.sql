@@ -1,8 +1,6 @@
 /*
 Description:
-The	Ole Automation Procedures option	controls	whether	OLE	Automation	objects	can	be	
-instantiated	within	Transact-SQL batches.	These	are	extended	stored	procedures	that	allow	
-SQL	Server	users	to	execute	functions	external	to	SQL	Server.
+Włączenie tej opcji zwiększy powierzchnię ataku na serwer SQL i umożliwi użytkownikom wykonywanie funkcji w kontekście zabezpieczeń serwera SQL.
 */
 SELECT 
     name as [Name], 

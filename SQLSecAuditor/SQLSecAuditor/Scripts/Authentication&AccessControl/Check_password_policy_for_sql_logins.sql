@@ -1,7 +1,6 @@
 /*
 Description:
-Applies	the	same	password	complexity	policy	used	in	Windows	to	passwords	used	inside	
-SQL	Server.
+Zaleca się stosowanie do haseł używanych w programie SQL Server tych samych zasad złożoności haseł, które są stosowane w systemie Windows.
 */
 SELECT 
     name AS [Login name], 

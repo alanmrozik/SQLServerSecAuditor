@@ -1,7 +1,7 @@
 /*
 Description:
-Applies	the	same	password	expiration	policy	used	in	Windows	to	passwords	used	inside	
-SQL	Server.
+Zapewnienie zgodności kont logowania SQL z zasadami dotyczącymi bezpiecznych haseł, określonymi w standardzie Windows Server Benchmark, gwarantuje, że hasła dla kont z uprawnieniami sysadmin będą regularnie zmieniane, co pomoże zapobiec ich przejęciu w wyniku ataku typu brute-force. 
+Uprawnienie CONTROL SERVER jest równoważne uprawnieniu sysadmin, dlatego konta je posiadające również powinny podlegać wymogowi okresowej zmiany hasła.
 */
 SELECT l.[name] as [Login], 
 'sysadmin membership' AS 'Access Method',

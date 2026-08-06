@@ -1,5 +1,5 @@
 /*Description:
-Warto jest mieć AG
+
 */
 IF EXISTS (
     SELECT 1

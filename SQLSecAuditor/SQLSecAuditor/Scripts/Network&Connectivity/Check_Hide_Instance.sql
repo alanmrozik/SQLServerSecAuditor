@@ -1,7 +1,6 @@
 /*
 Description:
-Non-clustered	SQL	Server	instances	within	production	environments should	be	designated	
-as	hidden	to	prevent	advertisement	by	the	SQL	Server	Browser	service.
+Instancje SQL Server niebędące częścią klastra w środowiskach produkcyjnych powinny być oznaczone jako ukryte, aby zapobiec ich rozgłaszaniu przez usługę SQL Server Browser.
 */
 /*
 Non-clustered	SQL	Server	instances	within	production	environments should	be	designated	

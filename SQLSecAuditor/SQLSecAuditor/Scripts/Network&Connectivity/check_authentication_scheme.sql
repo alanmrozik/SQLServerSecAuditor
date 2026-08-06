@@ -1,6 +1,5 @@
 /*
 Description:
-Authentication scheme
 */
 SELECT auth_scheme as [Authentication scheme]
 FROM sys.dm_exec_connections 

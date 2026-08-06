@@ -1,7 +1,6 @@
 /*
 Description:
-The	Database Mail XPs option	controls	the	ability	to	generate	and	transmit	email	
-messages	from	SQL	Server.
+Wyłączenie opcji Database Mail XPs ogranicza powierzchnię ataku na serwer SQL, eliminuje wektor ataku typu DoS oraz kanał służący do eksfiltracji danych z serwera bazy danych na host zdalny.
 
 */
 SELECT 

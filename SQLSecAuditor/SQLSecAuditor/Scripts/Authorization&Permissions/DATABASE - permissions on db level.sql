@@ -1,7 +1,6 @@
 /*
 Description:
-To ustawienie powoduje rejestrowanie nieudanych prób uwierzytelniania dla logowań do programu SQL Server w Errorlog. Jest to ustawienie domyślne dla programu SQL Server.
-Ustawienie to było historycznie dostępne we wszystkich wersjach i edycjach programu SQL Server. Przed wprowadzeniem funkcji SQL Server Audit był to jedyny dostępny mechanizm rejestrowania logowań (zarówno udanych, jak i nieudanych).
+
 */
 ;WITH Permissions AS
 (

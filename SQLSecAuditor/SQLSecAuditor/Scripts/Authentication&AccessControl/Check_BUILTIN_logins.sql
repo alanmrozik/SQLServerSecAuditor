@@ -1,9 +1,7 @@
 /*
 Description:
-Prior	to	SQL	Server	2008,	the	BUILTIN\Administrators group	was	added	as	a	SQL	Server	login	with	sysadmin	privileges	during	installation	by	default.	Best	practices	promote	creating	an	Active	Directory	level	group	containing	approved	DBA	staff	accounts	and	using	
-this	controlled	AD	group	as	the	login	with	sysadmin	privileges.	The	AD	group	should	be	
-specified	during	SQL	Server	installation	and	the	BUILTIN\Administrators group	would	
-therefore	have	no	need	to	be	a	login.
+Grupy wbudowane (BUILTIN), takie jak Administrators, Everyone, Authenticated Users, Guests itp., zazwyczaj obejmują bardzo szeroki krąg członków, co jest niezgodne z zasadą najlepszych praktyk, zakładającą przyznawanie dostępu do instancji programu SQL Server wyłącznie niezbędnym użytkownikom. 
+Grup tych nie należy wykorzystywać do nadawania jakiegokolwiek poziomu dostępu do instancji aparatu bazy danych SQL Server.
 */
 SELECT pr.[name] as [Name],
  pe.[permission_name] as [Permission name],

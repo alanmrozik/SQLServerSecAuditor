@@ -1,7 +1,6 @@
 /*
 Description:
-The	remote access option	controls	the	execution	of	local	stored	procedures	on	remote	
-servers	or	remote	stored	procedures	on	local	server.
+Funkcjonalność ta może zostać wykorzystana do przeprowadzenia ataku typu Denial-of-Service (DoS) na zdalne serwery poprzez przeniesienie procesu przetwarzania zapytań na system docelowy.
 */
 SELECT 
     name as [Name], 

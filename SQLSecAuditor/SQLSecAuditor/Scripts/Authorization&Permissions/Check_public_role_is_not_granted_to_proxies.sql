@@ -1,7 +1,6 @@
 /*
 Description:
-The	public database	role	contains	every	user	in	the	msdb database.	SQL	Agent	proxies	
-define	a	security	context	in	which	a	job	step	can	run.
+Przyznanie roli public dostępu do serwerów proxy agenta SQL umożliwiłoby wszystkim użytkownikom korzystanie z proxy, które może dysponować wysokimi uprawnieniami. Prawdopodobnie naruszyłoby to zasadę minimalnych uprawnień.
 */
 USE [msdb]
 GO

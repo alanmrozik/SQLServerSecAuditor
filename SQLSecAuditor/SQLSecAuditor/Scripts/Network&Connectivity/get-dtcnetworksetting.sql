@@ -1,6 +1,6 @@
 /*
 Description:
-Get-DtcNetworkSetting
+Weryfikacja konfiguracji MSDTC (Microsoft Distributed Transaction Coordinator) jest istotna dla poprawnego działania mechanizmów wymagających komunikacji pomiędzy serwerami, takich jak Linked Server wykorzystujący transakcje rozproszone.
 */
 IF EXISTS (
     SELECT 1
