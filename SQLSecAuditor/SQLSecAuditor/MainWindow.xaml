@@ -1453,7 +1453,7 @@
                                                                             <ItemsControl ItemsSource="{Binding Tables}">
                                                                                 <ItemsControl.ItemTemplate>
                                                                                     <DataTemplate>
-                                                                                        <views:ScriptResultsControl Results="{Binding}" />
+                                                                                        <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                                     </DataTemplate>
                                                                                 </ItemsControl.ItemTemplate>
                                                                             </ItemsControl>
