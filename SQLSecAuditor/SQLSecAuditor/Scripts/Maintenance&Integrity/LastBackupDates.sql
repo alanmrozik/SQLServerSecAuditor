@@ -1,3 +1,7 @@
+/*
+Description:
+Regularne wykonywanie kopii zapasowych baz danych pozwala zabezpieczyć dane przed ich utratą spowodowaną awarią sprzętu, błędami użytkowników lub innymi nieprzewidzianymi zdarzeniami.
+*/
 ;WITH backup_cte AS
 (
     SELECT

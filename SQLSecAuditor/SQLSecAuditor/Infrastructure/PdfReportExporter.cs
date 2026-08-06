@@ -55,12 +55,25 @@ namespace SqlSecAuditor.Infrastructure
                                     col.Item().Text(category.Error).FontColor(Colors.Red.Darken2);
                                 }
 
-                                foreach (var script in category.Scripts)
+                foreach (var script in category.Scripts)
                                 {
                                     col.Item().PaddingTop(4).Column(scriptCol =>
                                     {
                                         scriptCol.Spacing(5);
-                                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+
+                        if (!string.IsNullOrWhiteSpace(script.Error))
+                        {
+                            // leave error handling below
+                        }
+
+                        // include script description if present
+                        if (!string.IsNullOrWhiteSpace(script is ExportScript es ? es.Description : null))
+                        {
+                            scriptCol.Item().Text((script as ExportScript)?.Description ?? string.Empty)
+                                .FontSize(9)
+                                .FontColor(Colors.Grey.Darken2);
+                        }
 
                                         if (!string.IsNullOrWhiteSpace(script.Error))
                                         {
@@ -70,7 +83,7 @@ namespace SqlSecAuditor.Infrastructure
                                         foreach (var table in script.Tables)
                                         {
                                             scriptCol.Item().Text(table.TableName ?? string.Empty).Italic().FontSize(8).FontColor(Colors.Grey.Darken1);
-                                            scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table));
+                                            scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table, script.ScriptName));
                                         }
                                     });
                                 }
@@ -138,12 +151,13 @@ namespace SqlSecAuditor.Infrastructure
                 {
                     ScriptName = script.ScriptName,
                     Error = script.Error,
-                    Tables = script.Tables.Cast<DataTable>().ToArray()
+                    Tables = script.Tables.Cast<DataTable>().ToArray(),
+                    Description = script.Description
                 }).ToArray()
             });
         }
 
-        private static void RenderDataTable(TableDescriptor table, DataTable dataTable)
+        private static void RenderDataTable(TableDescriptor table, DataTable dataTable, string scriptName)
         {
             table.ColumnsDefinition(columns =>
             {
@@ -169,11 +183,164 @@ namespace SqlSecAuditor.Infrastructure
 
             foreach (DataRow row in dataTable.Rows)
             {
+                var rowBackground = EvaluateRowColorHex(scriptName, dataTable, row);
+
                 foreach (var value in row.ItemArray)
                 {
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4).Text(FormatValue(value));
+                    var cell = table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4);
+                    if (!string.IsNullOrWhiteSpace(rowBackground))
+                    {
+                        cell = cell.Background(rowBackground);
+                    }
+
+                    cell.Text(FormatValue(value));
                 }
             }
+        }
+
+        private static string? EvaluateRowColorHex(string scriptName, DataTable table, DataRow row)
+        {
+            const string green = "#D4EFDF";
+            const string red = "#FADBD8";
+            const string yellow = "#FCF3CF";
+
+            var normalizedScript = NormalizeToken(scriptName);
+            var rowText = string.Join(" | ", row.ItemArray.Select(ToText)).ToLowerInvariant();
+
+            if (normalizedScript.Contains("encryptionchecks") || normalizedScript.Contains("generalinfoaboutserver"))
+                return null;
+
+            if (normalizedScript.Contains("builtinlogins")
+                || normalizedScript.Contains("expirationforsqlloginsysadmins")
+                || normalizedScript.Contains("sysadminlogins")
+                || normalizedScript.Contains("guestpermissions")
+                || normalizedScript.Contains("permissionsondblevelpoprawiony")
+                || normalizedScript.Contains("serviceaccounts")
+                || normalizedScript.Contains("sqlserverport"))
+                return yellow;
+
+            if (normalizedScript.Contains("orphanedusers")
+                || normalizedScript.Contains("publicroleisnotgrantedtoproxies")
+                || normalizedScript.Contains("autoclose")
+                || normalizedScript.Contains("clrenabled"))
+                return red;
+
+            if (normalizedScript.Contains("defaulttraceenabled"))
+                return rowText.Contains("enabled") ? green : rowText.Contains("disabled") ? red : null;
+
+            if (normalizedScript.Contains("loginauditing"))
+                return rowText.Contains("failed") && rowText.Contains("login") ? green : red;
+
+            if (normalizedScript.Contains("issadisabled")
+                || normalizedScript.Contains("scanforstartupprocs")
+                || normalizedScript.Contains("crossdbownershipchaining")
+                || normalizedScript.Contains("trustworthyofdatabase")
+                || normalizedScript.Contains("adhocdistributedqueries")
+                || normalizedScript.Contains("clrstrictsecurity")
+                || normalizedScript.Contains("databasemailxps")
+                || normalizedScript.Contains("oleautomationprocedures")
+                || normalizedScript.Contains("remoteacces")
+                || normalizedScript.Contains("remoteadminconnections"))
+                return rowText.Contains("disabled") ? green : rowText.Contains("enabled") ? red : null;
+
+            if (normalizedScript.Contains("passwordpolicyforsqllogins"))
+            {
+                if (rowText.Contains("not checked") || rowText.Contains("n/a") || rowText.Contains("0"))
+                    return red;
+                if (rowText.Contains("checked") || rowText.Contains("1") || rowText.Contains("true"))
+                    return green;
+                return null;
+            }
+
+            if (normalizedScript.Contains("hideinstance"))
+            {
+                if (HasExactValue(row, "1")) return green;
+                if (HasExactValue(row, "0")) return red;
+                return null;
+            }
+
+            if (normalizedScript.Contains("ifconnectionusekerberos"))
+                return rowText.Contains("kerberos") ? green : rowText.Contains("ntlm") ? red : null;
+
+            if (normalizedScript.Contains("isagenabled")
+                || normalizedScript.Contains("isclustered")
+                || normalizedScript.Contains("islogshipped")
+                || normalizedScript.Contains("ismirrored")
+                || normalizedScript.Contains("isreplicated"))
+            {
+                if (HasExactValue(row, "1")) return green;
+                if (HasExactValue(row, "0"))
+                {
+                    var hasAnyEnabled = table.ExtendedProperties["HaDrAnyEnabled"] as bool? == true;
+                    return hasAnyEnabled ? yellow : red;
+                }
+
+                return null;
+            }
+
+            if (normalizedScript.Contains("lastbackupdates"))
+            {
+                if (TryFindDate(row, out var dt))
+                    return dt >= DateTime.Now.AddMonths(-1) ? green : red;
+                return red;
+            }
+
+            if (normalizedScript.Contains("lastknowgoodcheckdb"))
+            {
+                if (TryFindDate(row, out var dt))
+                {
+                    if (dt.Year == 1900) return red;
+                    if (dt >= DateTime.Now.AddMonths(-1)) return green;
+                }
+
+                return null;
+            }
+
+            return null;
+        }
+
+        private static bool HasExactValue(DataRow row, string expected)
+        {
+            return row.ItemArray.Select(ToText).Any(v => string.Equals(v, expected, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool TryFindDate(DataRow row, out DateTime date)
+        {
+            foreach (var value in row.ItemArray)
+            {
+                if (value is DateTime dt)
+                {
+                    date = dt;
+                    return true;
+                }
+
+                var text = ToText(value);
+                if (DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out dt)
+                    || DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
+                {
+                    date = dt;
+                    return true;
+                }
+            }
+
+            date = default;
+            return false;
+        }
+
+        private static string ToText(object? value)
+        {
+            if (value is null || value == DBNull.Value)
+                return string.Empty;
+
+            return Convert.ToString(value, CultureInfo.InvariantCulture)?.Trim() ?? string.Empty;
+        }
+
+        private static string NormalizeToken(string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return string.Empty;
+
+            return new string(value.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
         }
 
         private static string FormatValue(object? value)
@@ -200,6 +367,7 @@ namespace SqlSecAuditor.Infrastructure
             public string ScriptName { get; set; } = string.Empty;
             public string? Error { get; set; }
             public IReadOnlyList<DataTable> Tables { get; set; } = Array.Empty<DataTable>();
+            public string? Description { get; set; }
         }
     }
 }

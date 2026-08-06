@@ -14,7 +14,7 @@ be	enabled	(1) for SQL Server failover clusters;otherwise, it should be disabled
 USE master;
 GO
 SELECT 
-    name, 
+    name as [Name], 
     CASE
     WHEN value_in_use = 0 THEN 'Disabled'
     WHEN value_in_use = 1 THEN 'Enabled'

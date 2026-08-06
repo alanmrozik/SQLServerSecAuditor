@@ -2,6 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:views="clr-namespace:SqlSecAuditor.Views"
+        xmlns:conv="clr-namespace:SqlSecAuditor.Converters"
         Title="SQLSecAuditor" Height="800" Width="1000"
         Background="{StaticResource AppWindowBackgroundBrush}"
         WindowStartupLocation="CenterScreen">
@@ -14,6 +15,7 @@
     </WindowChrome.WindowChrome>
 
     <Window.Resources>
+        <conv:WidthMinusConverter x:Key="WidthMinusConverter" />
         <Style x:Key="ReportBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#DCDCDC"/>
@@ -348,7 +350,7 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding GeneralInfoEntries}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding GeneralInfoEntries}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <Grid Margin="0,0,0,6">
@@ -424,12 +426,36 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding MaintenanceIntegrityResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding MaintenanceIntegrityResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
+
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -446,10 +472,10 @@
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
                                                                     <!-- If script produced DataTable(s) show them using ScriptResultsControl; otherwise show textual rows -->
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -520,12 +546,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding NetworkConnectivityResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding NetworkConnectivityResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -541,10 +590,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -615,12 +664,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding SurfaceAreaReductionResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding SurfaceAreaReductionResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -636,10 +708,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -710,12 +782,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding AuditingMonitoringResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding AuditingMonitoringResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -731,10 +826,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -805,12 +900,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding AuthenticationAccessControlResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding AuthenticationAccessControlResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -826,10 +944,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -900,12 +1018,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding AuthorizationPermissionsResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding AuthorizationPermissionsResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -921,10 +1062,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -995,12 +1136,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding DatabaseSecurityResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding DatabaseSecurityResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -1016,10 +1180,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
@@ -1090,12 +1254,35 @@
                                                     </TextBlock.Style>
                                                 </TextBlock>
 
-                                                <ItemsControl ItemsSource="{Binding HighAvailabilityDisasterRecoveryResults}">
+                                                <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding HighAvailabilityDisasterRecoveryResults}">
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
-                                                            <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
+                                                                    <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
                                                                     <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding Description}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
+                                                                    </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
@@ -1111,10 +1298,10 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                    <ItemsControl HorizontalContentAlignment="Stretch" ItemsSource="{Binding Tables}">
                                                                         <ItemsControl.ItemTemplate>
                                                                             <DataTemplate>
-                                                                                <views:ScriptResultsControl Results="{Binding}" />
+                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>

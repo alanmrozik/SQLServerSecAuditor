@@ -7,7 +7,7 @@ This	feature	can	be	used	to	remotely	access	and	exploit	vulnerabilities	on	remot
 Server	instances	and	to	run	unsafe	Visual	Basic	for	Application	functions.
 */
 SELECT 
-    name, 
+    name as [Name], 
     CASE
     WHEN value_in_use = 0 THEN 'Disabled'
     WHEN value_in_use = 1 THEN 'Enabled'

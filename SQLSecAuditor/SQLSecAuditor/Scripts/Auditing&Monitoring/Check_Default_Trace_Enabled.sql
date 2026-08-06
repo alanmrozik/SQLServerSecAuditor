@@ -1,10 +1,6 @@
 /*
 Description:
-The	default	trace	provides	audit	logging	of	database	activity	including	account	creations,	
-privilege	elevation	and	execution	of	DBCC	commands.
-Rationale:
-Default	trace	provides	valuable	audit	information	regarding	security-related	activities	on	
-the	server.
+Default trace zapewnia rejestrowanie działań w bazie danych na potrzeby audytu, w tym tworzenia kont, podnoszenia uprawnień oraz wykonywania poleceń DBCC.
 */
 SELECT 
     name, 
@@ -14,3 +10,8 @@ SELECT
     END AS [Status]
     FROM sys.configurations 
     WHERE name = 'default trace enabled';
+
+    /*Rationale:
+Default	trace	provides	valuable	audit	information	regarding	security-related	activities	on	
+the	server.
+*/

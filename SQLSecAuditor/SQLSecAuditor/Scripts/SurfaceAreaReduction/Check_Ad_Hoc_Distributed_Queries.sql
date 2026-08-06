@@ -1,10 +1,6 @@
 /*
 Description:
-Enabling	Ad	Hoc	Distributed	Queries	allows	users	to	query	data	and	execute	statements	on	
-external	data	sources.	This	functionality	should	be	disabled.
-Rationale:
-This	feature	can	be	used	to	remotely	access	and	exploit	vulnerabilities	on	remote	SQL	
-Server	instances	and	to	run	unsafe	Visual	Basic	for	Application	functions.
+Funkcja ta może zostać wykorzystana do zdalnego uzyskiwania dostępu i eksploatacji luk w zabezpieczeniach zdalnych instancji serwera SQL oraz do uruchamiania niebezpiecznych funkcji języka Visual Basic for Applications.
 */
 SELECT 
     name, 
@@ -14,3 +10,8 @@ SELECT
     END AS [Status]
     FROM sys.configurations 
     WHERE name = 'Ad Hoc Distributed Queries';
+    /*
+    Rationale:
+This	feature	can	be	used	to	remotely	access	and	exploit	vulnerabilities	on	remote	SQL	
+Server	instances	and	to	run	unsafe	Visual	Basic	for	Application	functions.
+*/

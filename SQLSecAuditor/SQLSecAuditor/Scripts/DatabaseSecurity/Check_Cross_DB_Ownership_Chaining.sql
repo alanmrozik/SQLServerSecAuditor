@@ -1,8 +1,30 @@
 /*
 Description:
-The	cross db ownership chaining option	controls	cross-database	ownership	chaining	
-across	all	databases	at	the	instance	(or	server)	level.
-Rationale:
+Opcja Cross DB Ownership Chaining steruje łańcuchowaniem własności między bazami danych na poziomie całej instancji (lub serwera).
+Po włączeniu ta opcja umożliwia członkowi roli db_owner w danej bazie danych uzyskanie dostępu do obiektów, których właścicielem jest login w dowolnej innej bazie danych, co prowadzi do niepotrzebnego ujawnienia informacji.
+*/
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.configurations
+    WHERE name = 'cross db ownership chaining'
+      AND value_in_use = 1
+)
+BEGIN
+    SELECT    
+        name AS [Configuration name],        
+        CASE        
+            WHEN value_in_use = 0 THEN 'Disabled'        
+            WHEN value_in_use = 1 THEN 'Enabled'    
+        END AS [Status]
+    FROM sys.configurations
+    WHERE name = 'cross db ownership chaining';
+END
+ELSE
+BEGIN
+    SELECT 'Żadna baza nie ma włączonego Cross DB Ownership Chaining' AS [Status];
+END;
+/*Rationale:
 When	enabled,	this	option	allows	a	member	of	the	db_owner role	in	a	database	to	gain	
 access	to	objects	owned	by	a	login	in	any	other	database,	causing	an	unnecessary	
 information	disclosure.	When	required,	cross-database	ownership	chaining	should	only	be	
@@ -11,12 +33,3 @@ databases	by	using	the	ALTER DATABASE<database_name>SET DB_CHAINING ON command.
 This	database	option	may	not	be	changed	on	the	master,	model,	or	tempdb system	
 databases.
 */
-SELECT    
-    name AS Configuration_Name,    
-    value_in_use AS Current_Value,    
-    CASE        
-    WHEN value_in_use = 0 THEN 'Disabled'        
-    WHEN value_in_use = 1 THEN 'Enabled'    
-    END AS Status
-    FROM sys.configurations
-    WHERE name = 'cross db ownership chaining';

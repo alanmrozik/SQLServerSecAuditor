@@ -7,7 +7,7 @@ from	both	inadvertent	and	malicious	assemblies.
 */
 USE [<database_name>]
 GO
-SELECT name AS Assembly_Name, permission_set_desc
+SELECT name AS Assembly_Name as [Assembly name], permission_set_desc as [Permission set]
 FROM sys.assemblies
 WHERE is_user_defined = 1;
 GO

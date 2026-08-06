@@ -1,10 +1,14 @@
+/*
+Description:
+Liczba użytkowników przypisanych do roli sysadmin powinna być minimalna, ograniczona do administratora serwera lub baz danych. Pozostali użytkownicy powinni zostać zweryfikowani.
+*/
 SELECT 
-	rp.name,
-    sp.name AS login_name,
-    sp.type_desc AS login_type,
-    sp.is_disabled,
-    sp.create_date,
-    sp.modify_date
+	rp.name as [Role name],
+    sp.name AS [Login name],
+    sp.type_desc AS [Login type],
+    sp.is_disabled AS [Is disabled],
+    sp.create_date AS [Creation date],
+    sp.modify_date AS [Modification date]
 FROM sys.server_role_members rm
 JOIN sys.server_principals sp 
     ON rm.member_principal_id = sp.principal_id
