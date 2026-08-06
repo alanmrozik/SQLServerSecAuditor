@@ -20,7 +20,12 @@ namespace SqlSecAuditor.Infrastructure
 
         public static void Export(string filePath, SqlInstance instance)
         {
-            var categories = BuildCategories(instance).ToList();
+            Export(filePath, instance, null);
+        }
+
+        public static void Export(string filePath, SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
+        {
+            var categories = BuildCategories(instance, selectedCategoryKeys).ToList();
 
             Document.Create(container =>
             {
@@ -94,9 +99,12 @@ namespace SqlSecAuditor.Infrastructure
             }).GeneratePdf(filePath);
         }
 
-        private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance)
+        private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
         {
             var categories = new List<ExportCategory>();
+            var selected = selectedCategoryKeys is null
+                ? null
+                : new HashSet<string>(selectedCategoryKeys, StringComparer.OrdinalIgnoreCase);
 
             if (instance.IsGeneralInfoLoaded)
             {
@@ -111,6 +119,7 @@ namespace SqlSecAuditor.Infrastructure
 
                 categories.Add(new ExportCategory
                 {
+                    Key = "general",
                     Title = "Informacje Ogólne",
                     Scripts = new[]
                     {
@@ -123,19 +132,19 @@ namespace SqlSecAuditor.Infrastructure
                 });
             }
 
-            AddCategoryIfExecuted(categories, "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
-            AddCategoryIfExecuted(categories, "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
-            AddCategoryIfExecuted(categories, "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
-            AddCategoryIfExecuted(categories, "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
-            AddCategoryIfExecuted(categories, "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
-            AddCategoryIfExecuted(categories, "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
-            AddCategoryIfExecuted(categories, "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
-            AddCategoryIfExecuted(categories, "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
+            AddCategoryIfExecuted(categories, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
+            AddCategoryIfExecuted(categories, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
+            AddCategoryIfExecuted(categories, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
+            AddCategoryIfExecuted(categories, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
+            AddCategoryIfExecuted(categories, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
+            AddCategoryIfExecuted(categories, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
+            AddCategoryIfExecuted(categories, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
+            AddCategoryIfExecuted(categories, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
-            return categories;
+            return selected is null ? categories : categories.Where(c => selected.Contains(c.Key));
         }
 
-        private static void AddCategoryIfExecuted(List<ExportCategory> categories, string title, IEnumerable<ScriptExecutionResult> results, string? error)
+        private static void AddCategoryIfExecuted(List<ExportCategory> categories, string key, string title, IEnumerable<ScriptExecutionResult> results, string? error)
         {
             var scripts = results.ToList();
             if (scripts.Count == 0)
@@ -145,6 +154,7 @@ namespace SqlSecAuditor.Infrastructure
 
             categories.Add(new ExportCategory
             {
+                Key = key,
                 Title = title,
                 Error = error,
                 Scripts = scripts.Select(script => new ExportScript
@@ -357,6 +367,7 @@ namespace SqlSecAuditor.Infrastructure
 
         private sealed class ExportCategory
         {
+            public string Key { get; set; } = string.Empty;
             public string Title { get; set; } = string.Empty;
             public string? Error { get; set; }
             public IReadOnlyList<ExportScript> Scripts { get; set; } = Array.Empty<ExportScript>();
