@@ -6,7 +6,7 @@ and	should	be	removed.
 Rationale:
 Orphan	users	should	be	removed	to	avoid	potential	misuse	of	those	broken	users	in	any	
 way.
-
-PER EVERY DB
 */
+--USE <database_name>;
+--GO
 EXEC sp_change_users_login @Action='Report';

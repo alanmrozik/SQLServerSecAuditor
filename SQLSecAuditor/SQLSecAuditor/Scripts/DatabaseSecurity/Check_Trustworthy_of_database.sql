@@ -6,7 +6,7 @@ Rationale:
 Provides	protection	from	malicious	CLR	assemblies	or	extended	procedures.
 */
 SELECT 
-	name,
+	name as [Name],
 	CASE
 	WHEN is_trustworthy_on = 1 THEN 'Enabled'
 	WHEN is_trustworthy_on = 0 THEN 'Disabled'
