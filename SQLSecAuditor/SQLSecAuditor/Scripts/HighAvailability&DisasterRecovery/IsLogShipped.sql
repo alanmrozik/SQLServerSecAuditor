@@ -1,3 +1,6 @@
+/*Description:
+Warto jest mieć AG
+*/
 IF EXISTS (
     SELECT 1
     FROM msdb.dbo.log_shipping_primary_databases

@@ -912,10 +912,14 @@
                                                                                 </Style.Triggers>
                                                                             </Style>
                                                                         </Border.Style>
-                                                                        <StackPanel Orientation="Horizontal">
-                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Center"/>
-                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                                        </StackPanel>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
                                                                     </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
@@ -1026,10 +1030,14 @@
                                                                                 </Style.Triggers>
                                                                             </Style>
                                                                         </Border.Style>
-                                                                        <StackPanel Orientation="Horizontal">
-                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Center"/>
-                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                                        </StackPanel>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
                                                                     </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
@@ -1140,10 +1148,14 @@
                                                                                 </Style.Triggers>
                                                                             </Style>
                                                                         </Border.Style>
-                                                                        <StackPanel Orientation="Horizontal">
-                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Center"/>
-                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                                        </StackPanel>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
                                                                     </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
@@ -1254,10 +1266,14 @@
                                                                                 </Style.Triggers>
                                                                             </Style>
                                                                         </Border.Style>
-                                                                        <StackPanel Orientation="Horizontal">
-                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Center"/>
-                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" VerticalAlignment="Center"/>
-                                                                        </StackPanel>
+                                                                        <Grid>
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="Auto" />
+                                                                                <ColumnDefinition Width="*" />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <TextBlock Text="ℹ" FontSize="12" Margin="0,0,8,0" Foreground="#2B7CBF" VerticalAlignment="Top" Grid.Column="0"/>
+                                                                            <TextBlock Text="{Binding Description}" FontStyle="Italic" FontSize="12" Foreground="#2B7CBF" TextWrapping="Wrap" Grid.Column="1" MaxWidth="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Border}, Converter={StaticResource WidthMinusConverter}, ConverterParameter=40}"/>
+                                                                        </Grid>
                                                                     </Border>
                                                                     <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
                                                                         <TextBlock.Style>
