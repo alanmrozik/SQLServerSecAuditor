@@ -1,3 +1,7 @@
+/*
+Description:
+Get-DtcNetworkSetting
+*/
 IF EXISTS (
     SELECT 1
     FROM sys.configurations

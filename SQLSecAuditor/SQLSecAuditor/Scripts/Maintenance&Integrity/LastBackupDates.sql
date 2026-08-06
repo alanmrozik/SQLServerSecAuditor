@@ -1,4 +1,5 @@
 /*
+Description:
 Warto jest mieć świeże backupy.
 */
 ;WITH backup_cte AS

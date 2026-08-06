@@ -1,6 +1,7 @@
 /*
 Description:
-Ukryta instancja
+Non-clustered	SQL	Server	instances	within	production	environments should	be	designated	
+as	hidden	to	prevent	advertisement	by	the	SQL	Server	Browser	service.
 */
 /*
 Non-clustered	SQL	Server	instances	within	production	environments should	be	designated	

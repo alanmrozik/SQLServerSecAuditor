@@ -1,3 +1,7 @@
+/*
+Description:
+Service accounts
+*/
 SELECT 
     servicename as [Service name],
     service_account as [Service account name],
