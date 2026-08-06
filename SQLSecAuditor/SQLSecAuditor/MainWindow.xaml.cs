@@ -262,6 +262,42 @@ namespace SqlSecAuditor
             MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        private void LoadSnapshotViewer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            var openDialog = new OpenFileDialog
+            {
+                Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
+            };
+
+            if (openDialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            try
+            {
+                var snapshot = ReportSnapshotService.LoadSnapshot(openDialog.FileName);
+                var categories = ReportSnapshotService.BuildViewerCategories(snapshot);
+
+                instance.SnapshotViewerCategories.Clear();
+                foreach (var category in categories)
+                {
+                    instance.SnapshotViewerCategories.Add(category);
+                }
+
+                instance.SnapshotViewerSummary = ReportSnapshotService.BuildViewerSummary(snapshot);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Nie udało się wczytać snapshotu:\n\n{ex.Message}", "Snapshot viewer", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
         // Public helper to display script results in the main UI.
         // The method will render the provided DataTable according to the rules:
         // - If table has exactly 2 columns and one column is named 'name' (case-insensitive):

@@ -1193,6 +1193,97 @@
                             </ListView>
                         </Grid>
                     </TabItem>
+
+                    <TabItem Header="Snapshot Viewer">
+                        <Grid Margin="0,5,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                <Button Content="WCZYTAJ SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#27AE60" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand"
+                                        Click="LoadSnapshotViewer_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="1" Text="{Binding SnapshotViewerSummary}" Foreground="#2C3E50" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                                <StackPanel>
+                                    <ItemsControl ItemsSource="{Binding SnapshotViewerCategories}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10" Background="#F8F9F9">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#2C3E50" Margin="0,0,0,8"/>
+                                                        <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Error}" Value="">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+
+                                                        <ItemsControl ItemsSource="{Binding Scripts}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Border BorderBrush="#E5E7E9" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8" Background="White">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#1F618D" Margin="0,0,0,6"/>
+                                                                            <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
+                                                                                <TextBlock.Style>
+                                                                                    <Style TargetType="TextBlock">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                            </DataTrigger>
+                                                                                            <DataTrigger Binding="{Binding Error}" Value="">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </TextBlock.Style>
+                                                                            </TextBlock>
+                                                                            <ItemsControl ItemsSource="{Binding Tables}">
+                                                                                <ItemsControl.ItemTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <views:ScriptResultsControl Results="{Binding}" />
+                                                                                    </DataTemplate>
+                                                                                </ItemsControl.ItemTemplate>
+                                                                            </ItemsControl>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </TabItem>
                 </TabControl>
             </Grid>
         </DataTemplate>
