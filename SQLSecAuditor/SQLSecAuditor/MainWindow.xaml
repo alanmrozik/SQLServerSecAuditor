@@ -16,6 +16,8 @@
 
     <Window.Resources>
         <conv:WidthMinusConverter x:Key="WidthMinusConverter" />
+        <conv:ScoreToArcConverter x:Key="ScoreToArcConverter" />
+        <conv:ScoreToBrushConverter x:Key="ScoreToBrushConverter" />
         <Style x:Key="ReportBorderStyle" TargetType="Border">
             <Setter Property="Background" Value="White"/>
             <Setter Property="BorderBrush" Value="#DCDCDC"/>
@@ -303,8 +305,36 @@
                                 <TextBlock Text="{Binding DatabaseName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#2980B9"/>
                             </StackPanel>
 
-                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
-                                <StackPanel x:Name="ResultsPanel">
+                            <TabControl Grid.Row="2" Grid.RowSpan="2" Margin="0,0,0,0">
+                                <TabItem Header="Audit">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <Grid Grid.Row="0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                                <Button Content="URUCHOM WIELE"
+                                                        Padding="15,8"
+                                                        Background="#1F618D" Foreground="White" FontWeight="Bold"
+                                                        BorderThickness="0" Cursor="Hand"
+                                                        Click="RunMultipleCategories_Click">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="4"/>
+                                                        </Style>
+                                                    </Button.Resources>
+                                                </Button>
+                                            </StackPanel>
+
+                                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                                                <StackPanel x:Name="ResultsPanel">
                                     <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
                                         <Expander IsExpanded="False" HorizontalContentAlignment="Stretch" Expanded="GeneralInfoExpander_Expanded">
                                             <Expander.Header>
@@ -1307,22 +1337,258 @@
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
-
-                            <Button Grid.Row="3" Content="EKSPORTUJ RAPORT (.PDF)" 
-                                    HorizontalAlignment="Right" Padding="15,8" 
-                                    Background="#2980B9" Foreground="White" FontWeight="Bold" 
-                                    BorderThickness="0" Cursor="Hand" Margin="0,15,0,0"
-                                    Click="ExportReport_Click">
-                                <Button.Resources>
-                                    <Style TargetType="Border">
-                                        <Setter Property="CornerRadius" Value="4"/>
-                                    </Style>
-                                </Button.Resources>
-                            </Button>
                         </Grid>
-                    </DataTemplate>
-                </TabControl.ContentTemplate>
-            </TabControl>
-        </Grid>
-    </Grid>
+
+                            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                                <Button Content="ZAPISZ SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#16A085" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"
+                                        Click="SaveSnapshot_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+
+                                <Button Content="EKSPORTUJ RAPORT (.PDF)" 
+                                        Padding="15,8" 
+                                        Background="#2980B9" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand"
+                                        Click="ExportReport_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Snapshots">
+                        <Grid Margin="0,5,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                <Button Content="PORÓWNAJ ZE SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#8E44AD" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand"
+                                        Click="CompareSnapshot_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="1" Text="{Binding SnapshotComparisonSummary}" Foreground="#34495E" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                            <ListView Grid.Row="2" ItemsSource="{Binding SnapshotComparisonRows}" BorderBrush="#D5DBDB" BorderThickness="1" Background="White">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Path" Width="320" DisplayMemberBinding="{Binding Path}"/>
+                                        <GridViewColumn Header="Aktualny (Audit)" Width="300" DisplayMemberBinding="{Binding CurrentValue}"/>
+                                        <GridViewColumn Header="" Width="40" DisplayMemberBinding="{Binding Marker}"/>
+                                        <GridViewColumn Header="Snapshot" Width="300" DisplayMemberBinding="{Binding SnapshotValue}"/>
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Snapshot Viewer">
+                        <Grid Margin="0,5,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                <Button Content="WCZYTAJ SNAPSHOT" 
+                                        Padding="15,8" 
+                                        Background="#27AE60" Foreground="White" FontWeight="Bold" 
+                                        BorderThickness="0" Cursor="Hand"
+                                        Click="LoadSnapshotViewer_Click">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </StackPanel>
+
+                            <TextBlock Grid.Row="1" Text="{Binding SnapshotViewerSummary}" Foreground="#2C3E50" FontWeight="SemiBold" Margin="0,0,0,8"/>
+
+                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                                <StackPanel>
+                                    <ItemsControl ItemsSource="{Binding SnapshotViewerCategories}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10" Background="#F8F9F9">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#2C3E50" Margin="0,0,0,8"/>
+                                                        <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,8">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding Error}" Value="">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+
+                                                        <ItemsControl ItemsSource="{Binding Scripts}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <Border BorderBrush="#E5E7E9" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8" Background="White">
+                                                                        <StackPanel>
+                                                                            <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#1F618D" Margin="0,0,0,6"/>
+                                                                            <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
+                                                                                <TextBlock.Style>
+                                                                                    <Style TargetType="TextBlock">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                            </DataTrigger>
+                                                                                            <DataTrigger Binding="{Binding Error}" Value="">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </TextBlock.Style>
+                                                                            </TextBlock>
+                                                                            <ItemsControl ItemsSource="{Binding Tables}">
+                                                                                <ItemsControl.ItemTemplate>
+                                                                                    <DataTemplate>
+                                                                                        <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
+                                                                                    </DataTemplate>
+                                                                                </ItemsControl.ItemTemplate>
+                                                                            </ItemsControl>
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
+                    </TabItem>
+
+                    <TabItem Header="Scoring">
+                        <Grid Margin="0,5,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="320"/>
+                                    <ColumnDefinition Width="20"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Border Grid.Column="0" Background="White" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="10" Padding="16">
+                                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <TextBlock Text="Security Score" FontSize="18" FontWeight="SemiBold" Foreground="#34495E" HorizontalAlignment="Center" Margin="0,0,0,12"/>
+
+                                        <Grid Width="220" Height="220">
+                                            <Ellipse Stroke="#ECF0F1" StrokeThickness="14" Fill="Transparent"/>
+
+                                            <Path StrokeThickness="14" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
+                                                <Path.Stroke>
+                                                    <MultiBinding Converter="{StaticResource ScoreToBrushConverter}">
+                                                        <Binding Path="ScoringPoints"/>
+                                                        <Binding Path="ScoringMinPoints"/>
+                                                        <Binding Path="ScoringMaxPoints"/>
+                                                    </MultiBinding>
+                                                </Path.Stroke>
+                                                <Path.Data>
+                                                    <MultiBinding Converter="{StaticResource ScoreToArcConverter}">
+                                                        <Binding Path="ScoringPoints"/>
+                                                        <Binding Path="ScoringMinPoints"/>
+                                                        <Binding Path="ScoringMaxPoints"/>
+                                                        <Binding RelativeSource="{RelativeSource AncestorType=Grid}" Path="ActualWidth"/>
+                                                    </MultiBinding>
+                                                </Path.Data>
+                                            </Path>
+
+                                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding ScoringDisplay}" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ScoringPercentDisplay}" FontSize="14" Foreground="#7F8C8D" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Column="2" Background="White" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="10" Padding="16">
+                                    <StackPanel>
+                                        <TextBlock Text="Breakdown" FontSize="18" FontWeight="SemiBold" Foreground="#34495E" Margin="0,0,0,12"/>
+
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="✅ Zielone (+1)" Foreground="#27AE60" FontSize="14"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ScoringGreenCount}" Foreground="#27AE60" FontWeight="SemiBold" FontSize="14"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="⚠ Żółte (-0.5)" Foreground="#F39C12" FontSize="14"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ScoringYellowCount}" Foreground="#F39C12" FontWeight="SemiBold" FontSize="14"/>
+                                        </Grid>
+
+                                        <Grid Margin="0,0,0,14">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="❌ Czerwone (-1)" Foreground="#E74C3C" FontSize="14"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ScoringRedCount}" Foreground="#E74C3C" FontWeight="SemiBold" FontSize="14"/>
+                                        </Grid>
+
+                                        <Border Background="#F8F9F9" BorderBrush="#E5E7E9" BorderThickness="1" CornerRadius="8" Padding="12">
+                                            <TextBlock Text="Scoring liczony jest na podstawie reguł kolorowania wyników: zielone +1, żółte -0.5, czerwone -1." TextWrapping="Wrap" Foreground="#566573"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+
+                            <TextBlock Grid.Row="1" Margin="0,12,0,0" Foreground="#7F8C8D"
+                                       Text="Uruchom kategorie w zakładce Audit, aby zaktualizować scoring."/>
+                        </Grid>
+                    </TabItem>
+                </TabControl>
+            </Grid>
+        </DataTemplate>
+    </TabControl.ContentTemplate>
+</TabControl>
+</Grid>
+</Grid>
 </Window>

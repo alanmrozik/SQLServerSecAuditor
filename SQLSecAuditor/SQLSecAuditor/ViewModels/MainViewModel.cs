@@ -226,6 +226,8 @@ namespace SqlSecAuditor.ViewModels
                 {
                     ApplyHighAvailabilityContext(results);
                 }
+
+                RecalculateScoring(instance);
             }
             catch (Exception ex)
             {
@@ -311,6 +313,61 @@ namespace SqlSecAuditor.ViewModels
             }
 
             return false;
+        }
+
+        private static void RecalculateScoring(SqlInstance instance)
+        {
+            var allResults = EnumerateAllScoredResults(instance).ToList();
+
+            var green = 0;
+            var yellow = 0;
+            var red = 0;
+
+            foreach (var result in allResults)
+            {
+                foreach (DataTable table in result.Tables)
+                {
+                    foreach (DataRow row in table.Rows)
+                    {
+                        var eval = RowEvaluationService.Evaluate(result.ScriptName, table, row);
+                        switch (eval)
+                        {
+                            case RowEvaluation.Green:
+                                green++;
+                                break;
+                            case RowEvaluation.Yellow:
+                                yellow++;
+                                break;
+                            case RowEvaluation.Red:
+                                red++;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            var points = green - red - (yellow * 0.5d);
+            var maxPoints = green + yellow + red;
+            var minPoints = -(red + yellow * 0.5d);
+
+            instance.ScoringGreenCount = green;
+            instance.ScoringYellowCount = yellow;
+            instance.ScoringRedCount = red;
+            instance.ScoringPoints = points;
+            instance.ScoringMaxPoints = maxPoints <= 0 ? 1 : maxPoints;
+            instance.ScoringMinPoints = minPoints;
+        }
+
+        private static IEnumerable<ScriptExecutionResult> EnumerateAllScoredResults(SqlInstance instance)
+        {
+            foreach (var result in instance.MaintenanceIntegrityResults) yield return result;
+            foreach (var result in instance.NetworkConnectivityResults) yield return result;
+            foreach (var result in instance.SurfaceAreaReductionResults) yield return result;
+            foreach (var result in instance.AuditingMonitoringResults) yield return result;
+            foreach (var result in instance.AuthenticationAccessControlResults) yield return result;
+            foreach (var result in instance.AuthorizationPermissionsResults) yield return result;
+            foreach (var result in instance.DatabaseSecurityResults) yield return result;
+            foreach (var result in instance.HighAvailabilityDisasterRecoveryResults) yield return result;
         }
 
         private static string FormatReaderRow(SqlDataReader reader)

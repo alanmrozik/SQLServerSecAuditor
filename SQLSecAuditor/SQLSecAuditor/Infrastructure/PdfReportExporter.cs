@@ -20,7 +20,12 @@ namespace SqlSecAuditor.Infrastructure
 
         public static void Export(string filePath, SqlInstance instance)
         {
-            var categories = BuildCategories(instance).ToList();
+            Export(filePath, instance, null);
+        }
+
+        public static void Export(string filePath, SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
+        {
+            var categories = BuildCategories(instance, selectedCategoryKeys).ToList();
 
             Document.Create(container =>
             {
@@ -94,9 +99,12 @@ namespace SqlSecAuditor.Infrastructure
             }).GeneratePdf(filePath);
         }
 
-        private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance)
+        private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
         {
             var categories = new List<ExportCategory>();
+            var selected = selectedCategoryKeys is null
+                ? null
+                : new HashSet<string>(selectedCategoryKeys, StringComparer.OrdinalIgnoreCase);
 
             if (instance.IsGeneralInfoLoaded)
             {
@@ -111,6 +119,7 @@ namespace SqlSecAuditor.Infrastructure
 
                 categories.Add(new ExportCategory
                 {
+                    Key = "general",
                     Title = "Informacje Ogólne",
                     Scripts = new[]
                     {
@@ -123,19 +132,19 @@ namespace SqlSecAuditor.Infrastructure
                 });
             }
 
-            AddCategoryIfExecuted(categories, "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
-            AddCategoryIfExecuted(categories, "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
-            AddCategoryIfExecuted(categories, "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
-            AddCategoryIfExecuted(categories, "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
-            AddCategoryIfExecuted(categories, "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
-            AddCategoryIfExecuted(categories, "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
-            AddCategoryIfExecuted(categories, "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
-            AddCategoryIfExecuted(categories, "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
+            AddCategoryIfExecuted(categories, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
+            AddCategoryIfExecuted(categories, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
+            AddCategoryIfExecuted(categories, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
+            AddCategoryIfExecuted(categories, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
+            AddCategoryIfExecuted(categories, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
+            AddCategoryIfExecuted(categories, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
+            AddCategoryIfExecuted(categories, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
+            AddCategoryIfExecuted(categories, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
-            return categories;
+            return selected is null ? categories : categories.Where(c => selected.Contains(c.Key));
         }
 
-        private static void AddCategoryIfExecuted(List<ExportCategory> categories, string title, IEnumerable<ScriptExecutionResult> results, string? error)
+        private static void AddCategoryIfExecuted(List<ExportCategory> categories, string key, string title, IEnumerable<ScriptExecutionResult> results, string? error)
         {
             var scripts = results.ToList();
             if (scripts.Count == 0)
@@ -145,6 +154,7 @@ namespace SqlSecAuditor.Infrastructure
 
             categories.Add(new ExportCategory
             {
+                Key = key,
                 Title = title,
                 Error = error,
                 Scripts = scripts.Select(script => new ExportScript
@@ -200,148 +210,10 @@ namespace SqlSecAuditor.Infrastructure
 
         private static string? EvaluateRowColorHex(string scriptName, DataTable table, DataRow row)
         {
-            const string green = "#D4EFDF";
-            const string red = "#FADBD8";
-            const string yellow = "#FCF3CF";
-
-            var normalizedScript = NormalizeToken(scriptName);
-            var rowText = string.Join(" | ", row.ItemArray.Select(ToText)).ToLowerInvariant();
-
-            if (normalizedScript.Contains("encryptionchecks") || normalizedScript.Contains("generalinfoaboutserver"))
-                return null;
-
-            if (normalizedScript.Contains("builtinlogins")
-                || normalizedScript.Contains("expirationforsqlloginsysadmins")
-                || normalizedScript.Contains("sysadminlogins")
-                || normalizedScript.Contains("guestpermissions")
-                || normalizedScript.Contains("permissionsondblevelpoprawiony")
-                || normalizedScript.Contains("serviceaccounts")
-                || normalizedScript.Contains("sqlserverport"))
-                return yellow;
-
-            if (normalizedScript.Contains("orphanedusers")
-                || normalizedScript.Contains("publicroleisnotgrantedtoproxies")
-                || normalizedScript.Contains("autoclose")
-                || normalizedScript.Contains("clrenabled"))
-                return red;
-
-            if (normalizedScript.Contains("defaulttraceenabled"))
-                return rowText.Contains("enabled") ? green : rowText.Contains("disabled") ? red : null;
-
-            if (normalizedScript.Contains("loginauditing"))
-                return rowText.Contains("failed") && rowText.Contains("login") ? green : red;
-
-            if (normalizedScript.Contains("issadisabled")
-                || normalizedScript.Contains("scanforstartupprocs")
-                || normalizedScript.Contains("crossdbownershipchaining")
-                || normalizedScript.Contains("trustworthyofdatabase")
-                || normalizedScript.Contains("adhocdistributedqueries")
-                || normalizedScript.Contains("clrstrictsecurity")
-                || normalizedScript.Contains("databasemailxps")
-                || normalizedScript.Contains("oleautomationprocedures")
-                || normalizedScript.Contains("remoteacces")
-                || normalizedScript.Contains("remoteadminconnections"))
-                return rowText.Contains("disabled") ? green : rowText.Contains("enabled") ? red : null;
-
-            if (normalizedScript.Contains("passwordpolicyforsqllogins"))
-            {
-                if (rowText.Contains("not checked") || rowText.Contains("n/a") || rowText.Contains("0"))
-                    return red;
-                if (rowText.Contains("checked") || rowText.Contains("1") || rowText.Contains("true"))
-                    return green;
-                return null;
-            }
-
-            if (normalizedScript.Contains("hideinstance"))
-            {
-                if (HasExactValue(row, "1")) return green;
-                if (HasExactValue(row, "0")) return red;
-                return null;
-            }
-
-            if (normalizedScript.Contains("ifconnectionusekerberos"))
-                return rowText.Contains("kerberos") ? green : rowText.Contains("ntlm") ? red : null;
-
-            if (normalizedScript.Contains("isagenabled")
-                || normalizedScript.Contains("isclustered")
-                || normalizedScript.Contains("islogshipped")
-                || normalizedScript.Contains("ismirrored")
-                || normalizedScript.Contains("isreplicated"))
-            {
-                if (HasExactValue(row, "1")) return green;
-                if (HasExactValue(row, "0"))
-                {
-                    var hasAnyEnabled = table.ExtendedProperties["HaDrAnyEnabled"] as bool? == true;
-                    return hasAnyEnabled ? yellow : red;
-                }
-
-                return null;
-            }
-
-            if (normalizedScript.Contains("lastbackupdates"))
-            {
-                if (TryFindDate(row, out var dt))
-                    return dt >= DateTime.Now.AddMonths(-1) ? green : red;
-                return red;
-            }
-
-            if (normalizedScript.Contains("lastknowgoodcheckdb"))
-            {
-                if (TryFindDate(row, out var dt))
-                {
-                    if (dt.Year == 1900) return red;
-                    if (dt >= DateTime.Now.AddMonths(-1)) return green;
-                }
-
-                return null;
-            }
-
-            return null;
+            var evaluation = RowEvaluationService.Evaluate(scriptName, table, row);
+            return RowEvaluationService.ToColorHex(evaluation);
         }
 
-        private static bool HasExactValue(DataRow row, string expected)
-        {
-            return row.ItemArray.Select(ToText).Any(v => string.Equals(v, expected, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static bool TryFindDate(DataRow row, out DateTime date)
-        {
-            foreach (var value in row.ItemArray)
-            {
-                if (value is DateTime dt)
-                {
-                    date = dt;
-                    return true;
-                }
-
-                var text = ToText(value);
-                if (DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out dt)
-                    || DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
-                {
-                    date = dt;
-                    return true;
-                }
-            }
-
-            date = default;
-            return false;
-        }
-
-        private static string ToText(object? value)
-        {
-            if (value is null || value == DBNull.Value)
-                return string.Empty;
-
-            return Convert.ToString(value, CultureInfo.InvariantCulture)?.Trim() ?? string.Empty;
-        }
-
-        private static string NormalizeToken(string? value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return string.Empty;
-
-            return new string(value.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
-        }
 
         private static string FormatValue(object? value)
         {
@@ -357,6 +229,7 @@ namespace SqlSecAuditor.Infrastructure
 
         private sealed class ExportCategory
         {
+            public string Key { get; set; } = string.Empty;
             public string Title { get; set; } = string.Empty;
             public string? Error { get; set; }
             public IReadOnlyList<ExportScript> Scripts { get; set; } = Array.Empty<ExportScript>();
