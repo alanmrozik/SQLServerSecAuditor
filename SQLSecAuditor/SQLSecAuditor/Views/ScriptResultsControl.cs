@@ -1,7 +1,5 @@
-using System;
+using SqlSecAuditor.Infrastructure;
 using System.Data;
-using System.Globalization;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -102,190 +100,16 @@ namespace SqlSecAuditor.Views
 
         private Brush? EvaluateRowBrush(DataRow row)
         {
-            var normalizedScript = NormalizeToken(ScriptName);
-            var rowText = string.Join(" | ", row.ItemArray.Select(ToText)).ToLowerInvariant();
-
-            if (normalizedScript.Contains("encryptionchecks") || normalizedScript.Contains("generalinfoaboutserver"))
+            var evaluation = RowEvaluationService.Evaluate(ScriptName, Results, row);
+            return evaluation switch
             {
-                return null;
-            }
-
-            if (normalizedScript.Contains("builtinlogins")
-                || normalizedScript.Contains("expirationforsqlloginsysadmins")
-                || normalizedScript.Contains("sysadminlogins")
-                || normalizedScript.Contains("guestpermissions")
-                || normalizedScript.Contains("permissionsondblevelpoprawiony")
-                || normalizedScript.Contains("serviceaccounts")
-                || normalizedScript.Contains("sqlserverport"))
-            {
-                return YellowRowBrush;
-            }
-
-            if (normalizedScript.Contains("orphanedusers")
-                || normalizedScript.Contains("publicroleisnotgrantedtoproxies")
-                || normalizedScript.Contains("autoclose")
-                || normalizedScript.Contains("clrenabled"))
-            {
-                return RedRowBrush;
-            }
-
-            if (normalizedScript.Contains("defaulttraceenabled"))
-            {
-                return rowText.Contains("enabled") ? GreenRowBrush : rowText.Contains("disabled") ? RedRowBrush : null;
-            }
-
-            if (normalizedScript.Contains("loginauditing"))
-            {
-                return rowText.Contains("failed") && rowText.Contains("login") ? GreenRowBrush : RedRowBrush;
-            }
-
-            if (normalizedScript.Contains("issadisabled")
-                || normalizedScript.Contains("scanforstartupprocs")
-                || normalizedScript.Contains("crossdbownershipchaining")
-                || normalizedScript.Contains("trustworthyofdatabase")
-                || normalizedScript.Contains("adhocdistributedqueries")
-                || normalizedScript.Contains("clrstrictsecurity")
-                || normalizedScript.Contains("databasemailxps")
-                || normalizedScript.Contains("oleautomationprocedures")
-                || normalizedScript.Contains("remoteacces")
-                || normalizedScript.Contains("remoteadminconnections"))
-            {
-                return rowText.Contains("disabled") ? GreenRowBrush : rowText.Contains("enabled") ? RedRowBrush : null;
-            }
-
-            if (normalizedScript.Contains("passwordpolicyforsqllogins"))
-            {
-                if (rowText.Contains("not checked") || rowText.Contains("n/a") || rowText.Contains("0"))
-                {
-                    return RedRowBrush;
-                }
-
-                if (rowText.Contains("checked") || rowText.Contains("1") || rowText.Contains("true"))
-                {
-                    return GreenRowBrush;
-                }
-
-                return null;
-            }
-
-            if (normalizedScript.Contains("hideinstance"))
-            {
-                if (HasExactValue(row, "1"))
-                {
-                    return GreenRowBrush;
-                }
-
-                if (HasExactValue(row, "0"))
-                {
-                    return RedRowBrush;
-                }
-
-                return null;
-            }
-
-            if (normalizedScript.Contains("ifconnectionusekerberos"))
-            {
-                return rowText.Contains("kerberos") ? GreenRowBrush : rowText.Contains("ntlm") ? RedRowBrush : null;
-            }
-
-            if (normalizedScript.Contains("isagenabled")
-                || normalizedScript.Contains("isclustered")
-                || normalizedScript.Contains("islogshipped")
-                || normalizedScript.Contains("ismirrored")
-                || normalizedScript.Contains("isreplicated"))
-            {
-                if (HasExactValue(row, "1"))
-                {
-                    return GreenRowBrush;
-                }
-
-                if (HasExactValue(row, "0"))
-                {
-                    var hasAnyEnabled = Results.ExtendedProperties["HaDrAnyEnabled"] as bool? == true;
-                    return hasAnyEnabled ? YellowRowBrush : RedRowBrush;
-                }
-
-                return null;
-            }
-
-            if (normalizedScript.Contains("lastbackupdates"))
-            {
-                if (TryFindDate(row, out var dt))
-                {
-                    return dt >= DateTime.Now.AddMonths(-1) ? GreenRowBrush : RedRowBrush;
-                }
-
-                return RedRowBrush;
-            }
-
-            if (normalizedScript.Contains("lastknowgoodcheckdb"))
-            {
-                if (TryFindDate(row, out var dt))
-                {
-                    if (dt.Year == 1900)
-                    {
-                        return RedRowBrush;
-                    }
-
-                    if (dt >= DateTime.Now.AddMonths(-1))
-                    {
-                        return GreenRowBrush;
-                    }
-                }
-
-                return null;
-            }
-
-            return null;
+                RowEvaluation.Green => GreenRowBrush,
+                RowEvaluation.Red => RedRowBrush,
+                RowEvaluation.Yellow => YellowRowBrush,
+                _ => null
+            };
         }
 
-        private static bool HasExactValue(DataRow row, string expected)
-        {
-            return row.ItemArray.Select(ToText).Any(v => string.Equals(v, expected, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static bool TryFindDate(DataRow row, out DateTime date)
-        {
-            foreach (var value in row.ItemArray)
-            {
-                if (value is DateTime dt)
-                {
-                    date = dt;
-                    return true;
-                }
-
-                var text = ToText(value);
-                if (DateTime.TryParse(text, CultureInfo.CurrentCulture, DateTimeStyles.None, out dt)
-                    || DateTime.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out dt))
-                {
-                    date = dt;
-                    return true;
-                }
-            }
-
-            date = default;
-            return false;
-        }
-
-        private static string ToText(object? value)
-        {
-            if (value == null || value == DBNull.Value)
-            {
-                return string.Empty;
-            }
-
-            return Convert.ToString(value, CultureInfo.InvariantCulture)?.Trim() ?? string.Empty;
-        }
-
-        private static string NormalizeToken(string? value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return string.Empty;
-            }
-
-            return new string(value.Where(char.IsLetterOrDigit).ToArray()).ToLowerInvariant();
-        }
 
         private static Brush CreateBrush(string hex)
         {

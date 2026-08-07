@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -27,6 +28,12 @@ namespace SqlSecAuditor.Models
         private string? _highAvailabilityDisasterRecoveryError;
         private string? _snapshotComparisonSummary;
         private string? _snapshotViewerSummary;
+        private double _scoringPoints;
+        private double _scoringMaxPoints;
+        private double _scoringMinPoints;
+        private int _scoringGreenCount;
+        private int _scoringYellowCount;
+        private int _scoringRedCount;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -59,6 +66,74 @@ namespace SqlSecAuditor.Models
         public ObservableCollection<SnapshotComparisonRow> SnapshotComparisonRows { get; } = new();
 
         public ObservableCollection<SnapshotViewerCategory> SnapshotViewerCategories { get; } = new();
+
+        public double ScoringPoints
+        {
+            get => _scoringPoints;
+            set
+            {
+                if (SetProperty(ref _scoringPoints, value))
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScoringDisplay)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScoringPercentDisplay)));
+                }
+            }
+        }
+
+        public double ScoringMaxPoints
+        {
+            get => _scoringMaxPoints;
+            set
+            {
+                if (SetProperty(ref _scoringMaxPoints, value))
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScoringDisplay)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScoringPercentDisplay)));
+                }
+            }
+        }
+
+        public double ScoringMinPoints
+        {
+            get => _scoringMinPoints;
+            set => SetProperty(ref _scoringMinPoints, value);
+        }
+
+        public int ScoringGreenCount
+        {
+            get => _scoringGreenCount;
+            set => SetProperty(ref _scoringGreenCount, value);
+        }
+
+        public int ScoringYellowCount
+        {
+            get => _scoringYellowCount;
+            set => SetProperty(ref _scoringYellowCount, value);
+        }
+
+        public int ScoringRedCount
+        {
+            get => _scoringRedCount;
+            set => SetProperty(ref _scoringRedCount, value);
+        }
+
+        public string ScoringDisplay => $"{ScoringPoints:0.0} / {ScoringMaxPoints:0.0}";
+
+        public string ScoringPercentDisplay
+        {
+            get
+            {
+                var range = ScoringMaxPoints - ScoringMinPoints;
+                if (range <= 0)
+                {
+                    return "0%";
+                }
+
+                var normalized = (ScoringPoints - ScoringMinPoints) / range;
+                normalized = Math.Max(0, Math.Min(1, normalized));
+                return $"{normalized * 100:0}%";
+            }
+        }
 
         public bool IsGeneralInfoLoaded
         {
