@@ -243,7 +243,7 @@ namespace SqlSecAuditor
                 return;
             }
 
-            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy_HH_mm");
             var safeServer = SanitizeFileNamePart(instance.ServerName);
             var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
 
@@ -311,7 +311,30 @@ namespace SqlSecAuditor
                 return;
             }
 
-            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var categoryOptions = GetExecutedCategoryOptions(instance);
+            if (categoryOptions.Count == 0)
+            {
+                MessageBox.Show(this, "Brak uruchomionych kategorii do eksportu.", "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var selectorDialog = new PdfExportCategoryDialog(categoryOptions)
+            {
+                Owner = this
+            };
+
+            if (selectorDialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var selectedKeys = selectorDialog.SelectedCategoryKeys;
+            if (selectedKeys.Count == 0)
+            {
+                return;
+            }
+
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy_HH_mm");
             var safeServer = SanitizeFileNamePart(instance.ServerName);
             var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
 
@@ -326,7 +349,7 @@ namespace SqlSecAuditor
                 return;
             }
 
-            PdfReportExporter.Export(dialog.FileName, instance);
+            PdfReportExporter.Export(dialog.FileName, instance, selectedKeys);
             MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -386,6 +409,42 @@ namespace SqlSecAuditor
         private StackPanel? FindResultsPanel()
         {
             return FindChildByName<StackPanel>(this, "ResultsPanel");
+        }
+
+        private static ObservableCollection<PdfExportCategoryOption> GetExecutedCategoryOptions(SqlInstance instance)
+        {
+            var options = new ObservableCollection<PdfExportCategoryOption>();
+
+            if (instance.IsGeneralInfoLoaded)
+            {
+                options.Add(new PdfExportCategoryOption { Key = "general", Name = "Informacje Ogólne" });
+            }
+
+            AddIfExecuted(options, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults.Count > 0);
+            AddIfExecuted(options, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults.Count > 0);
+            AddIfExecuted(options, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults.Count > 0);
+            AddIfExecuted(options, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults.Count > 0);
+            AddIfExecuted(options, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults.Count > 0);
+            AddIfExecuted(options, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults.Count > 0);
+            AddIfExecuted(options, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults.Count > 0);
+            AddIfExecuted(options, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults.Count > 0);
+
+            return options;
+        }
+
+        private static void AddIfExecuted(ObservableCollection<PdfExportCategoryOption> options, string key, string name, bool isExecuted)
+        {
+            if (!isExecuted)
+            {
+                return;
+            }
+
+            options.Add(new PdfExportCategoryOption
+            {
+                Key = key,
+                Name = name,
+                IsSelected = true
+            });
         }
 
         private static string SanitizeFileNamePart(string value)
