@@ -1,14 +1,22 @@
-SELECT SERVERPROPERTY('IsClustered')
+/*Description:
 
+*/
+IF CAST(SERVERPROPERTY('IsClustered') AS INT)=1
+BEGIN
 SELECT
-	NodeName,
-	status_description,
+	NodeName as [Node name],
+	status_description [Status],
 	CASE
 	WHEN is_current_owner = 1 THEN 'YES'
 	WHEN is_current_owner = 0 THEN 'NO'
-	END AS [is_current_owner]
+	END AS [Is current owner]
 FROM sys.dm_os_cluster_nodes
 ORDER BY nodename;
 
 SELECT *
 FROM sys.dm_os_cluster_properties;
+END
+ELSE
+BEGIN
+	SELECT 'Brak SQL Server Failvoer Cluster' as [Status];
+END;

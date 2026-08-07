@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Data;
@@ -168,6 +169,73 @@ namespace SqlSecAuditor
             await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
         }
 
+        private async void RunMultipleCategories_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            var options = new ObservableCollection<RunCategoryOption>
+            {
+                new RunCategoryOption { Key = "maintenance", Name = "Utrzymanie i integralność" },
+                new RunCategoryOption { Key = "network", Name = "Sieć i łączność" },
+                new RunCategoryOption { Key = "surface", Name = "Redukcja powierzchni ataku" },
+                new RunCategoryOption { Key = "auditing", Name = "Audyt i monitoring" },
+                new RunCategoryOption { Key = "authentication", Name = "Uwierzytelnianie i kontrola dostępu" },
+                new RunCategoryOption { Key = "authorization", Name = "Autoryzacja i uprawnienia" },
+                new RunCategoryOption { Key = "database", Name = "Bezpieczeństwo baz danych" },
+                new RunCategoryOption { Key = "hadr", Name = "Wysoka dostępność i odzyskiwanie po awarii" }
+            };
+
+            var dialog = new RunMultipleCategoriesDialog(options)
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var selected = dialog.SelectedCategoryKeys;
+            foreach (var key in selected)
+            {
+                switch (key)
+                {
+                    case "maintenance":
+                        await viewModel.RunMaintenanceIntegrityAsync(instance);
+                        break;
+                    case "network":
+                        await viewModel.RunNetworkConnectivityAsync(instance);
+                        break;
+                    case "surface":
+                        await viewModel.RunSurfaceAreaReductionAsync(instance);
+                        break;
+                    case "auditing":
+                        await viewModel.RunAuditingMonitoringAsync(instance);
+                        break;
+                    case "authentication":
+                        await viewModel.RunAuthenticationAccessControlAsync(instance);
+                        break;
+                    case "authorization":
+                        await viewModel.RunAuthorizationPermissionsAsync(instance);
+                        break;
+                    case "database":
+                        await viewModel.RunDatabaseSecurityAsync(instance);
+                        break;
+                    case "hadr":
+                        await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
+                        break;
+                }
+            }
+        }
+
         private void SaveSnapshot_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement { DataContext: SqlInstance instance })
@@ -175,7 +243,7 @@ namespace SqlSecAuditor
                 return;
             }
 
-            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy_HH_mm");
             var safeServer = SanitizeFileNamePart(instance.ServerName);
             var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
 
@@ -243,7 +311,30 @@ namespace SqlSecAuditor
                 return;
             }
 
-            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy");
+            var categoryOptions = GetExecutedCategoryOptions(instance);
+            if (categoryOptions.Count == 0)
+            {
+                MessageBox.Show(this, "Brak uruchomionych kategorii do eksportu.", "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var selectorDialog = new PdfExportCategoryDialog(categoryOptions)
+            {
+                Owner = this
+            };
+
+            if (selectorDialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var selectedKeys = selectorDialog.SelectedCategoryKeys;
+            if (selectedKeys.Count == 0)
+            {
+                return;
+            }
+
+            var dateStamp = DateTime.Now.ToString("dd_MM_yyyy_HH_mm");
             var safeServer = SanitizeFileNamePart(instance.ServerName);
             var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
 
@@ -258,8 +349,44 @@ namespace SqlSecAuditor
                 return;
             }
 
-            PdfReportExporter.Export(dialog.FileName, instance);
+            PdfReportExporter.Export(dialog.FileName, instance, selectedKeys);
             MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void LoadSnapshotViewer_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            var openDialog = new OpenFileDialog
+            {
+                Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
+            };
+
+            if (openDialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            try
+            {
+                var snapshot = ReportSnapshotService.LoadSnapshot(openDialog.FileName);
+                var categories = ReportSnapshotService.BuildViewerCategories(snapshot);
+
+                instance.SnapshotViewerCategories.Clear();
+                foreach (var category in categories)
+                {
+                    instance.SnapshotViewerCategories.Add(category);
+                }
+
+                instance.SnapshotViewerSummary = ReportSnapshotService.BuildViewerSummary(snapshot);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Nie udało się wczytać snapshotu:\n\n{ex.Message}", "Snapshot viewer", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         // Public helper to display script results in the main UI.
@@ -282,6 +409,42 @@ namespace SqlSecAuditor
         private StackPanel? FindResultsPanel()
         {
             return FindChildByName<StackPanel>(this, "ResultsPanel");
+        }
+
+        private static ObservableCollection<PdfExportCategoryOption> GetExecutedCategoryOptions(SqlInstance instance)
+        {
+            var options = new ObservableCollection<PdfExportCategoryOption>();
+
+            if (instance.IsGeneralInfoLoaded)
+            {
+                options.Add(new PdfExportCategoryOption { Key = "general", Name = "Informacje Ogólne" });
+            }
+
+            AddIfExecuted(options, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults.Count > 0);
+            AddIfExecuted(options, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults.Count > 0);
+            AddIfExecuted(options, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults.Count > 0);
+            AddIfExecuted(options, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults.Count > 0);
+            AddIfExecuted(options, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults.Count > 0);
+            AddIfExecuted(options, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults.Count > 0);
+            AddIfExecuted(options, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults.Count > 0);
+            AddIfExecuted(options, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults.Count > 0);
+
+            return options;
+        }
+
+        private static void AddIfExecuted(ObservableCollection<PdfExportCategoryOption> options, string key, string name, bool isExecuted)
+        {
+            if (!isExecuted)
+            {
+                return;
+            }
+
+            options.Add(new PdfExportCategoryOption
+            {
+                Key = key,
+                Name = name,
+                IsSelected = true
+            });
         }
 
         private static string SanitizeFileNamePart(string value)

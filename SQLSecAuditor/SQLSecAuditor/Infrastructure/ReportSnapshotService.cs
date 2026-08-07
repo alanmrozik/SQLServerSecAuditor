@@ -1,6 +1,7 @@
 using SqlSecAuditor.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -326,6 +327,78 @@ namespace SqlSecAuditor.Infrastructure
                 Marker = marker,
                 ChangeType = changeType
             };
+        }
+
+        public static List<SnapshotViewerCategory> BuildViewerCategories(ReportSnapshot snapshot)
+        {
+            var result = new List<SnapshotViewerCategory>();
+
+            foreach (var category in snapshot.Categories)
+            {
+                var viewerCategory = new SnapshotViewerCategory
+                {
+                    Name = category.Name,
+                    Error = category.Error
+                };
+
+                foreach (var script in category.Scripts)
+                {
+                    var execution = new ScriptExecutionResult
+                    {
+                        ScriptName = script.Name,
+                        Error = script.Error
+                    };
+
+                    foreach (var sourceTable in script.Tables)
+                    {
+                        var table = new DataTable { TableName = sourceTable.Name ?? string.Empty };
+
+                        foreach (var colName in sourceTable.Columns)
+                        {
+                            table.Columns.Add(colName);
+                        }
+
+                        foreach (var rowValues in sourceTable.Rows)
+                        {
+                            var values = rowValues.Cast<object>().ToArray();
+                            table.Rows.Add(values);
+                        }
+
+                        execution.Tables.Add(table);
+                    }
+
+                    ApplyHighAvailabilityContextForViewer(execution);
+                    viewerCategory.Scripts.Add(execution);
+                }
+
+                result.Add(viewerCategory);
+            }
+
+            return result;
+        }
+
+        public static string BuildViewerSummary(ReportSnapshot snapshot)
+        {
+            var categories = snapshot.Categories.Count;
+            var scripts = snapshot.Categories.Sum(c => c.Scripts.Count);
+            var tables = snapshot.Categories.Sum(c => c.Scripts.Sum(s => s.Tables.Count));
+            return $"Snapshot: {snapshot.ServerName} [{snapshot.DatabaseName}] | Kategorie: {categories}, Skrypty: {scripts}, Tabele: {tables}";
+        }
+
+        private static void ApplyHighAvailabilityContextForViewer(ScriptExecutionResult script)
+        {
+            var allTables = script.Tables.Cast<DataTable>().ToList();
+            var hasAnyEnabled = allTables.Any(table =>
+                table.Rows.Cast<DataRow>().Any(row =>
+                    row.ItemArray.Any(cell =>
+                        cell != null &&
+                        cell != DBNull.Value &&
+                        string.Equals(cell.ToString()?.Trim(), "1", StringComparison.OrdinalIgnoreCase))));
+
+            foreach (var table in allTables)
+            {
+                table.ExtendedProperties["HaDrAnyEnabled"] = hasAnyEnabled;
+            }
         }
 
         private static void AddCategory(ReportSnapshot snapshot, string categoryName, IEnumerable<ScriptExecutionResult> results, string? error)

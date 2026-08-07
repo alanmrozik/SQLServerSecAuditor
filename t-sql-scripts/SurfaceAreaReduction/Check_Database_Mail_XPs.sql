@@ -7,7 +7,7 @@ Disabling	the	Database Mail XPs option	reduces	the	SQL	Server	surface,	eliminate
 attack	vector	and	channel	to	exfiltrate	data	from	the	database	server	to	a	remote host
 */
 SELECT 
-    name, 
+    name as [Name], 
     CASE
     WHEN value_in_use = 0 THEN 'Disabled'
     WHEN value_in_use = 1 THEN 'Enabled'

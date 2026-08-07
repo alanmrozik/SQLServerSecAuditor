@@ -8,7 +8,9 @@ Server	Benchmark	will	ensure	the	passwords	for	SQL	logins	with	sysadmin privileg
 changed	on	a	frequent	basis	to	help	prevent	compromise	via	a	brute	force	attack.	CONTROL 
 SERVER is	an	equivalent	permission	to	sysadmi and logins with that permission should also be required to have expiring passwords.
 */
-SELECT l.[name], 'sysadmin membership' AS 'Access_Method',l.is_expiration_checked
+SELECT l.[name] as [Login], 
+'sysadmin membership' AS 'Access Method',
+l.is_expiration_checked as [Is expiration set]
 FROM sys.sql_logins AS l
 WHERE IS_SRVROLEMEMBER('sysadmin',name) = 1
 AND l.is_expiration_checked <> 1

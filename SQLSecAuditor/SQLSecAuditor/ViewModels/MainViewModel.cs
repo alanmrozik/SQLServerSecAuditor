@@ -156,6 +156,7 @@ namespace SqlSecAuditor.ViewModels
                     {
                         // Run per-database: collect all database names then execute on each
                         var perDbResult = new ScriptExecutionResult { ScriptName = scriptName };
+                        perDbResult.Description = ExtractScriptDescription(sql);
                         try
                         {
                             var databases = await GetDatabaseNamesAsync(instance.ConnectionString);
@@ -199,6 +200,7 @@ namespace SqlSecAuditor.ViewModels
                     else
                     {
                         var result = new ScriptExecutionResult { ScriptName = scriptName };
+                        result.Description = ExtractScriptDescription(sql);
                         try
                         {
                             var commandText = RemoveBatchSeparators(sql);
@@ -219,6 +221,13 @@ namespace SqlSecAuditor.ViewModels
                         results.Add(result);
                     }
                 }
+
+                if (string.Equals(category, "HighAvailability&DisasterRecovery", StringComparison.OrdinalIgnoreCase))
+                {
+                    ApplyHighAvailabilityContext(results);
+                }
+
+                RecalculateScoring(instance);
             }
             catch (Exception ex)
             {
@@ -276,6 +285,90 @@ namespace SqlSecAuditor.ViewModels
                 e => instance.HighAvailabilityDisasterRecoveryError = e);
         }
 
+
+        private static void ApplyHighAvailabilityContext(IEnumerable<ScriptExecutionResult> results)
+        {
+            var allTables = results.SelectMany(r => r.Tables).ToList();
+            var hasAnyEnabled = allTables.Any(TableHasExactOneValue);
+
+            foreach (var table in allTables)
+            {
+                table.ExtendedProperties["HaDrAnyEnabled"] = hasAnyEnabled;
+            }
+        }
+
+        private static bool TableHasExactOneValue(DataTable table)
+        {
+            foreach (DataRow row in table.Rows)
+            {
+                foreach (var cell in row.ItemArray)
+                {
+                    if (cell != null
+                        && cell != DBNull.Value
+                        && string.Equals(cell.ToString()?.Trim(), "1", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static void RecalculateScoring(SqlInstance instance)
+        {
+            var allResults = EnumerateAllScoredResults(instance).ToList();
+
+            var green = 0;
+            var yellow = 0;
+            var red = 0;
+
+            foreach (var result in allResults)
+            {
+                foreach (DataTable table in result.Tables)
+                {
+                    foreach (DataRow row in table.Rows)
+                    {
+                        var eval = RowEvaluationService.Evaluate(result.ScriptName, table, row);
+                        switch (eval)
+                        {
+                            case RowEvaluation.Green:
+                                green++;
+                                break;
+                            case RowEvaluation.Yellow:
+                                yellow++;
+                                break;
+                            case RowEvaluation.Red:
+                                red++;
+                                break;
+                        }
+                    }
+                }
+            }
+
+            var points = green - red - (yellow * 0.5d);
+            var maxPoints = green + yellow + red;
+            var minPoints = -(red + yellow * 0.5d);
+
+            instance.ScoringGreenCount = green;
+            instance.ScoringYellowCount = yellow;
+            instance.ScoringRedCount = red;
+            instance.ScoringPoints = points;
+            instance.ScoringMaxPoints = maxPoints <= 0 ? 1 : maxPoints;
+            instance.ScoringMinPoints = minPoints;
+        }
+
+        private static IEnumerable<ScriptExecutionResult> EnumerateAllScoredResults(SqlInstance instance)
+        {
+            foreach (var result in instance.MaintenanceIntegrityResults) yield return result;
+            foreach (var result in instance.NetworkConnectivityResults) yield return result;
+            foreach (var result in instance.SurfaceAreaReductionResults) yield return result;
+            foreach (var result in instance.AuditingMonitoringResults) yield return result;
+            foreach (var result in instance.AuthenticationAccessControlResults) yield return result;
+            foreach (var result in instance.AuthorizationPermissionsResults) yield return result;
+            foreach (var result in instance.DatabaseSecurityResults) yield return result;
+            foreach (var result in instance.HighAvailabilityDisasterRecoveryResults) yield return result;
+        }
 
         private static string FormatReaderRow(SqlDataReader reader)
         {
@@ -347,6 +440,111 @@ namespace SqlSecAuditor.ViewModels
             }
 
             return builder.ToString();
+        }
+
+        // Extract a short description from the top of a SQL script.
+        // Supports a leading block comment (/* ... */) or consecutive leading line comments (-- ...)
+        private static string? ExtractScriptDescription(string script)
+        {
+            if (string.IsNullOrWhiteSpace(script))
+                return null;
+            // Prefer a block comment that contains the token "Description:" (case-insensitive).
+            var lower = script.ToLowerInvariant();
+            var descToken = "description:";
+            var descIdx = lower.IndexOf(descToken, StringComparison.Ordinal);
+            if (descIdx >= 0)
+            {
+                // Find the start of the containing block comment
+                var blockStart = lower.LastIndexOf("/*", descIdx, StringComparison.Ordinal);
+                var blockEnd = lower.IndexOf("*/", descIdx + descToken.Length, StringComparison.Ordinal);
+                if (blockStart >= 0 && blockEnd > blockStart)
+                {
+                    var block = script.Substring(blockStart + 2, blockEnd - (blockStart + 2));
+                    // Extract text after the Description: token
+                    var relIdx = block.ToLowerInvariant().IndexOf(descToken, StringComparison.Ordinal);
+                    if (relIdx >= 0)
+                    {
+                        var after = block.Substring(relIdx + descToken.Length).Trim();
+                        // stop at 'Rationale:' if present
+                        var rationaleIdx = after.IndexOf("Rationale:", StringComparison.OrdinalIgnoreCase);
+                        if (rationaleIdx >= 0)
+                            after = after.Substring(0, rationaleIdx).Trim();
+                        return NormalizeWhitespace(after);
+                    }
+                }
+            }
+
+            // Fallback: keep original behavior (leading block or leading -- lines)
+            using var reader = new StringReader(script);
+            string? line;
+
+            // Skip leading blank lines
+            while ((line = reader.ReadLine()) is not null)
+            {
+                if (!string.IsNullOrWhiteSpace(line))
+                    break;
+            }
+
+            if (line is null)
+                return null;
+
+            var sb = new StringBuilder();
+            var trimmed = line.TrimStart();
+
+            // Block comment /* ... */
+            if (trimmed.StartsWith("/*"))
+            {
+                // Inline end on same line
+                var startIdx = trimmed.IndexOf("/*");
+                var endIdx = trimmed.IndexOf("*/", startIdx + 2);
+                if (endIdx >= 0)
+                {
+                    return NormalizeWhitespace(trimmed.Substring(startIdx + 2, endIdx - (startIdx + 2)).Trim());
+                }
+
+                // Multi-line block comment
+                sb.AppendLine(trimmed.Substring(startIdx + 2));
+                while ((line = reader.ReadLine()) is not null)
+                {
+                    var idx = line.IndexOf("*/");
+                    if (idx >= 0)
+                    {
+                        sb.Append(line.Substring(0, idx));
+                        break;
+                    }
+                    sb.AppendLine(line);
+                }
+
+                return NormalizeWhitespace(sb.ToString().Trim());
+            }
+
+            // Consecutive -- comment lines
+            if (trimmed.StartsWith("--"))
+            {
+                sb.AppendLine(trimmed.Length > 2 ? trimmed.Substring(2).TrimStart() : string.Empty);
+                while ((line = reader.ReadLine()) is not null)
+                {
+                    if (string.IsNullOrWhiteSpace(line))
+                        break;
+                    var t = line.TrimStart();
+                    if (t.StartsWith("--"))
+                        sb.AppendLine(t.Length > 2 ? t.Substring(2).TrimStart() : string.Empty);
+                    else
+                        break;
+                }
+
+                return NormalizeWhitespace(sb.ToString().Trim());
+            }
+
+            return null;
+        }
+
+        private static string NormalizeWhitespace(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input)) return input;
+            var parts = input.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim());
+            return string.Join(" ", parts).Trim();
         }
 
         private static async Task<List<string>> GetDatabaseNamesAsync(string connectionString)

@@ -1,19 +1,33 @@
 /*
 Description:
-Prior	to	SQL	Server	2008,	the	BUILTIN\Administrators group	was	added	as	a	SQL	Server	
-login	with	sysadmin	privileges	during	installation	by	default.	Best	practices	promote	
-creating	an	Active	Directory	level	group	containing	approved	DBA	staff	accounts	and	using	
-this	controlled	AD	group	as	the	login	with	sysadmin	privileges.	The	AD	group	should	be	
-specified	during	SQL	Server	installation	and	the	BUILTIN\Administrators group	would	
-therefore	have	no	need	to	be	a	login.
-Rationale:
+Grupy wbudowane (BUILTIN), takie jak Administrators, Everyone, Authenticated Users, Guests itp., zazwyczaj obejmują bardzo szeroki krąg członków, co jest niezgodne z zasadą najlepszych praktyk, zakładającą przyznawanie dostępu do instancji programu SQL Server wyłącznie niezbędnym użytkownikom. 
+Grup tych nie należy wykorzystywać do nadawania jakiegokolwiek poziomu dostępu do instancji aparatu bazy danych SQL Server.
+*/
+IF EXISTS
+(
+    SELECT 1
+    FROM sys.server_principals pr
+    JOIN sys.server_permissions pe
+        ON pr.principal_id = pe.grantee_principal_id
+    WHERE pr.name LIKE 'BUILTIN%'
+)
+BEGIN
+    SELECT 
+        pr.[name] AS [Name],
+        pe.[permission_name] AS [Permission name],
+        pe.[state_desc] AS [Status]
+    FROM sys.server_principals pr
+    JOIN sys.server_permissions pe
+        ON pr.principal_id = pe.grantee_principal_id
+    WHERE pr.name LIKE 'BUILTIN%';
+END
+ELSE
+BEGIN
+    SELECT 'Brak uprawnień przypisanych do grup wbudowanych BUILTIN' AS [Status];
+END;
+/*Rationale:
 The	BUILTIN groups	(Administrators,	Everyone,	Authenticated	Users,	Guests,	etc.)	generally	
 contain	very	broad	memberships	which	would	not	meet	the	best	practice	of	ensuring	only	
 the	necessary	users	have	been	granted	access	to	a	SQL	Server	instance.	These	groups	
 should	not	be	used	for	any	level	of	access	into	a	SQL	Server	Database	Engine	instance.
 */
-SELECT pr.[name], pe.[permission_name], pe.[state_desc]
-FROM sys.server_principals pr
-JOIN sys.server_permissions pe
-ON pr.principal_id = pe.grantee_principal_id
-WHERE pr.name like 'BUILTIN%';

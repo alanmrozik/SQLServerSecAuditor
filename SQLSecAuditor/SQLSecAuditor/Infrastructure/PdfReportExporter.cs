@@ -20,7 +20,12 @@ namespace SqlSecAuditor.Infrastructure
 
         public static void Export(string filePath, SqlInstance instance)
         {
-            var categories = BuildCategories(instance).ToList();
+            Export(filePath, instance, null);
+        }
+
+        public static void Export(string filePath, SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
+        {
+            var categories = BuildCategories(instance, selectedCategoryKeys).ToList();
 
             Document.Create(container =>
             {
@@ -55,12 +60,25 @@ namespace SqlSecAuditor.Infrastructure
                                     col.Item().Text(category.Error).FontColor(Colors.Red.Darken2);
                                 }
 
-                                foreach (var script in category.Scripts)
+                foreach (var script in category.Scripts)
                                 {
                                     col.Item().PaddingTop(4).Column(scriptCol =>
                                     {
                                         scriptCol.Spacing(5);
-                                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+
+                        if (!string.IsNullOrWhiteSpace(script.Error))
+                        {
+                            // leave error handling below
+                        }
+
+                        // include script description if present
+                        if (!string.IsNullOrWhiteSpace(script is ExportScript es ? es.Description : null))
+                        {
+                            scriptCol.Item().Text((script as ExportScript)?.Description ?? string.Empty)
+                                .FontSize(9)
+                                .FontColor(Colors.Grey.Darken2);
+                        }
 
                                         if (!string.IsNullOrWhiteSpace(script.Error))
                                         {
@@ -70,7 +88,7 @@ namespace SqlSecAuditor.Infrastructure
                                         foreach (var table in script.Tables)
                                         {
                                             scriptCol.Item().Text(table.TableName ?? string.Empty).Italic().FontSize(8).FontColor(Colors.Grey.Darken1);
-                                            scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table));
+                                            scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table, script.ScriptName));
                                         }
                                     });
                                 }
@@ -81,9 +99,12 @@ namespace SqlSecAuditor.Infrastructure
             }).GeneratePdf(filePath);
         }
 
-        private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance)
+        private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
         {
             var categories = new List<ExportCategory>();
+            var selected = selectedCategoryKeys is null
+                ? null
+                : new HashSet<string>(selectedCategoryKeys, StringComparer.OrdinalIgnoreCase);
 
             if (instance.IsGeneralInfoLoaded)
             {
@@ -98,6 +119,7 @@ namespace SqlSecAuditor.Infrastructure
 
                 categories.Add(new ExportCategory
                 {
+                    Key = "general",
                     Title = "Informacje Ogólne",
                     Scripts = new[]
                     {
@@ -110,19 +132,19 @@ namespace SqlSecAuditor.Infrastructure
                 });
             }
 
-            AddCategoryIfExecuted(categories, "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
-            AddCategoryIfExecuted(categories, "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
-            AddCategoryIfExecuted(categories, "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
-            AddCategoryIfExecuted(categories, "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
-            AddCategoryIfExecuted(categories, "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
-            AddCategoryIfExecuted(categories, "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
-            AddCategoryIfExecuted(categories, "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
-            AddCategoryIfExecuted(categories, "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
+            AddCategoryIfExecuted(categories, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
+            AddCategoryIfExecuted(categories, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
+            AddCategoryIfExecuted(categories, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
+            AddCategoryIfExecuted(categories, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
+            AddCategoryIfExecuted(categories, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
+            AddCategoryIfExecuted(categories, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
+            AddCategoryIfExecuted(categories, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
+            AddCategoryIfExecuted(categories, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
-            return categories;
+            return selected is null ? categories : categories.Where(c => selected.Contains(c.Key));
         }
 
-        private static void AddCategoryIfExecuted(List<ExportCategory> categories, string title, IEnumerable<ScriptExecutionResult> results, string? error)
+        private static void AddCategoryIfExecuted(List<ExportCategory> categories, string key, string title, IEnumerable<ScriptExecutionResult> results, string? error)
         {
             var scripts = results.ToList();
             if (scripts.Count == 0)
@@ -132,18 +154,20 @@ namespace SqlSecAuditor.Infrastructure
 
             categories.Add(new ExportCategory
             {
+                Key = key,
                 Title = title,
                 Error = error,
                 Scripts = scripts.Select(script => new ExportScript
                 {
                     ScriptName = script.ScriptName,
                     Error = script.Error,
-                    Tables = script.Tables.Cast<DataTable>().ToArray()
+                    Tables = script.Tables.Cast<DataTable>().ToArray(),
+                    Description = script.Description
                 }).ToArray()
             });
         }
 
-        private static void RenderDataTable(TableDescriptor table, DataTable dataTable)
+        private static void RenderDataTable(TableDescriptor table, DataTable dataTable, string scriptName)
         {
             table.ColumnsDefinition(columns =>
             {
@@ -169,12 +193,27 @@ namespace SqlSecAuditor.Infrastructure
 
             foreach (DataRow row in dataTable.Rows)
             {
+                var rowBackground = EvaluateRowColorHex(scriptName, dataTable, row);
+
                 foreach (var value in row.ItemArray)
                 {
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4).Text(FormatValue(value));
+                    var cell = table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4);
+                    if (!string.IsNullOrWhiteSpace(rowBackground))
+                    {
+                        cell = cell.Background(rowBackground);
+                    }
+
+                    cell.Text(FormatValue(value));
                 }
             }
         }
+
+        private static string? EvaluateRowColorHex(string scriptName, DataTable table, DataRow row)
+        {
+            var evaluation = RowEvaluationService.Evaluate(scriptName, table, row);
+            return RowEvaluationService.ToColorHex(evaluation);
+        }
+
 
         private static string FormatValue(object? value)
         {
@@ -190,6 +229,7 @@ namespace SqlSecAuditor.Infrastructure
 
         private sealed class ExportCategory
         {
+            public string Key { get; set; } = string.Empty;
             public string Title { get; set; } = string.Empty;
             public string? Error { get; set; }
             public IReadOnlyList<ExportScript> Scripts { get; set; } = Array.Empty<ExportScript>();
@@ -200,6 +240,7 @@ namespace SqlSecAuditor.Infrastructure
             public string ScriptName { get; set; } = string.Empty;
             public string? Error { get; set; }
             public IReadOnlyList<DataTable> Tables { get; set; } = Array.Empty<DataTable>();
+            public string? Description { get; set; }
         }
     }
 }

@@ -7,7 +7,7 @@ Functionality	can	be	abused	to	launch	a	Denial-of-Service	(DoS)	attack	on	remote
 by	off-loading	query	processing	to	a	target.
 */
 SELECT 
-    name, 
+    name as [Name], 
     CASE
     WHEN value_in_use = 0 THEN 'Disabled'
     WHEN value_in_use = 1 THEN 'Enabled'

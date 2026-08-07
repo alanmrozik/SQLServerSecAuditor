@@ -1,6 +1,5 @@
-using System;
+using SqlSecAuditor.Infrastructure;
 using System.Data;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -10,13 +9,26 @@ namespace SqlSecAuditor.Views
 {
     public class ScriptResultsControl : UserControl
     {
+        private static readonly Brush GreenRowBrush = CreateBrush("#D4EFDF");
+        private static readonly Brush RedRowBrush = CreateBrush("#FADBD8");
+        private static readonly Brush YellowRowBrush = CreateBrush("#FCF3CF");
+
         public static readonly DependencyProperty ResultsProperty = DependencyProperty.Register(
             nameof(Results), typeof(DataTable), typeof(ScriptResultsControl), new PropertyMetadata(null, OnResultsChanged));
+
+        public static readonly DependencyProperty ScriptNameProperty = DependencyProperty.Register(
+            nameof(ScriptName), typeof(string), typeof(ScriptResultsControl), new PropertyMetadata(string.Empty, OnResultsChanged));
 
         public DataTable Results
         {
             get => (DataTable)GetValue(ResultsProperty);
             set => SetValue(ResultsProperty, value);
+        }
+
+        public string ScriptName
+        {
+            get => (string)GetValue(ScriptNameProperty);
+            set => SetValue(ScriptNameProperty, value);
         }
 
         private static void OnResultsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -31,7 +43,6 @@ namespace SqlSecAuditor.Views
         {
             var root = new StackPanel { Margin = new Thickness(0, 0, 0, 10) };
 
-            // Always present results as a read-only DataGrid. If there are no rows, show an explicit message but still render the table (headers).
             if (Results == null || Results.Columns.Count == 0)
             {
                 root.Children.Add(new TextBlock { Text = "Brak wyników.", Margin = new Thickness(10) });
@@ -47,10 +58,9 @@ namespace SqlSecAuditor.Views
                 Margin = new Thickness(0, 4, 0, 4)
             };
 
-            // Pass vertical scroll to parent; Shift+wheel scrolls horizontally
             grid.PreviewMouseWheel += DataGrid_PreviewMouseWheel;
+            grid.LoadingRow += DataGrid_LoadingRow;
 
-            // Show database name as sub-header if TableName is set
             if (!string.IsNullOrWhiteSpace(Results.TableName))
             {
                 root.Children.Add(new TextBlock
@@ -65,10 +75,47 @@ namespace SqlSecAuditor.Views
 
             if (Results.Rows.Count == 0)
             {
-                root.Children.Add(new TextBlock { Text = "Brak wierszy.", Margin = new Thickness(6,4,0,0), Foreground = System.Windows.Media.Brushes.Gray });
+                root.Children.Add(new TextBlock { Text = "Brak wierszy.", Margin = new Thickness(6, 4, 0, 0), Foreground = Brushes.Gray });
             }
 
             Content = root;
+        }
+
+        private void DataGrid_LoadingRow(object? sender, DataGridRowEventArgs e)
+        {
+            if (e.Row.Item is not DataRowView rowView)
+            {
+                return;
+            }
+
+            var rowBrush = EvaluateRowBrush(rowView.Row);
+            if (rowBrush == null)
+            {
+                e.Row.ClearValue(BackgroundProperty);
+                return;
+            }
+
+            e.Row.Background = rowBrush;
+        }
+
+        private Brush? EvaluateRowBrush(DataRow row)
+        {
+            var evaluation = RowEvaluationService.Evaluate(ScriptName, Results, row);
+            return evaluation switch
+            {
+                RowEvaluation.Green => GreenRowBrush,
+                RowEvaluation.Red => RedRowBrush,
+                RowEvaluation.Yellow => YellowRowBrush,
+                _ => null
+            };
+        }
+
+
+        private static Brush CreateBrush(string hex)
+        {
+            var brush = (SolidColorBrush)new BrushConverter().ConvertFrom(hex)!;
+            brush.Freeze();
+            return brush;
         }
 
         private static void DataGrid_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -78,7 +125,6 @@ namespace SqlSecAuditor.Views
 
             if (Keyboard.Modifiers == ModifierKeys.Shift)
             {
-                // Horizontal scroll: find the DataGrid's internal ScrollViewer
                 var sv = FindVisualChild<ScrollViewer>(dataGrid);
                 if (sv != null)
                 {
@@ -88,7 +134,6 @@ namespace SqlSecAuditor.Views
                 return;
             }
 
-            // Vertical scroll: bubble up to the parent ScrollViewer
             e.Handled = true;
             var args = new MouseWheelEventArgs(e.MouseDevice, e.Timestamp, e.Delta)
             {
