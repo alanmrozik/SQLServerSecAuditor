@@ -313,8 +313,28 @@
                                             <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
 
-                                        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
-                                            <StackPanel x:Name="ResultsPanel">
+                                        <Grid Grid.Row="0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
+                                                <Button Content="URUCHOM WIELE"
+                                                        Padding="15,8"
+                                                        Background="#1F618D" Foreground="White" FontWeight="Bold"
+                                                        BorderThickness="0" Cursor="Hand"
+                                                        Click="RunMultipleCategories_Click">
+                                                    <Button.Resources>
+                                                        <Style TargetType="Border">
+                                                            <Setter Property="CornerRadius" Value="4"/>
+                                                        </Style>
+                                                    </Button.Resources>
+                                                </Button>
+                                            </StackPanel>
+
+                                            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                                                <StackPanel x:Name="ResultsPanel">
                                     <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
                                         <Expander IsExpanded="False" HorizontalContentAlignment="Stretch" Expanded="GeneralInfoExpander_Expanded">
                                             <Expander.Header>
@@ -1317,6 +1337,7 @@
                                     </Border>
                                 </StackPanel>
                             </ScrollViewer>
+                        </Grid>
 
                             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
                                 <Button Content="ZAPISZ SNAPSHOT" 

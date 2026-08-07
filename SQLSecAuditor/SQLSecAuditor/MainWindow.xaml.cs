@@ -1,4 +1,5 @@
 using Microsoft.Win32;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Data;
@@ -166,6 +167,73 @@ namespace SqlSecAuditor
             }
 
             await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
+        }
+
+        private async void RunMultipleCategories_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            {
+                return;
+            }
+
+            if (DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            var options = new ObservableCollection<RunCategoryOption>
+            {
+                new RunCategoryOption { Key = "maintenance", Name = "Utrzymanie i integralność" },
+                new RunCategoryOption { Key = "network", Name = "Sieć i łączność" },
+                new RunCategoryOption { Key = "surface", Name = "Redukcja powierzchni ataku" },
+                new RunCategoryOption { Key = "auditing", Name = "Audyt i monitoring" },
+                new RunCategoryOption { Key = "authentication", Name = "Uwierzytelnianie i kontrola dostępu" },
+                new RunCategoryOption { Key = "authorization", Name = "Autoryzacja i uprawnienia" },
+                new RunCategoryOption { Key = "database", Name = "Bezpieczeństwo baz danych" },
+                new RunCategoryOption { Key = "hadr", Name = "Wysoka dostępność i odzyskiwanie po awarii" }
+            };
+
+            var dialog = new RunMultipleCategoriesDialog(options)
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() != true)
+            {
+                return;
+            }
+
+            var selected = dialog.SelectedCategoryKeys;
+            foreach (var key in selected)
+            {
+                switch (key)
+                {
+                    case "maintenance":
+                        await viewModel.RunMaintenanceIntegrityAsync(instance);
+                        break;
+                    case "network":
+                        await viewModel.RunNetworkConnectivityAsync(instance);
+                        break;
+                    case "surface":
+                        await viewModel.RunSurfaceAreaReductionAsync(instance);
+                        break;
+                    case "auditing":
+                        await viewModel.RunAuditingMonitoringAsync(instance);
+                        break;
+                    case "authentication":
+                        await viewModel.RunAuthenticationAccessControlAsync(instance);
+                        break;
+                    case "authorization":
+                        await viewModel.RunAuthorizationPermissionsAsync(instance);
+                        break;
+                    case "database":
+                        await viewModel.RunDatabaseSecurityAsync(instance);
+                        break;
+                    case "hadr":
+                        await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
+                        break;
+                }
+            }
         }
 
         private void SaveSnapshot_Click(object sender, RoutedEventArgs e)
