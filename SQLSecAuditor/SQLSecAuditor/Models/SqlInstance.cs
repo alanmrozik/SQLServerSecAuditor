@@ -29,6 +29,7 @@ namespace SqlSecAuditor.Models
         private string? _snapshotComparisonSummary;
         private string? _snapshotViewerSummary;
         private double _scoringPoints;
+        private double _scoringRawPoints;
         private double _scoringMaxPoints;
         private double _scoringMinPoints;
         private int _scoringGreenCount;
@@ -80,6 +81,20 @@ namespace SqlSecAuditor.Models
             }
         }
 
+        // Raw (signed) points used for chart normalization. ScoringPoints is the non-negative display value.
+        public double ScoringRawPoints
+        {
+            get => _scoringRawPoints;
+            set
+            {
+                if (SetProperty(ref _scoringRawPoints, value))
+                {
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScoringDisplay)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScoringPercentDisplay)));
+                }
+            }
+        }
+
         public double ScoringMaxPoints
         {
             get => _scoringMaxPoints;
@@ -117,21 +132,28 @@ namespace SqlSecAuditor.Models
             set => SetProperty(ref _scoringRedCount, value);
         }
 
-        public string ScoringDisplay => $"{ScoringPoints:0.0} / {ScoringMaxPoints:0.0}";
+        // Display as: number of greens / (greens + reds)
+        public string ScoringDisplay
+        {
+            get
+            {
+                var denom = ScoringGreenCount + ScoringRedCount;
+                return denom > 0 ? $"{ScoringGreenCount} / {denom}" : $"0 / 0";
+            }
+        }
 
         public string ScoringPercentDisplay
         {
             get
             {
-                var range = ScoringMaxPoints - ScoringMinPoints;
-                if (range <= 0)
+                // Calculate percent directly from counts so displayed percent matches the ScoringDisplay counts
+                var denom = ScoringGreenCount + ScoringRedCount;
+                if (denom <= 0)
                 {
                     return "0%";
                 }
-
-                var normalized = (ScoringPoints - ScoringMinPoints) / range;
-                normalized = Math.Max(0, Math.Min(1, normalized));
-                return $"{normalized * 100:0}%";
+                var pct = (double)ScoringGreenCount / denom;
+                return $"{pct * 100:0}%";
             }
         }
 

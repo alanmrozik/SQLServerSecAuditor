@@ -1519,14 +1519,16 @@
                                             <Path StrokeThickness="14" Fill="Transparent" StrokeStartLineCap="Round" StrokeEndLineCap="Round">
                                                 <Path.Stroke>
                                                     <MultiBinding Converter="{StaticResource ScoreToBrushConverter}">
-                                                        <Binding Path="ScoringPoints"/>
+                                                        <!-- Use raw (signed) points for normalization so chart position reflects negatives correctly -->
+                                                        <Binding Path="ScoringRawPoints"/>
                                                         <Binding Path="ScoringMinPoints"/>
                                                         <Binding Path="ScoringMaxPoints"/>
                                                     </MultiBinding>
                                                 </Path.Stroke>
                                                 <Path.Data>
                                                     <MultiBinding Converter="{StaticResource ScoreToArcConverter}">
-                                                        <Binding Path="ScoringPoints"/>
+                                                        <!-- Use raw (signed) points for arc normalization -->
+                                                        <Binding Path="ScoringRawPoints"/>
                                                         <Binding Path="ScoringMinPoints"/>
                                                         <Binding Path="ScoringMaxPoints"/>
                                                         <Binding RelativeSource="{RelativeSource AncestorType=Grid}" Path="ActualWidth"/>
@@ -1535,8 +1537,9 @@
                                             </Path>
 
                                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding ScoringDisplay}" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" HorizontalAlignment="Center"/>
-                                                <TextBlock Text="{Binding ScoringPercentDisplay}" FontSize="14" Foreground="#7F8C8D" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                                                <!-- Show percent prominently in the center -->
+                                                <TextBlock Text="{Binding ScoringPercentDisplay}" FontSize="22" FontWeight="Bold" Foreground="#2C3E50" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding ScoringDisplay}" FontSize="14" Foreground="#7F8C8D" HorizontalAlignment="Center" Margin="0,4,0,0"/>
                                             </StackPanel>
                                         </Grid>
                                     </StackPanel>

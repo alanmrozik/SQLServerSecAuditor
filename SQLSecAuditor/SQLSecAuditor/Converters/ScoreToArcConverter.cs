@@ -28,7 +28,8 @@ namespace SqlSecAuditor.Converters
             var normalized = (score - minScore) / range;
             normalized = Math.Max(0, Math.Min(1, normalized));
 
-            if (normalized <= 0.0001)
+            // If normalized is exactly 0, don't draw arc. Allow very small positive values so scoring shows on chart.
+            if (normalized <= 0.0)
                 return Geometry.Empty;
 
             var startAngle = -90d;
