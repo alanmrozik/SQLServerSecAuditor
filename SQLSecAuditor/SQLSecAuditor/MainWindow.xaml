@@ -1577,7 +1577,7 @@
                                         </Grid>
 
                                         <Border Background="#F8F9F9" BorderBrush="#E5E7E9" BorderThickness="1" CornerRadius="8" Padding="12">
-                                            <TextBlock Text="Scoring liczony jest na podstawie reguł kolorowania wyników: zielone +1, żółte -0.5, czerwone -1." TextWrapping="Wrap" Foreground="#566573"/>
+                                            <TextBlock Text="Scoring liczony jest na podstawie reguł kolorowania wyników: zielone = +1 punkt, czerwone = -1 punkt. Żółte nie wpływają na scoring (wymagają weryfikacji administratora)." TextWrapping="Wrap" Foreground="#566573"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
