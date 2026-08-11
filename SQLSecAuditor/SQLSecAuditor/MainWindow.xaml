@@ -547,6 +547,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                                            <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                                            <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                                                <Border.Style>
+                                                                                                    <Style TargetType="Border">
+                                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                                        <Style.Triggers>
+                                                                                                            <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                                                            </DataTrigger>
+                                                                                                            <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                                            </DataTrigger>
+                                                                                                            <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                                            </DataTrigger>
+                                                                                                        </Style.Triggers>
+                                                                                                    </Style>
+                                                                                                </Border.Style>
+                                                                                                <StackPanel>
+                                                                                                    <Grid Margin="0,0,0,6">
+                                                                                                        <Grid.ColumnDefinitions>
+                                                                                                            <ColumnDefinition Width="*"/>
+                                                                                                            <ColumnDefinition Width="Auto"/>
+                                                                                                        </Grid.ColumnDefinitions>
+                                                                                                        <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                                        <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                                            <Button.Resources>
+                                                                                                                <Style TargetType="Border">
+                                                                                                                    <Setter Property="CornerRadius" Value="3"/>
+                                                                                                                </Style>
+                                                                                                            </Button.Resources>
+                                                                                                        </Button>
+                                                                                                    </Grid>
+                                                                                                    <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                                                </StackPanel>
+                                                                                            </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -665,6 +701,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -783,6 +855,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -901,6 +1009,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -1019,6 +1163,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -1137,6 +1317,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -1255,6 +1471,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -1373,6 +1625,42 @@
                                                                             </DataTemplate>
                                                                         </ItemsControl.ItemTemplate>
                                                                     </ItemsControl>
+                                                                    <!-- Show fix script when this result contains any Red rows and a fix is available -->
+                                                                    <Border Background="#F4F8FF" BorderBrush="#DDEEFF" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,8,0,0">
+                                                                        <Border.Style>
+                                                                            <Style TargetType="Border">
+                                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                                                <Style.Triggers>
+                                                                                    <DataTrigger Binding="{Binding HasAnyRed}" Value="True">
+                                                                                        <Setter Property="Visibility" Value="Visible" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="{x:Null}">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                    <DataTrigger Binding="{Binding FixScript}" Value="">
+                                                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                                                    </DataTrigger>
+                                                                                </Style.Triggers>
+                                                                            </Style>
+                                                                        </Border.Style>
+                                                                        <StackPanel>
+                                                                            <Grid Margin="0,0,0,6">
+                                                                                <Grid.ColumnDefinitions>
+                                                                                    <ColumnDefinition Width="*"/>
+                                                                                    <ColumnDefinition Width="Auto"/>
+                                                                                </Grid.ColumnDefinitions>
+                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                    <Button.Resources>
+                                                                                        <Style TargetType="Border">
+                                                                                            <Setter Property="CornerRadius" Value="3"/>
+                                                                                        </Style>
+                                                                                    </Button.Resources>
+                                                                                </Button>
+                                                                            </Grid>
+                                                                            <TextBox Text="{Binding FixScript}" FontFamily="Consolas" FontSize="12" TextWrapping="Wrap" AcceptsReturn="True" IsReadOnly="True" VerticalScrollBarVisibility="Auto" Height="120"/>
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
                                                             </Border>
                                                         </DataTemplate>
@@ -1472,7 +1760,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="✅ Zielone (+1)" Foreground="#27AE60" FontSize="14"/>
+                                            <TextBlock Text="Zielone (+1)" Foreground="#27AE60" FontSize="14"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ScoringGreenCount}" Foreground="#27AE60" FontWeight="SemiBold" FontSize="14"/>
                                         </Grid>
 
@@ -1481,7 +1769,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="⚠ Żółte (-0.5)" Foreground="#F39C12" FontSize="14"/>
+                                            <TextBlock Text="Żółte" Foreground="#F39C12" FontSize="14"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ScoringYellowCount}" Foreground="#F39C12" FontWeight="SemiBold" FontSize="14"/>
                                         </Grid>
 
@@ -1490,7 +1778,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="❌ Czerwone (-1)" Foreground="#E74C3C" FontSize="14"/>
+                                            <TextBlock Text="Czerwone (-1)" Foreground="#E74C3C" FontSize="14"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ScoringRedCount}" Foreground="#E74C3C" FontWeight="SemiBold" FontSize="14"/>
                                         </Grid>
 

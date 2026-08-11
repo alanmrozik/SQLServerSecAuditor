@@ -12,3 +12,8 @@ capture	successful	logins	creates	excessive noise	in	the	SQL	Server	Errorlog whi
 hamper	a	DBA	trying	to	troubleshoot	problems.	Elsewhere	in	this	benchmark,	we	
 recommend	using	the	newer	lightwieght SQL Server Audit feature to capture both succesful and failed logins.
 */
+/*Fix:
+EXEC xp_instance_regwrite N'HKEY_LOCAL_MACHINE', 
+N'Software\Microsoft\MSSQLServer\MSSQLServer', N'AuditLevel', 
+REG_DWORD, 2 
+*/

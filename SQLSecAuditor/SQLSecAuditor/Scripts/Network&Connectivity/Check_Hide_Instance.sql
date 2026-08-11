@@ -25,3 +25,12 @@ ELSE
 BEGIN
     SELECT @getValue AS [HideInstance];
 END;
+/*Fix:
+EXEC master.sys.xp_instance_regwrite 
+@rootkey = N'HKEY_LOCAL_MACHINE', 
+@key = N'SOFTWARE\Microsoft\Microsoft SQL 
+Server\MSSQLServer\SuperSocketNetLib', 
+@value_name = N'HideInstance', 
+@type = N'REG_DWORD', 
+@value = 1; 
+*/

@@ -15,3 +15,12 @@ SELECT
 This	feature	can	be	used	to	remotely	access	and	exploit	vulnerabilities	on	remote	SQL	
 Server	instances	and	to	run	unsafe	Visual	Basic	for	Application	functions.
 */
+/*Fix:
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Ad Hoc Distributed Queries', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE; 
+*/

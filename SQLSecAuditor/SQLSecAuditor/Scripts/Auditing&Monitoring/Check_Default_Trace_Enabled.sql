@@ -15,3 +15,12 @@ SELECT
 Default	trace	provides	valuable	audit	information	regarding	security-related	activities	on	
 the	server.
 */
+/*Fix:
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'default trace enabled', 1; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE; 
+*/

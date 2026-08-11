@@ -33,3 +33,8 @@ databases	by	using	the	ALTER DATABASE<database_name>SET DB_CHAINING ON command.
 This	database	option	may	not	be	changed	on	the	master,	model,	or	tempdb system	
 databases.
 */
+/*Fix:
+EXECUTE sp_configure 'cross db ownership chaining', 0; 
+RECONFIGURE; 
+GO 
+*/

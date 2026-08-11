@@ -14,3 +14,12 @@ SELECT
     Rationale:
 Enabling	this	option	will	increase	the	attack	surface	of	SQL	Server	and	allow	users	to	
 execute	functions	in	the	security	context	of	SQL	Server*/
+/*Fix:
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Ole Automation Procedures', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE;  
+*/

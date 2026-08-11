@@ -533,5 +533,28 @@ namespace SqlSecAuditor
         {
             Close();
         }
+
+        private void CopyFixScript_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button button || button.DataContext is not ScriptExecutionResult result)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(result.FixScript))
+            {
+                return;
+            }
+
+            try
+            {
+                Clipboard.SetText(result.FixScript);
+                MessageBox.Show("Skrypt naprawczy skopiowany do schowka.", "Skopiowano", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Nie udało się skopiować do schowka: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
     }
 }

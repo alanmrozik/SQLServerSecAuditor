@@ -54,12 +54,33 @@ namespace SqlSecAuditor.ViewModels
             ConnectNewDatabaseCommand = new RelayCommand(ExecuteConnectNewDatabase);
         }
 
-        private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        // Extract a fix script from a SQL file: a block comment starting with 'Fix:' (/*Fix: ... */)
+        private static string? ExtractFixScript(string script)
         {
-            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
-            field = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            return true;
+            if (string.IsNullOrWhiteSpace(script)) return null;
+
+            var lower = script.ToLowerInvariant();
+            var token = "fix:";
+            var idx = lower.IndexOf(token, StringComparison.Ordinal);
+            if (idx >= 0)
+            {
+                // find enclosing block comment
+                var start = lower.LastIndexOf("/*", idx, StringComparison.Ordinal);
+                var end = lower.IndexOf("*/", idx, StringComparison.Ordinal);
+                if (start >= 0 && end > start)
+                {
+                    var block = script.Substring(start + 2, end - (start + 2));
+                    var rel = block.ToLowerInvariant().IndexOf(token, StringComparison.Ordinal);
+                    if (rel >= 0)
+                    {
+                        var after = block.Substring(rel + token.Length).Trim();
+                        // Return as-is (preserve SQL formatting)
+                        return after.Trim();
+                    }
+                }
+            }
+
+            return null;
         }
 
         private void ExecuteConnectNewDatabase(object obj)
@@ -210,13 +231,23 @@ namespace SqlSecAuditor.ViewModels
                                     await using var cmd = dbConnection.CreateCommand();
                                     cmd.CommandText = RemoveBatchSeparators(sql);
                                     await using var rdr = await cmd.ExecuteReaderAsync();
-                                    do
-                                    {
-                                        var tbl = await ReadDataTableAsync(rdr);
-                                        tbl.TableName = dbName;
-                                        perDbResult.Tables.Add(tbl);
-                                    }
-                                    while (await rdr.NextResultAsync());
+                                        do
+                                        {
+                                            var tbl = await ReadDataTableAsync(rdr);
+                                            tbl.TableName = dbName;
+                                            perDbResult.Tables.Add(tbl);
+
+                                            // Evaluate rows for red status
+                                            foreach (DataRow r in tbl.Rows)
+                                            {
+                                                var ev = RowEvaluationService.Evaluate(perDbResult.ScriptName, tbl, r);
+                                                if (ev == RowEvaluation.Red)
+                                                {
+                                                    perDbResult.HasAnyRed = true;
+                                                }
+                                            }
+                                        }
+                                        while (await rdr.NextResultAsync());
                                 }
                                 catch (Exception dbEx)
                                 {
@@ -232,12 +263,15 @@ namespace SqlSecAuditor.ViewModels
                         {
                             perDbResult.Error = ex.Message;
                         }
+                        // also extract fix script if present
+                        perDbResult.FixScript = ExtractFixScript(sql);
                         results.Add(perDbResult);
                     }
                     else
                     {
                         var result = new ScriptExecutionResult { ScriptName = scriptName };
                         result.Description = ExtractScriptDescription(sql);
+                        result.FixScript = ExtractFixScript(sql);
                         try
                         {
                             var commandText = RemoveBatchSeparators(sql);
@@ -248,6 +282,16 @@ namespace SqlSecAuditor.ViewModels
                             {
                                 var table = await ReadDataTableAsync(reader);
                                 result.Tables.Add(table);
+
+                                // Evaluate rows for red status
+                                foreach (DataRow r in table.Rows)
+                                {
+                                    var ev = RowEvaluationService.Evaluate(result.ScriptName, table, r);
+                                    if (ev == RowEvaluation.Red)
+                                    {
+                                        result.HasAnyRed = true;
+                                    }
+                                }
                             }
                             while (await reader.NextResultAsync());
                         }
