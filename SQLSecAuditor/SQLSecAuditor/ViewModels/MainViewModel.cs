@@ -346,13 +346,16 @@ namespace SqlSecAuditor.ViewModels
                 }
             }
 
-            var points = green - red - (yellow * 0.5d);
-            var maxPoints = green + yellow + red;
-            var minPoints = -(red + yellow * 0.5d);
+            // Yellow evaluations do not affect scoring (per new rule)
+            var rawPoints = green - red;
+            var points = rawPoints < 0 ? 0 : rawPoints; // display value (non-negative)
+            var maxPoints = green; // only greens count toward positive max
+            var minPoints = -red;  // only reds count toward negative min
 
             instance.ScoringGreenCount = green;
             instance.ScoringYellowCount = yellow;
             instance.ScoringRedCount = red;
+            instance.ScoringRawPoints = rawPoints;
             instance.ScoringPoints = points;
             instance.ScoringMaxPoints = maxPoints <= 0 ? 1 : maxPoints;
             instance.ScoringMinPoints = minPoints;
