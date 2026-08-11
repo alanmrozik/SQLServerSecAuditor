@@ -54,6 +54,14 @@ namespace SqlSecAuditor.ViewModels
             ConnectNewDatabaseCommand = new RelayCommand(ExecuteConnectNewDatabase);
         }
 
+        private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+            field = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            return true;
+        }
+
         // Extract a fix script from a SQL file: a block comment starting with 'Fix:' (/*Fix: ... */)
         private static string? ExtractFixScript(string script)
         {
