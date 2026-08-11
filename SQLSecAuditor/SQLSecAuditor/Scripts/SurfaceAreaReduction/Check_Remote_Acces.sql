@@ -14,3 +14,12 @@ SELECT
     Rationale:
 Functionality	can	be	abused	to	launch	a	Denial-of-Service	(DoS)	attack	on	remote	servers	
 by	off-loading	query	processing	to	a	target.*/
+/*Fix:
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'remote access', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE; 
+*/

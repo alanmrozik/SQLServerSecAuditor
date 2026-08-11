@@ -28,3 +28,9 @@ Because	authentication	of	users	for	contained	databases	occurs	within	the	databa
 the	server\instance	level,	the	database	must	be	opened	every	time	to	authenticate	a	user.	
 The	frequent	opening/closing	of	the	database consumes additional server resources and may contribute to a denial of service.
 */
+/*Fix:
+SELECT * FROM test;
+*/
+/*Fix:
+ALTER DATABASE <database_name> SET AUTO_CLOSE OFF; 
+*/

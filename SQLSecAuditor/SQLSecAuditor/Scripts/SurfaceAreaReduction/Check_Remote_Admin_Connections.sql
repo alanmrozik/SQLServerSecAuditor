@@ -22,3 +22,8 @@ and	not	responding	to	a	SQL	Server	Database	Engine	connection.	In	a	cluster	scen
 administrator	may	not	actually	be	logged	on	to	the	same	node	that	is	currently	hosting	the	
 SQL	Server	instance	and	thus	is	considered	"remote".	Therefore,	this	setting	should	usually	
 be	enabled	(1) for SQL Server failover clusters;otherwise, it should be disabled (0) which is the default.*/
+/*Fix:
+EXECUTE sp_configure 'remote admin connections', 0; 
+RECONFIGURE; 
+GO 
+*/

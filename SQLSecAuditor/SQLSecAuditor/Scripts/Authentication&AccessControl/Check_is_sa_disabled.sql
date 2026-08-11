@@ -16,3 +16,11 @@ SELECT
 Enforcing	this	control	reduces	the	probability	of	an	attacker	executing	brute	force	attacks	
 against	a	well-known	principal.
 */
+/*Fix:
+USE [master] 
+GO 
+DECLARE @tsql nvarchar(max) 
+SET @tsql = 'ALTER LOGIN ' + SUSER_NAME(0x01) + ' DISABLE' 
+EXEC (@tsql) 
+GO 
+*/

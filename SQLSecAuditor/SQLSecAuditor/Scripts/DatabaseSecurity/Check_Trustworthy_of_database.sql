@@ -27,3 +27,6 @@ END;
 /*Rationale:
 Provides	protection	from	malicious	CLR	assemblies	or	extended	procedures.
 */
+/*Fix:
+ALTER DATABASE [<database_name>] SET TRUSTWORTHY OFF;
+*/

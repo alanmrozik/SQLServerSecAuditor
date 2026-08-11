@@ -312,6 +312,12 @@ namespace SqlSecAuditor.Models
         // Kolekcja DataTable — jeden element na każdy zestaw wynikowy zwrócony przez skrypt
         public ObservableCollection<System.Data.DataTable> Tables { get; } = new();
 
+        // Opcjonalny skrypt naprawczy wyciągnięty z pliku .sql (z sekcji /*Fix: ... */)
+        public string? FixScript { get; set; }
+
+        // Czy którykolwiek wiersz tego skryptu został oceniony jako Red
+        public bool HasAnyRed { get; set; }
+
         // Krótki opis/skrócona notatka wyciągnięta z nagłówka pliku .sql
         public string? Description { get; set; }
 

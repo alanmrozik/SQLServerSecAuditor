@@ -14,3 +14,12 @@ SELECT
     /*Rationale:
 Disabling	the	Database Mail XPs option	reduces	the	SQL	Server	surface,	eliminates	a	DOS	
 attack	vector	and	channel	to	exfiltrate	data	from	the	database	server	to	a	remote host*/
+/*Fix:
+EXECUTE sp_configure 'show advanced options', 1; 
+RECONFIGURE; 
+EXECUTE sp_configure 'Database Mail XPs', 0; 
+RECONFIGURE; 
+GO 
+EXECUTE sp_configure 'show advanced options', 0; 
+RECONFIGURE; 
+*/
