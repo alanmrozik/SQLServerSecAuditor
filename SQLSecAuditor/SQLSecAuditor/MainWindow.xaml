@@ -177,54 +177,100 @@
         </Menu>
 
         <Grid Grid.Row="2" Background="{StaticResource AppWindowBackgroundBrush}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250" MinWidth="250"/>
-                <ColumnDefinition Width="6"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+            <!-- Zewnętrzny TabControl: Audit (per instancja) | Snapshots (globalny) -->
+            <TabControl x:Name="TopLevelTabControl" Background="Transparent" BorderThickness="0" Padding="0">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Height" Value="40"/>
+                        <Setter Property="MinWidth" Value="110"/>
+                        <Setter Property="FontFamily" Value="Segoe UI"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Border x:Name="Border" Background="{StaticResource AppHeaderBackgroundBrush}"
+                                            BorderThickness="0,0,0,3" BorderBrush="Transparent">
+                                        <ContentPresenter x:Name="ContentSite"
+                                                          VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                          ContentSource="Header" Margin="18,5"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Border" Property="BorderBrush" Value="#2980B9"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                            <Setter Property="FontWeight" Value="SemiBold"/>
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter Property="Foreground" Value="#BDC3C7"/>
+                                        </Trigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                                <Condition Property="IsSelected" Value="False"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter TargetName="Border" Property="Background" Value="#3D566E"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </MultiTrigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </TabControl.ItemContainerStyle>
 
-            <!-- Boczny panel jako nagłówek z przyciskiem z boku zamiast po prostu TabControl -->
-            <Border x:Name="InstancesSidebar" Grid.Column="0" Background="{StaticResource AppHeaderHoverBrush}" Padding="10">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <!-- === TAB: AUDIT (per instancja) === -->
+                <TabItem Header="Audit">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="250" MinWidth="250"/>
+                            <ColumnDefinition Width="6"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
 
-                    <TextBlock Text="Zbadane Instancje" Foreground="White" FontWeight="Bold" FontSize="16" Margin="0,10,0,20" HorizontalAlignment="Center"/>
+                        <!-- Boczny panel -->
+                        <Border x:Name="InstancesSidebar" Grid.Column="0" Background="{StaticResource AppHeaderHoverBrush}" Padding="10">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                    <!-- Przycisk do połączeń bazy będzie tu dla wygody użytkownika (oprócz menu) -->
-                    <Button Grid.Row="2" Content="+ Połącz z nową bazą" 
-                            Command="{Binding ConnectNewDatabaseCommand}"
-                            Background="#27AE60" Foreground="White" FontWeight="Bold" 
-                            BorderThickness="0" Padding="10" Cursor="Hand" Margin="0,10,0,10">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="4"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </Grid>
-            </Border>
+                                <TextBlock Text="Zbadane Instancje" Foreground="White" FontWeight="Bold" FontSize="16" Margin="0,10,0,20" HorizontalAlignment="Center"/>
 
-            <GridSplitter Grid.Column="1"
-                          Width="6"
-                          HorizontalAlignment="Stretch"
-                          VerticalAlignment="Stretch"
-                          Background="#34495E"
-                          ShowsPreview="True"
-                          ResizeDirection="Columns"
-                          ResizeBehavior="PreviousAndNext"/>
+                                <!-- Przycisk do połączeń bazy będzie tu dla wygody użytkownika (oprócz menu) -->
+                                <Button Grid.Row="2" Content="+ Połącz z nową bazą"
+                                        Command="{Binding ConnectNewDatabaseCommand}"
+                                        Background="#27AE60" Foreground="White" FontWeight="Bold"
+                                        BorderThickness="0" Padding="10" Cursor="Hand" Margin="0,10,0,10">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="4"/>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
+                            </Grid>
+                        </Border>
 
-            <!-- Taby -->
-            <TabControl Grid.Column="0" Grid.ColumnSpan="3"
-                Tag="{Binding ElementName=InstancesSidebar, Path=ActualWidth}"
-                TabStripPlacement="Left" 
-                Background="Transparent" 
-                BorderThickness="0" 
-                Padding="0"
-                ItemsSource="{Binding Instances}">
+                        <GridSplitter Grid.Column="1"
+                                      Width="6"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      Background="#34495E"
+                                      ShowsPreview="True"
+                                      ResizeDirection="Columns"
+                                      ResizeBehavior="PreviousAndNext"/>
+
+                        <!-- Taby instancji -->
+                        <TabControl Grid.Column="0" Grid.ColumnSpan="3"
+                            Tag="{Binding ElementName=InstancesSidebar, Path=ActualWidth}"
+                            TabStripPlacement="Left" 
+                            Background="Transparent" 
+                            BorderThickness="0" 
+                            Padding="0"
+                            ItemsSource="{Binding Instances}"
+                            SelectedItem="{Binding SelectedInstance}">
                 <TabControl.Template>
                     <ControlTemplate TargetType="TabControl">
                         <Grid>
@@ -1367,134 +1413,6 @@
                         </Grid>
                     </TabItem>
 
-                    <TabItem Header="Snapshots">
-                        <Grid Margin="0,5,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                                <Button Content="PORÓWNAJ ZE SNAPSHOT" 
-                                        Padding="15,8" 
-                                        Background="#8E44AD" Foreground="White" FontWeight="Bold" 
-                                        BorderThickness="0" Cursor="Hand"
-                                        Click="CompareSnapshot_Click">
-                                    <Button.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="4"/>
-                                        </Style>
-                                    </Button.Resources>
-                                </Button>
-                            </StackPanel>
-
-                            <TextBlock Grid.Row="1" Text="{Binding SnapshotComparisonSummary}" Foreground="#34495E" FontWeight="SemiBold" Margin="0,0,0,8"/>
-
-                            <ListView Grid.Row="2" ItemsSource="{Binding SnapshotComparisonRows}" BorderBrush="#D5DBDB" BorderThickness="1" Background="White">
-                                <ListView.View>
-                                    <GridView>
-                                        <GridViewColumn Header="Path" Width="320" DisplayMemberBinding="{Binding Path}"/>
-                                        <GridViewColumn Header="Aktualny (Audit)" Width="300" DisplayMemberBinding="{Binding CurrentValue}"/>
-                                        <GridViewColumn Header="" Width="40" DisplayMemberBinding="{Binding Marker}"/>
-                                        <GridViewColumn Header="Snapshot" Width="300" DisplayMemberBinding="{Binding SnapshotValue}"/>
-                                    </GridView>
-                                </ListView.View>
-                            </ListView>
-                        </Grid>
-                    </TabItem>
-
-                    <TabItem Header="Snapshot Viewer">
-                        <Grid Margin="0,5,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-
-                            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                                <Button Content="WCZYTAJ SNAPSHOT" 
-                                        Padding="15,8" 
-                                        Background="#27AE60" Foreground="White" FontWeight="Bold" 
-                                        BorderThickness="0" Cursor="Hand"
-                                        Click="LoadSnapshotViewer_Click">
-                                    <Button.Resources>
-                                        <Style TargetType="Border">
-                                            <Setter Property="CornerRadius" Value="4"/>
-                                        </Style>
-                                    </Button.Resources>
-                                </Button>
-                            </StackPanel>
-
-                            <TextBlock Grid.Row="1" Text="{Binding SnapshotViewerSummary}" Foreground="#2C3E50" FontWeight="SemiBold" Margin="0,0,0,8"/>
-
-                            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
-                                <StackPanel>
-                                    <ItemsControl ItemsSource="{Binding SnapshotViewerCategories}">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,10" Background="#F8F9F9">
-                                                    <StackPanel>
-                                                        <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15" Foreground="#2C3E50" Margin="0,0,0,8"/>
-                                                        <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,8">
-                                                            <TextBlock.Style>
-                                                                <Style TargetType="TextBlock">
-                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
-                                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding Error}" Value="">
-                                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </TextBlock.Style>
-                                                        </TextBlock>
-
-                                                        <ItemsControl ItemsSource="{Binding Scripts}">
-                                                            <ItemsControl.ItemTemplate>
-                                                                <DataTemplate>
-                                                                    <Border BorderBrush="#E5E7E9" BorderThickness="1" CornerRadius="4" Padding="8" Margin="0,0,0,8" Background="White">
-                                                                        <StackPanel>
-                                                                            <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#1F618D" Margin="0,0,0,6"/>
-                                                                            <TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,0,0,6">
-                                                                                <TextBlock.Style>
-                                                                                    <Style TargetType="TextBlock">
-                                                                                        <Setter Property="Visibility" Value="Visible"/>
-                                                                                        <Style.Triggers>
-                                                                                            <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
-                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                            </DataTrigger>
-                                                                                            <DataTrigger Binding="{Binding Error}" Value="">
-                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                            </DataTrigger>
-                                                                                        </Style.Triggers>
-                                                                                    </Style>
-                                                                                </TextBlock.Style>
-                                                                            </TextBlock>
-                                                                            <ItemsControl ItemsSource="{Binding Tables}">
-                                                                                <ItemsControl.ItemTemplate>
-                                                                                    <DataTemplate>
-                                                                                        <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
-                                                                                    </DataTemplate>
-                                                                                </ItemsControl.ItemTemplate>
-                                                                            </ItemsControl>
-                                                                        </StackPanel>
-                                                                    </Border>
-                                                                </DataTemplate>
-                                                            </ItemsControl.ItemTemplate>
-                                                        </ItemsControl>
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </StackPanel>
-                            </ScrollViewer>
-                        </Grid>
-                    </TabItem>
-
                     <TabItem Header="Scoring">
                         <Grid Margin="0,5,0,0">
                             <Grid.RowDefinitions>
@@ -1592,6 +1510,220 @@
         </DataTemplate>
     </TabControl.ContentTemplate>
 </TabControl>
-</Grid>
-</Grid>
+                    </Grid>
+                </TabItem>
+
+                <!-- === TAB: SNAPSHOTS (globalny) === -->
+                <TabItem Header="Snapshots">
+                    <TabControl Background="Transparent" BorderThickness="0" Padding="0">
+                        <TabControl.ItemContainerStyle>
+                            <Style TargetType="TabItem">
+                                <Setter Property="Height" Value="36"/>
+                                <Setter Property="MinWidth" Value="100"/>
+                                <Setter Property="FontFamily" Value="Segoe UI"/>
+                                <Setter Property="FontSize" Value="13"/>
+                                <Setter Property="Cursor" Value="Hand"/>
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="TabItem">
+                                            <Border x:Name="Border" Background="{StaticResource AppHeaderBackgroundBrush}"
+                                                    BorderThickness="0,0,0,2" BorderBrush="Transparent">
+                                                <ContentPresenter x:Name="ContentSite"
+                                                                  VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                                  ContentSource="Header" Margin="16,4"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter TargetName="Border" Property="BorderBrush" Value="#8E44AD"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter Property="FontWeight" Value="SemiBold"/>
+                                                </Trigger>
+                                                <Trigger Property="IsSelected" Value="False">
+                                                    <Setter Property="Foreground" Value="#BDC3C7"/>
+                                                </Trigger>
+                                                <MultiTrigger>
+                                                    <MultiTrigger.Conditions>
+                                                        <Condition Property="IsMouseOver" Value="True"/>
+                                                        <Condition Property="IsSelected" Value="False"/>
+                                                    </MultiTrigger.Conditions>
+                                                    <Setter TargetName="Border" Property="Background" Value="#3D566E"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                </MultiTrigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </TabControl.ItemContainerStyle>
+
+                        <!-- Comparer -->
+                        <TabItem Header="Comparer">
+                            <Border Background="{StaticResource AppPanelBackgroundBrush}"
+                                    BorderBrush="{StaticResource AppAccentBorderBrush}"
+                                    BorderThickness="1" CornerRadius="8" Margin="15" Padding="16">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="Porównanie Snapshotów" FontSize="18" FontWeight="Bold"
+                                               Foreground="#2C3E50" Margin="0,0,0,16"/>
+
+                                    <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
+                                        <Button Content="PORÓWNAJ BIEŻĄCY AUDIT ZE SNAPSHOTEM"
+                                                Padding="14,9" Margin="0,0,10,8"
+                                                Background="#8E44AD" Foreground="White" FontWeight="Bold"
+                                                BorderThickness="0" Cursor="Hand"
+                                                Click="CompareSnapshot_Click">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                        <Button Content="PORÓWNAJ DWA SNAPSHOTY"
+                                                Padding="14,9" Margin="0,0,0,8"
+                                                Background="#2980B9" Foreground="White" FontWeight="Bold"
+                                                BorderThickness="0" Cursor="Hand"
+                                                Click="CompareTwoSnapshots_Click">
+                                            <Button.Resources>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="CornerRadius" Value="4"/>
+                                                </Style>
+                                            </Button.Resources>
+                                        </Button>
+                                    </WrapPanel>
+
+                                    <TextBlock Grid.Row="2" Text="{Binding SnapshotComparisonSummary}"
+                                               Foreground="#34495E" FontWeight="SemiBold" Margin="0,0,0,10"
+                                               TextWrapping="Wrap"/>
+
+                                    <ListView Grid.Row="3" ItemsSource="{Binding SnapshotComparisonRows}"
+                                              BorderBrush="#D5DBDB" BorderThickness="1" Background="White">
+                                        <ListView.View>
+                                            <GridView>
+                                                <GridViewColumn Header="Path" Width="320" DisplayMemberBinding="{Binding Path}"/>
+                                                <GridViewColumn Header="Wartość A" Width="280" DisplayMemberBinding="{Binding CurrentValue}"/>
+                                                <GridViewColumn Header="" Width="40" DisplayMemberBinding="{Binding Marker}"/>
+                                                <GridViewColumn Header="Wartość B" Width="280" DisplayMemberBinding="{Binding SnapshotValue}"/>
+                                            </GridView>
+                                        </ListView.View>
+                                    </ListView>
+                                </Grid>
+                            </Border>
+                        </TabItem>
+
+                        <!-- Viewer -->
+                        <TabItem Header="Viewer">
+                            <Border Background="{StaticResource AppPanelBackgroundBrush}"
+                                    BorderBrush="{StaticResource AppAccentBorderBrush}"
+                                    BorderThickness="1" CornerRadius="8" Margin="15" Padding="16">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Text="Przeglądarka Snapshotów" FontSize="18" FontWeight="Bold"
+                                               Foreground="#2C3E50" Margin="0,0,0,16"/>
+
+                                    <Button Grid.Row="1" Content="WCZYTAJ SNAPSHOT"
+                                            HorizontalAlignment="Left"
+                                            Padding="14,9" Margin="0,0,0,12"
+                                            Background="#27AE60" Foreground="White" FontWeight="Bold"
+                                            BorderThickness="0" Cursor="Hand"
+                                            Click="LoadSnapshotViewer_Click">
+                                        <Button.Resources>
+                                            <Style TargetType="Border">
+                                                <Setter Property="CornerRadius" Value="4"/>
+                                            </Style>
+                                        </Button.Resources>
+                                    </Button>
+
+                                    <TextBlock Grid.Row="2" Text="{Binding SnapshotViewerSummary}"
+                                               Foreground="#2C3E50" FontWeight="SemiBold" Margin="0,0,0,10"
+                                               TextWrapping="Wrap"/>
+
+                                    <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+                                        <StackPanel>
+                                            <ItemsControl ItemsSource="{Binding SnapshotViewerCategories}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4"
+                                                                Padding="10" Margin="0,0,0,10" Background="#F8F9F9">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="15"
+                                                                           Foreground="#2C3E50" Margin="0,0,0,8"/>
+                                                                <TextBlock Text="{Binding Error}" Foreground="#C0392B"
+                                                                           TextWrapping="Wrap" Margin="0,0,0,8">
+                                                                    <TextBlock.Style>
+                                                                        <Style TargetType="TextBlock">
+                                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                                            <Style.Triggers>
+                                                                                <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                </DataTrigger>
+                                                                                <DataTrigger Binding="{Binding Error}" Value="">
+                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                </DataTrigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBlock.Style>
+                                                                </TextBlock>
+                                                                <ItemsControl ItemsSource="{Binding Scripts}">
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Border BorderBrush="#E5E7E9" BorderThickness="1"
+                                                                                    CornerRadius="4" Padding="8" Margin="0,0,0,8" Background="White">
+                                                                                <StackPanel>
+                                                                                    <TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold"
+                                                                                               Foreground="#1F618D" Margin="0,0,0,6"/>
+                                                                                    <TextBlock Text="{Binding Error}" Foreground="#C0392B"
+                                                                                               TextWrapping="Wrap" Margin="0,0,0,6">
+                                                                                        <TextBlock.Style>
+                                                                                            <Style TargetType="TextBlock">
+                                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                                <Style.Triggers>
+                                                                                                    <DataTrigger Binding="{Binding Error}" Value="{x:Null}">
+                                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                    </DataTrigger>
+                                                                                                    <DataTrigger Binding="{Binding Error}" Value="">
+                                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Style.Triggers>
+                                                                                            </Style>
+                                                                                        </TextBlock.Style>
+                                                                                    </TextBlock>
+                                                                                    <ItemsControl ItemsSource="{Binding Tables}">
+                                                                                        <ItemsControl.ItemTemplate>
+                                                                                            <DataTemplate>
+                                                                                                <views:ScriptResultsControl Results="{Binding}" ScriptName="{Binding DataContext.ScriptName, RelativeSource={RelativeSource AncestorType=Border}}" />
+                                                                                            </DataTemplate>
+                                                                                        </ItemsControl.ItemTemplate>
+                                                                                    </ItemsControl>
+                                                                                </StackPanel>
+                                                                            </Border>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                        </TabItem>
+                    </TabControl>
+                </TabItem>
+            </TabControl>
+        </Grid>
+    </Grid>
 </Window>
