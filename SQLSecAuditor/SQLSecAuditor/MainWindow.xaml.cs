@@ -264,8 +264,13 @@ namespace SqlSecAuditor
 
         private void CompareSnapshot_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
+            if (DataContext is not MainViewModel viewModel)
+                return;
+
+            var instance = viewModel.SelectedInstance;
+            if (instance is null)
             {
+                MessageBox.Show(this, "Najpierw wybierz instancję z listy po lewej stronie (zakładka Audit).", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -275,9 +280,7 @@ namespace SqlSecAuditor
             };
 
             if (openDialog.ShowDialog(this) != true)
-            {
                 return;
-            }
 
             try
             {
@@ -285,22 +288,60 @@ namespace SqlSecAuditor
                 var current = ReportSnapshotService.BuildSnapshot(instance);
                 var rows = ReportSnapshotService.CompareRows(current, other);
 
-                instance.SnapshotComparisonRows.Clear();
+                viewModel.SnapshotComparisonRows.Clear();
                 foreach (var row in rows)
-                {
-                    instance.SnapshotComparisonRows.Add(row);
-                }
+                    viewModel.SnapshotComparisonRows.Add(row);
 
-                instance.SnapshotComparisonSummary = ReportSnapshotService.BuildComparisonSummary(rows);
-
-                if (rows.Count == 0)
-                {
-                    instance.SnapshotComparisonSummary = "Brak różnic.";
-                }
+                viewModel.SnapshotComparisonSummary = rows.Count == 0
+                    ? "Brak różnic."
+                    : ReportSnapshotService.BuildComparisonSummary(rows);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(this, $"Nie udało się porównać snapshotu:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void CompareTwoSnapshots_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainViewModel viewModel)
+                return;
+
+            var dialogA = new OpenFileDialog
+            {
+                Title = "Wybierz pierwszy snapshot (Snapshot A)",
+                Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
+            };
+
+            if (dialogA.ShowDialog(this) != true)
+                return;
+
+            var dialogB = new OpenFileDialog
+            {
+                Title = "Wybierz drugi snapshot (Snapshot B)",
+                Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
+            };
+
+            if (dialogB.ShowDialog(this) != true)
+                return;
+
+            try
+            {
+                var snapshotA = ReportSnapshotService.LoadSnapshot(dialogA.FileName);
+                var snapshotB = ReportSnapshotService.LoadSnapshot(dialogB.FileName);
+                var rows = ReportSnapshotService.CompareRows(snapshotA, snapshotB);
+
+                viewModel.SnapshotComparisonRows.Clear();
+                foreach (var row in rows)
+                    viewModel.SnapshotComparisonRows.Add(row);
+
+                viewModel.SnapshotComparisonSummary = rows.Count == 0
+                    ? "Brak różnic między snapshotami."
+                    : $"[A: {System.IO.Path.GetFileName(dialogA.FileName)}  vs  B: {System.IO.Path.GetFileName(dialogB.FileName)}]  " + ReportSnapshotService.BuildComparisonSummary(rows);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, $"Nie udało się porównać snapshotów:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -355,10 +396,8 @@ namespace SqlSecAuditor
 
         private void LoadSnapshotViewer_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not FrameworkElement { DataContext: SqlInstance instance })
-            {
+            if (DataContext is not MainViewModel viewModel)
                 return;
-            }
 
             var openDialog = new OpenFileDialog
             {
@@ -366,22 +405,18 @@ namespace SqlSecAuditor
             };
 
             if (openDialog.ShowDialog(this) != true)
-            {
                 return;
-            }
 
             try
             {
                 var snapshot = ReportSnapshotService.LoadSnapshot(openDialog.FileName);
                 var categories = ReportSnapshotService.BuildViewerCategories(snapshot);
 
-                instance.SnapshotViewerCategories.Clear();
+                viewModel.SnapshotViewerCategories.Clear();
                 foreach (var category in categories)
-                {
-                    instance.SnapshotViewerCategories.Add(category);
-                }
+                    viewModel.SnapshotViewerCategories.Add(category);
 
-                instance.SnapshotViewerSummary = ReportSnapshotService.BuildViewerSummary(snapshot);
+                viewModel.SnapshotViewerSummary = ReportSnapshotService.BuildViewerSummary(snapshot);
             }
             catch (Exception ex)
             {
