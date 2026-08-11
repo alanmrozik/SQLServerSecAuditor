@@ -4,17 +4,46 @@ using SqlSecAuditor.Models;
 using SqlSecAuditor.Views;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Data;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
 
 namespace SqlSecAuditor.ViewModels
 {
-    public class MainViewModel
+    public class MainViewModel : INotifyPropertyChanged
     {
+        private SqlInstance? _selectedInstance;
+        private string? _snapshotComparisonSummary;
+        private string? _snapshotViewerSummary;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public ObservableCollection<SqlInstance> Instances { get; set; }
+
+        public ObservableCollection<SnapshotComparisonRow> SnapshotComparisonRows { get; } = new();
+        public ObservableCollection<SnapshotViewerCategory> SnapshotViewerCategories { get; } = new();
+
+        public SqlInstance? SelectedInstance
+        {
+            get => _selectedInstance;
+            set => SetProperty(ref _selectedInstance, value);
+        }
+
+        public string? SnapshotComparisonSummary
+        {
+            get => _snapshotComparisonSummary;
+            set => SetProperty(ref _snapshotComparisonSummary, value);
+        }
+
+        public string? SnapshotViewerSummary
+        {
+            get => _snapshotViewerSummary;
+            set => SetProperty(ref _snapshotViewerSummary, value);
+        }
 
         public ICommand ConnectNewDatabaseCommand { get; }
 
