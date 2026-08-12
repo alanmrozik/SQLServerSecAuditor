@@ -88,7 +88,17 @@ namespace SqlSecAuditor.Infrastructure
                                         foreach (var table in script.Tables)
                                         {
                                             scriptCol.Item().Text(table.TableName ?? string.Empty).Italic().FontSize(8).FontColor(Colors.Grey.Darken1);
-                                            scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table, script.ScriptName));
+                                            foreach (var columns in SplitColumnsForPdf(table))
+                                            {
+                                                if (table.Columns.Count > MaxColumnsPerTable)
+                                                {
+                                                    var first = table.Columns.IndexOf(columns[0]) + 1;
+                                                    var last = table.Columns.IndexOf(columns[^1]) + 1;
+                                                    scriptCol.Item().Text($"Kolumny {first}-{last} z {table.Columns.Count}").FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                }
+
+                                                scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table, script.ScriptName, columns));
+                                            }
                                         }
                                     });
                                 }
@@ -141,6 +151,8 @@ namespace SqlSecAuditor.Infrastructure
             AddCategoryIfExecuted(categories, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
             AddCategoryIfExecuted(categories, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
+            AddCategoryIfExecuted(categories, "custom_queries", "Własne zapytania", instance.CustomQueryResults, instance.CustomQueriesError);
+
             return selected is null ? categories : categories.Where(c => selected.Contains(c.Key));
         }
 
@@ -167,19 +179,31 @@ namespace SqlSecAuditor.Infrastructure
             });
         }
 
-        private static void RenderDataTable(TableDescriptor table, DataTable dataTable, string scriptName)
+        private const int MaxColumnsPerTable = 5;
+
+        private static IEnumerable<IReadOnlyList<DataColumn>> SplitColumnsForPdf(DataTable dataTable)
         {
-            table.ColumnsDefinition(columns =>
+            return dataTable.Columns.Cast<DataColumn>()
+                .Select((column, index) => new { column, index })
+                .GroupBy(item => item.index / MaxColumnsPerTable)
+                .Select(group => (IReadOnlyList<DataColumn>)group.Select(item => item.column).ToArray());
+        }
+
+        private static void RenderDataTable(TableDescriptor table, DataTable dataTable, string scriptName, IReadOnlyList<DataColumn> columns)
+        {
+            table.ColumnsDefinition(descriptor =>
             {
-                foreach (DataColumn column in dataTable.Columns)
+                descriptor.ConstantColumn(28);
+                foreach (var column in columns)
                 {
-                    columns.RelativeColumn();
+                    descriptor.RelativeColumn();
                 }
             });
 
             table.Header(header =>
             {
-                foreach (DataColumn column in dataTable.Columns)
+                header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text("#").SemiBold();
+                foreach (var column in columns)
                 {
                     header.Cell().Background(Colors.Grey.Lighten3).Padding(4).Text(column.ColumnName).SemiBold();
                 }
@@ -187,15 +211,19 @@ namespace SqlSecAuditor.Infrastructure
 
             if (dataTable.Rows.Count == 0)
             {
-                table.Cell().ColumnSpan((uint)dataTable.Columns.Count).Padding(4).Text("Brak wierszy.").FontColor(Colors.Grey.Darken1);
+                table.Cell().ColumnSpan((uint)(columns.Count + 1)).Padding(4).Text("Brak wierszy.").FontColor(Colors.Grey.Darken1);
                 return;
             }
 
-            foreach (DataRow row in dataTable.Rows)
+            for (var rowIndex = 0; rowIndex < dataTable.Rows.Count; rowIndex++)
             {
+                var row = dataTable.Rows[rowIndex];
                 var rowBackground = EvaluateRowColorHex(scriptName, dataTable, row);
+                var indexCell = table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4);
+                if (!string.IsNullOrWhiteSpace(rowBackground)) indexCell = indexCell.Background(rowBackground);
+                indexCell.Text((rowIndex + 1).ToString(CultureInfo.InvariantCulture));
 
-                foreach (var value in row.ItemArray)
+                foreach (var column in columns)
                 {
                     var cell = table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4);
                     if (!string.IsNullOrWhiteSpace(rowBackground))
@@ -203,7 +231,7 @@ namespace SqlSecAuditor.Infrastructure
                         cell = cell.Background(rowBackground);
                     }
 
-                    cell.Text(FormatValue(value));
+                    cell.Text(FormatValue(row[column]));
                 }
             }
         }

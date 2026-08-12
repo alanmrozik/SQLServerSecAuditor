@@ -23,6 +23,7 @@ namespace SqlSecAuditor.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<SqlInstance> Instances { get; set; }
+        public ObservableCollection<CustomQuery> CustomQueries { get; } = new();
 
         public ObservableCollection<SnapshotComparisonRow> SnapshotComparisonRows { get; } = new();
         public ObservableCollection<SnapshotViewerCategory> SnapshotViewerCategories { get; } = new();
@@ -50,6 +51,7 @@ namespace SqlSecAuditor.ViewModels
         public MainViewModel()
         {
             Instances = new ObservableCollection<SqlInstance>();
+            foreach (var query in CustomQueriesStore.Load()) CustomQueries.Add(query);
 
             ConnectNewDatabaseCommand = new RelayCommand(ExecuteConnectNewDatabase);
         }
@@ -372,6 +374,65 @@ namespace SqlSecAuditor.ViewModels
                 instance.HighAvailabilityDisasterRecoveryResults,
                 r => instance.IsHighAvailabilityDisasterRecoveryRunning = r,
                 e => instance.HighAvailabilityDisasterRecoveryError = e);
+        }
+
+        public void AddCustomQuery(CustomQuery query)
+        {
+            CustomQueries.Add(query);
+            CustomQueriesStore.Save(CustomQueries);
+        }
+
+        public void DeleteCustomQuery(CustomQuery query)
+        {
+            CustomQueries.Remove(query);
+            foreach (var instance in Instances)
+            {
+                foreach (var result in instance.CustomQueryResults.Where(r => r.CustomQueryId == query.Id).ToList())
+                    instance.CustomQueryResults.Remove(result);
+            }
+            CustomQueriesStore.Save(CustomQueries);
+        }
+
+        public async Task RunCustomQueriesAsync(SqlInstance instance)
+        {
+            if (instance.IsCustomQueriesRunning) return;
+            instance.CustomQueryResults.Clear();
+            await RunCustomQueriesCoreAsync(instance, CustomQueries);
+        }
+
+        public async Task RunCustomQueryAsync(SqlInstance instance, CustomQuery query)
+        {
+            if (instance.IsCustomQueriesRunning) return;
+            foreach (var result in instance.CustomQueryResults.Where(r => r.CustomQueryId == query.Id).ToList())
+                instance.CustomQueryResults.Remove(result);
+            await RunCustomQueriesCoreAsync(instance, new[] { query });
+        }
+
+        private async Task RunCustomQueriesCoreAsync(SqlInstance instance, IEnumerable<CustomQuery> queries)
+        {
+            instance.IsCustomQueriesRunning = true;
+            instance.CustomQueriesError = null;
+            try
+            {
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+                foreach (var query in queries)
+                {
+                    var result = new ScriptExecutionResult { ScriptName = query.Name, CustomQueryId = query.Id };
+                    try
+                    {
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = RemoveBatchSeparators(query.Sql);
+                        await using var reader = await command.ExecuteReaderAsync();
+                        do { result.Tables.Add(await ReadDataTableAsync(reader)); }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex) { result.Error = ex.Message; }
+                    instance.CustomQueryResults.Add(result);
+                }
+            }
+            catch (Exception ex) { instance.CustomQueriesError = ex.Message; }
+            finally { instance.IsCustomQueriesRunning = false; }
         }
 
 
