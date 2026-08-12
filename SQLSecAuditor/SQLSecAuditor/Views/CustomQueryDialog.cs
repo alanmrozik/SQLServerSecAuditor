@@ -19,19 +19,29 @@ namespace SqlSecAuditor.Views
             MinWidth = 500;
             MinHeight = 380;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
+            Background = Application.Current.TryFindResource("AppWindowBackgroundBrush") as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.White;
 
-            var panel = new Grid { Margin = new Thickness(16) };
+            var shell = new Border
+            {
+                Background = Application.Current.TryFindResource("AppPanelBackgroundBrush") as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.White,
+                BorderBrush = Application.Current.TryFindResource("AppPanelBorderBrush") as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.LightGray,
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Margin = new Thickness(18),
+                Padding = new Thickness(22)
+            };
+            var panel = new Grid();
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            panel.Children.Add(new TextBlock { Text = "Nazwa zapytania", Margin = new Thickness(0, 0, 0, 5) });
-            _nameBox = new TextBox { Margin = new Thickness(0, 0, 0, 14) };
+            panel.Children.Add(new TextBlock { Text = "NAZWA ZAPYTANIA", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = Application.Current.TryFindResource("AppMutedTextBrush") as System.Windows.Media.Brush, Margin = new Thickness(0, 0, 0, 5) });
+            _nameBox = new TextBox { Margin = new Thickness(0, 0, 0, 14), ToolTip = "Nazwa zapytania" };
             Grid.SetRow(_nameBox, 1);
             panel.Children.Add(_nameBox);
 
-            var sqlLabel = new TextBlock { Text = "SQL", Margin = new Thickness(0, 0, 0, 5) };
+            var sqlLabel = new TextBlock { Text = "TREŚĆ SQL", FontWeight = FontWeights.SemiBold, Foreground = Application.Current.TryFindResource("AppMutedTextBrush") as System.Windows.Media.Brush, Margin = new Thickness(0, 0, 0, 5) };
             Grid.SetRow(sqlLabel, 2);
             panel.Children.Add(sqlLabel);
             _sqlBox = new TextBox { AcceptsReturn = true, AcceptsTab = true, FontFamily = new System.Windows.Media.FontFamily("Consolas"), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, TextWrapping = TextWrapping.NoWrap, Margin = new Thickness(0, 24, 0, 14) };
@@ -47,7 +57,8 @@ namespace SqlSecAuditor.Views
             Grid.SetRow(buttons, 3);
             panel.Children.Add(buttons);
 
-            Content = panel;
+            shell.Child = panel;
+            Content = shell;
         }
 
         private void Save_Click(object sender, RoutedEventArgs e)

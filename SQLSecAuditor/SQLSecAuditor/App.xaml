@@ -1,54 +1,148 @@
-﻿<Application x:Class="SQLSecAuditor.App"
+<Application x:Class="SQLSecAuditor.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:SQLSecAuditor"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#ECF0F1" />
-        <SolidColorBrush x:Key="AppHeaderBackgroundBrush" Color="#1E2B3C" />
-        <SolidColorBrush x:Key="AppHeaderHoverBrush" Color="#34495E" />
-        <SolidColorBrush x:Key="AppPanelBackgroundBrush" Color="White" />
-        <SolidColorBrush x:Key="AppPanelBorderBrush" Color="#DCDCDC" />
-        <SolidColorBrush x:Key="AppAccentBorderBrush" Color="#BDC3C7" />
-        <SolidColorBrush x:Key="AppMutedTextBrush" Color="#556677" />
+        <!-- Design system: Slate navigation, clean surfaces, blue as the single interactive accent. -->
+        <SolidColorBrush x:Key="AppWindowBackgroundBrush" Color="#F4F7FB" />
+        <SolidColorBrush x:Key="AppHeaderBackgroundBrush" Color="#274C77" />
+        <SolidColorBrush x:Key="AppHeaderHoverBrush" Color="#355B85" />
+        <SolidColorBrush x:Key="AppPanelBackgroundBrush" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="AppPanelBorderBrush" Color="#E2E8F0" />
+        <SolidColorBrush x:Key="AppAccentBorderBrush" Color="#CBD5E1" />
+        <SolidColorBrush x:Key="AppAccentBrush" Color="#2563EB" />
+        <SolidColorBrush x:Key="AppAccentHoverBrush" Color="#1D4ED8" />
+        <SolidColorBrush x:Key="AppMutedTextBrush" Color="#64748B" />
+        <SolidColorBrush x:Key="AppTextBrush" Color="#0F172A" />
+        <SolidColorBrush x:Key="AppSuccessBrush" Color="#059669" />
+        <SolidColorBrush x:Key="AppDangerBrush" Color="#DC2626" />
 
-        <Style x:Key="AppChromeButtonStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="White" />
-            <Setter Property="BorderThickness" Value="0" />
+        <Style TargetType="Window">
+            <Setter Property="FontFamily" Value="Segoe UI" />
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+            <Setter Property="Background" Value="{StaticResource AppWindowBackgroundBrush}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+            <Setter Property="Cursor" Value="Arrow" />
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="MinHeight" Value="30" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AppAccentBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6" SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border x:Name="hoverOverlay" Background="#000000" Opacity="0" CornerRadius="5" />
+                                <ContentPresenter Margin="{TemplateBinding Padding}" HorizontalAlignment="Center" VerticalAlignment="Center" TextElement.FontSize="12" />
+                            </Grid>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="hoverOverlay" Property="Opacity" Value="0.10" /></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="hoverOverlay" Property="Opacity" Value="0.18" /></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="border" Property="Opacity" Value="0.48" /></Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource AppHeaderHoverBrush}" />
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <Style x:Key="AppSectionBorderStyle" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource AppPanelBackgroundBrush}" />
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="9,6" />
+            <Setter Property="Background" Value="White" />
+            <Setter Property="BorderBrush" Value="{StaticResource AppAccentBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AppAccentBrush}" /><Setter TargetName="border" Property="BorderThickness" Value="2" /></Trigger>
+                            <Trigger Property="IsReadOnly" Value="True"><Setter TargetName="border" Property="Background" Value="#F8FAFC" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="BorderBrush" Value="{StaticResource AppAccentBorderBrush}" />
+            <Setter Property="Background" Value="White" />
+        </Style>
+
+        <Style TargetType="CheckBox">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="box" Width="18" Height="18" Margin="0,0,8,0" Background="White" BorderBrush="{StaticResource AppAccentBorderBrush}" BorderThickness="1" CornerRadius="4">
+                                <Path x:Name="check" Data="M 3 9 L 7 13 L 15 4" Stroke="White" StrokeThickness="2" StrokeEndLineCap="Round" StrokeStartLineCap="Round" Visibility="Collapsed" />
+                            </Border>
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True"><Setter TargetName="box" Property="Background" Value="{StaticResource AppAccentBrush}" /><Setter TargetName="box" Property="BorderBrush" Value="{StaticResource AppAccentBrush}" /><Setter TargetName="check" Property="Visibility" Value="Visible" /></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="box" Property="BorderBrush" Value="{StaticResource AppAccentBrush}" /></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Keep the standard pointer in content areas; interactive controls override it locally. -->
+        <Style TargetType="TabControl"><Setter Property="Cursor" Value="Arrow" /></Style>
+        <Style TargetType="ScrollViewer"><Setter Property="Cursor" Value="Arrow" /></Style>
+        <Style TargetType="ListView"><Setter Property="Cursor" Value="Arrow" /></Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="White" />
             <Setter Property="BorderBrush" Value="{StaticResource AppPanelBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="3" />
-            <Setter Property="Margin" Value="10" />
+            <Setter Property="GridLinesVisibility" Value="Horizontal" />
+            <Setter Property="HorizontalGridLinesBrush" Value="#EEF2F7" />
+            <Setter Property="RowBackground" Value="White" />
+            <Setter Property="AlternatingRowBackground" Value="#F8FAFC" />
+            <Setter Property="RowHeaderWidth" Value="0" />
         </Style>
-
-        <Style x:Key="AppPageTitleStyle" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="22" />
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#F1F5F9" />
+            <Setter Property="Foreground" Value="#334155" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="{StaticResource AppHeaderBackgroundBrush}" />
+            <Setter Property="Padding" Value="8,7" />
+            <Setter Property="BorderBrush" Value="#E2E8F0" />
+        </Style>
+        <Style TargetType="DataGridCell"><Setter Property="Padding" Value="8,6" /><Setter Property="BorderThickness" Value="0" /></Style>
+
+        <Style TargetType="Menu">
+            <Setter Property="Background" Value="{StaticResource AppHeaderBackgroundBrush}" />
+            <Setter Property="Foreground" Value="#CBD5E1" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style TargetType="MenuItem">
+            <Setter Property="Padding" Value="12,7" />
+            <Setter Property="Foreground" Value="{StaticResource AppTextBrush}" />
         </Style>
 
-        <Style x:Key="AppGroupBoxStyle" TargetType="GroupBox">
-            <Setter Property="Margin" Value="0,18,0,0" />
-            <Setter Property="Padding" Value="12" />
+        <Style x:Key="AppChromeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" /><Setter Property="Foreground" Value="White" /><Setter Property="BorderThickness" Value="0" /><Setter Property="Padding" Value="0" />
+            <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button"><Border Background="{TemplateBinding Background}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource AppHeaderHoverBrush}" /></Trigger></ControlTemplate.Triggers></ControlTemplate></Setter.Value></Setter>
         </Style>
+        <Style x:Key="AppSectionBorderStyle" TargetType="Border"><Setter Property="Background" Value="{StaticResource AppPanelBackgroundBrush}" /><Setter Property="BorderBrush" Value="{StaticResource AppPanelBorderBrush}" /><Setter Property="BorderThickness" Value="1" /><Setter Property="CornerRadius" Value="10" /><Setter Property="Margin" Value="10" /></Style>
+        <Style x:Key="AppPageTitleStyle" TargetType="TextBlock"><Setter Property="FontSize" Value="22" /><Setter Property="FontWeight" Value="SemiBold" /><Setter Property="Foreground" Value="{StaticResource AppTextBrush}" /></Style>
+        <Style x:Key="AppGroupBoxStyle" TargetType="GroupBox"><Setter Property="Margin" Value="0,18,0,0" /><Setter Property="Padding" Value="12" /></Style>
     </Application.Resources>
 </Application>

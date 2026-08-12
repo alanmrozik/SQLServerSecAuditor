@@ -22,12 +22,34 @@ namespace SqlSecAuditor.Infrastructure
             {
                 return Array.Empty<CustomQuery>();
             }
+            catch (IOException)
+            {
+                return Array.Empty<CustomQuery>();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Array.Empty<CustomQuery>();
+            }
         }
 
         public static void Save(IEnumerable<CustomQuery> queries)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(queries, new JsonSerializerOptions { WriteIndented = true }));
+            var directory = Path.GetDirectoryName(FilePath)!;
+            Directory.CreateDirectory(directory);
+
+            var temporaryPath = Path.Combine(directory, $"{Path.GetFileName(FilePath)}.{Guid.NewGuid():N}.tmp");
+            try
+            {
+                File.WriteAllText(temporaryPath, JsonSerializer.Serialize(queries, new JsonSerializerOptions { WriteIndented = true }));
+                File.Move(temporaryPath, FilePath, overwrite: true);
+            }
+            finally
+            {
+                if (File.Exists(temporaryPath))
+                {
+                    File.Delete(temporaryPath);
+                }
+            }
         }
     }
 }
