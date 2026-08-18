@@ -1,15 +1,12 @@
 using Microsoft.Data.SqlClient;
 using SqlSecAuditor.Infrastructure;
 using SqlSecAuditor.Models;
-using SqlSecAuditor.Views;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Windows;
 using System.Windows.Input;
 
 namespace SqlSecAuditor.ViewModels
@@ -19,6 +16,7 @@ namespace SqlSecAuditor.ViewModels
         private SqlInstance? _selectedInstance;
         private string? _snapshotComparisonSummary;
         private string? _snapshotViewerSummary;
+        private readonly IConnectionDialogService _connectionDialogService;
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -47,8 +45,9 @@ namespace SqlSecAuditor.ViewModels
 
         public ICommand ConnectNewDatabaseCommand { get; }
 
-        public MainViewModel()
+        public MainViewModel(IConnectionDialogService connectionDialogService)
         {
+            _connectionDialogService = connectionDialogService ?? throw new ArgumentNullException(nameof(connectionDialogService));
             Instances = new ObservableCollection<SqlInstance>();
 
             ConnectNewDatabaseCommand = new RelayCommand(ExecuteConnectNewDatabase);
@@ -91,16 +90,12 @@ namespace SqlSecAuditor.ViewModels
             return null;
         }
 
-        private void ExecuteConnectNewDatabase(object obj)
+        private void ExecuteConnectNewDatabase(object? obj)
         {
-            var dialog = new ConnectionWindow
+            var instance = _connectionDialogService.ShowConnectionDialog();
+            if (instance is not null)
             {
-                Owner = Application.Current?.MainWindow
-            };
-
-            if (dialog.ShowDialog() == true && dialog.ResultInstance is not null)
-            {
-                Instances.Add(dialog.ResultInstance);
+                Instances.Add(instance);
             }
         }
 
@@ -117,7 +112,7 @@ namespace SqlSecAuditor.ViewModels
             try
             {
                 var script = await SqlScriptLoader.LoadScriptAsync("General", "GeneralInfoAboutServer.sql");
-                var commandText = RemoveBatchSeparators(script);
+                var commandText = SqlScriptText.RemoveBatchSeparators(script);
 
                 await using var connection = new SqlConnection(instance.ConnectionString);
                 await connection.OpenAsync();
@@ -222,10 +217,10 @@ namespace SqlSecAuditor.ViewModels
                     {
                         // Run per-database: collect all database names then execute on each
                         var perDbResult = new ScriptExecutionResult { ScriptName = scriptName };
-                        perDbResult.Description = ExtractScriptDescription(sql);
+                        perDbResult.Description = SqlScriptText.ExtractDescription(sql);
                         try
                         {
-                            var databases = await GetDatabaseNamesAsync(instance.ConnectionString);
+                            var databases = await SqlDatabaseCatalog.GetOnlineUserDatabasesAsync(instance.ConnectionString);
                             foreach (var dbName in databases)
                             {
                                 var csBuilder = new SqlConnectionStringBuilder(instance.ConnectionString)
@@ -237,11 +232,11 @@ namespace SqlSecAuditor.ViewModels
                                 {
                                     await dbConnection.OpenAsync();
                                     await using var cmd = dbConnection.CreateCommand();
-                                    cmd.CommandText = RemoveBatchSeparators(sql);
+                                    cmd.CommandText = SqlScriptText.RemoveBatchSeparators(sql);
                                     await using var rdr = await cmd.ExecuteReaderAsync();
                                         do
                                         {
-                                            var tbl = await ReadDataTableAsync(rdr);
+                                            var tbl = await SqlDataReaderTableReader.ReadAsync(rdr);
                                             tbl.TableName = dbName;
                                             perDbResult.Tables.Add(tbl);
 
@@ -272,23 +267,23 @@ namespace SqlSecAuditor.ViewModels
                             perDbResult.Error = ex.Message;
                         }
                         // also extract fix script if present
-                        perDbResult.FixScript = ExtractFixScript(sql);
+                        perDbResult.FixScript = SqlScriptText.ExtractFixScript(sql);
                         results.Add(perDbResult);
                     }
                     else
                     {
                         var result = new ScriptExecutionResult { ScriptName = scriptName };
-                        result.Description = ExtractScriptDescription(sql);
-                        result.FixScript = ExtractFixScript(sql);
+                        result.Description = SqlScriptText.ExtractDescription(sql);
+                        result.FixScript = SqlScriptText.ExtractFixScript(sql);
                         try
                         {
-                            var commandText = RemoveBatchSeparators(sql);
+                            var commandText = SqlScriptText.RemoveBatchSeparators(sql);
                             await using var command = connection.CreateCommand();
                             command.CommandText = commandText;
                             await using var reader = await command.ExecuteReaderAsync();
                             do
                             {
-                                var table = await ReadDataTableAsync(reader);
+                                var table = await SqlDataReaderTableReader.ReadAsync(reader);
                                 result.Tables.Add(table);
 
                                 // Evaluate rows for red status
@@ -313,10 +308,10 @@ namespace SqlSecAuditor.ViewModels
 
                 if (string.Equals(category, "HighAvailability&DisasterRecovery", StringComparison.OrdinalIgnoreCase))
                 {
-                    ApplyHighAvailabilityContext(results);
+                    AuditScoringService.ApplyHighAvailabilityContext(results);
                 }
 
-                RecalculateScoring(instance);
+                AuditScoringService.Recalculate(instance);
             }
             catch (Exception ex)
             {
@@ -374,6 +369,65 @@ namespace SqlSecAuditor.ViewModels
                 e => instance.HighAvailabilityDisasterRecoveryError = e);
         }
 
+        public void AddCustomQuery(CustomQuery query)
+        {
+            CustomQueries.Add(query);
+            CustomQueriesStore.Save(CustomQueries);
+        }
+
+        public void DeleteCustomQuery(CustomQuery query)
+        {
+            CustomQueries.Remove(query);
+            foreach (var instance in Instances)
+            {
+                foreach (var result in instance.CustomQueryResults.Where(r => r.CustomQueryId == query.Id).ToList())
+                    instance.CustomQueryResults.Remove(result);
+            }
+            CustomQueriesStore.Save(CustomQueries);
+        }
+
+        public async Task RunCustomQueriesAsync(SqlInstance instance)
+        {
+            if (instance.IsCustomQueriesRunning) return;
+            instance.CustomQueryResults.Clear();
+            await RunCustomQueriesCoreAsync(instance, CustomQueries);
+        }
+
+        public async Task RunCustomQueryAsync(SqlInstance instance, CustomQuery query)
+        {
+            if (instance.IsCustomQueriesRunning) return;
+            foreach (var result in instance.CustomQueryResults.Where(r => r.CustomQueryId == query.Id).ToList())
+                instance.CustomQueryResults.Remove(result);
+            await RunCustomQueriesCoreAsync(instance, new[] { query });
+        }
+
+        private async Task RunCustomQueriesCoreAsync(SqlInstance instance, IEnumerable<CustomQuery> queries)
+        {
+            instance.IsCustomQueriesRunning = true;
+            instance.CustomQueriesError = null;
+            try
+            {
+                await using var connection = new SqlConnection(instance.ConnectionString);
+                await connection.OpenAsync();
+                foreach (var query in queries)
+                {
+                    var result = new ScriptExecutionResult { ScriptName = query.Name, CustomQueryId = query.Id };
+                    try
+                    {
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = RemoveBatchSeparators(query.Sql);
+                        await using var reader = await command.ExecuteReaderAsync();
+                        do { result.Tables.Add(await ReadDataTableAsync(reader)); }
+                        while (await reader.NextResultAsync());
+                    }
+                    catch (Exception ex) { result.Error = ex.Message; }
+                    instance.CustomQueryResults.Add(result);
+                }
+            }
+            catch (Exception ex) { instance.CustomQueriesError = ex.Message; }
+            finally { instance.IsCustomQueriesRunning = false; }
+        }
+
 
         private static void ApplyHighAvailabilityContext(IEnumerable<ScriptExecutionResult> results)
         {
@@ -404,13 +458,6 @@ namespace SqlSecAuditor.ViewModels
             return false;
         }
 
-        private static void RecalculateScoring(SqlInstance instance)
-        {
-            var allResults = EnumerateAllScoredResults(instance).ToList();
-
-            var green = 0;
-            var yellow = 0;
-            var red = 0;
 
             foreach (var result in allResults)
             {
@@ -462,19 +509,6 @@ namespace SqlSecAuditor.ViewModels
             foreach (var result in instance.HighAvailabilityDisasterRecoveryResults) yield return result;
         }
 
-        private static string FormatReaderRow(SqlDataReader reader)
-        {
-            var values = new string[reader.FieldCount];
-            for (var i = 0; i < reader.FieldCount; i++)
-            {
-                var columnName = reader.GetName(i);
-                var value = reader.IsDBNull(i) ? "N/A" : reader.GetValue(i)?.ToString() ?? "N/A";
-                values[i] = $"{columnName}: {value}";
-            }
-
-            return string.Join(" | ", values);
-        }
-
         private static async Task<DataTable> ReadDataTableAsync(SqlDataReader reader)
         {
             var table = new DataTable();
@@ -492,11 +526,7 @@ namespace SqlSecAuditor.ViewModels
                     // ignore and use object
                 }
 
-                var columnName = reader.GetName(i);
-                if (string.IsNullOrWhiteSpace(columnName))
-                {
-                    columnName = $"Column{ i + 1 }";
-                }
+                var columnName = GetUniqueColumnName(table, reader.GetName(i), i);
                 table.Columns.Add(columnName, columnType);
             }
 
@@ -513,6 +543,20 @@ namespace SqlSecAuditor.ViewModels
             }
 
             return table;
+        }
+
+        private static string GetUniqueColumnName(DataTable table, string? proposedName, int ordinal)
+        {
+            var baseName = string.IsNullOrWhiteSpace(proposedName) ? $"Column{ordinal + 1}" : proposedName;
+            var name = baseName;
+            var suffix = 2;
+
+            while (table.Columns.Contains(name))
+            {
+                name = $"{baseName}_{suffix++}";
+            }
+
+            return name;
         }
 
         private static string RemoveBatchSeparators(string script)

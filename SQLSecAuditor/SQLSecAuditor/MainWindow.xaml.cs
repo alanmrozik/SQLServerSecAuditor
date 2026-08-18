@@ -15,7 +15,7 @@ namespace SqlSecAuditor
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
+            DataContext = new MainViewModel(new ConnectionDialogService(this));
         }
 
         private async void GeneralInfoExpander_Expanded(object sender, RoutedEventArgs e)
@@ -34,139 +34,36 @@ namespace SqlSecAuditor
         }
 
         private async void MaintenanceIntegrityRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunMaintenanceIntegrityAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunMaintenanceIntegrityAsync(instance));
 
         private async void NetworkConnectivityRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunNetworkConnectivityAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunNetworkConnectivityAsync(instance));
 
         private async void SurfaceAreaReductionRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunSurfaceAreaReductionAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunSurfaceAreaReductionAsync(instance));
 
         private async void AuditingMonitoringRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunAuditingMonitoringAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunAuditingMonitoringAsync(instance));
 
         private async void AuthenticationAccessControlRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunAuthenticationAccessControlAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunAuthenticationAccessControlAsync(instance));
 
         private async void AuthorizationPermissionsRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunAuthorizationPermissionsAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunAuthorizationPermissionsAsync(instance));
 
         private async void DatabaseSecurityRun_Click(object sender, RoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
-            {
-                return;
-            }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunDatabaseSecurityAsync(instance);
-        }
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunDatabaseSecurityAsync(instance));
 
         private async void HighAvailabilityDisasterRecoveryRun_Click(object sender, RoutedEventArgs e)
+            => await RunCategoryAsync(sender, e, static (viewModel, instance) => viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance));
+
+        private async Task RunCategoryAsync(object sender, RoutedEventArgs e, Func<MainViewModel, SqlInstance, Task> runCategory)
         {
             e.Handled = true;
-
-            if (sender is not Button { DataContext: SqlInstance instance })
+            if (sender is Button { DataContext: SqlInstance instance } && DataContext is MainViewModel viewModel)
             {
-                return;
+                await runCategory(viewModel, instance);
             }
-
-            if (DataContext is not MainViewModel viewModel)
-            {
-                return;
-            }
-
-            await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
         }
 
         private async void RunMultipleCategories_Click(object sender, RoutedEventArgs e)
