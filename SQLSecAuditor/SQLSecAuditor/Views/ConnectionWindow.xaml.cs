@@ -10,7 +10,6 @@ using System.Windows.Input;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Media;
-using System.Windows.Shell;
 
 namespace SqlSecAuditor.Views
 {
@@ -25,17 +24,10 @@ namespace SqlSecAuditor.Views
             Height = 600;
             Width = 760;
             ResizeMode = ResizeMode.NoResize;
+            WindowStyle = WindowStyle.None;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = GetBrush("AppWindowBackgroundBrush", Color.FromRgb(0xEC, 0xF0, 0xF1));
             DataContext = new ConnectionWindowViewModel();
-
-            WindowChrome.SetWindowChrome(this, new WindowChrome
-            {
-                CaptionHeight = 35,
-                CornerRadius = new CornerRadius(0),
-                GlassFrameThickness = new Thickness(0),
-                UseAeroCaptionButtons = false
-            });
 
             Content = BuildLayout();
         }
@@ -62,10 +54,14 @@ namespace SqlSecAuditor.Views
                 Height = 35,
                 Background = GetBrush("AppHeaderBackgroundBrush", Color.FromRgb(0x1E, 0x2B, 0x3C))
             };
-            WindowChrome.SetIsHitTestVisibleInChrome(titleBar, true);
-
             titleBar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             titleBar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            var dragArea = new Grid
+            {
+                Background = Brushes.Transparent
+            };
+            dragArea.MouseLeftButtonDown += TitleBar_MouseLeftButtonDown;
 
             var titlePanel = new StackPanel
             {
@@ -81,14 +77,14 @@ namespace SqlSecAuditor.Views
                 FontSize = 14,
                 VerticalAlignment = VerticalAlignment.Center
             });
-            titleBar.Children.Add(titlePanel);
+            dragArea.Children.Add(titlePanel);
+            titleBar.Children.Add(dragArea);
 
             var buttons = new StackPanel
             {
                 Orientation = Orientation.Horizontal,
                 VerticalAlignment = VerticalAlignment.Stretch
             };
-            WindowChrome.SetIsHitTestVisibleInChrome(buttons, true);
 
             buttons.Children.Add(CreateChromeButton("—", Minimize_Click, useSharedStyle: true, fontSize: 14, width: 45));
             buttons.Children.Add(CreateChromeButton("X", Close_Click, useSharedStyle: false, fontSize: 14, width: 45, hoverBrushFallback: Color.FromRgb(0xE7, 0x4C, 0x3C)));
@@ -307,7 +303,12 @@ namespace SqlSecAuditor.Views
             credentialsGrid.Children.Add(CreateBoundTextBox(nameof(ConnectionWindowViewModel.SqlUserName), 1, 0, 0, 8));
 
             credentialsGrid.Children.Add(CreateLabel("Password", 0, 1, 0, 12, 0));
-            var passwordBox = new PasswordBox { Margin = new Thickness(0, 0, 0, 0) };
+            var passwordBox = new PasswordBox
+            {
+                Margin = new Thickness(0),
+                Padding = new Thickness(0),
+                VerticalContentAlignment = VerticalAlignment.Center
+            };
             passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
             credentialsGrid.Children.Add(passwordBox);
             Grid.SetColumn(passwordBox, 1);
@@ -359,7 +360,6 @@ namespace SqlSecAuditor.Views
                 FontFamily = new FontFamily("Consolas"),
                 ClickMode = ClickMode.Release,
                 BorderThickness = new Thickness(0),
-                Background = Brushes.Transparent,
                 Foreground = Brushes.White
             };
 
@@ -423,7 +423,9 @@ namespace SqlSecAuditor.Views
         {
             var textBox = new TextBox
             {
-                Margin = new Thickness(0, 0, 0, bottom)
+                Margin = new Thickness(0, 0, 0, bottom),
+                Padding = new Thickness(0),
+                VerticalContentAlignment = VerticalAlignment.Center
             };
             textBox.SetBinding(TextBox.TextProperty, new Binding(path) { Mode = BindingMode.TwoWay, UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged });
             Grid.SetColumn(textBox, column);
@@ -445,6 +447,14 @@ namespace SqlSecAuditor.Views
             if (DataContext is ConnectionWindowViewModel viewModel && sender is PasswordBox passwordBox)
             {
                 viewModel.Password = passwordBox.Password;
+            }
+        }
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                DragMove();
             }
         }
 
