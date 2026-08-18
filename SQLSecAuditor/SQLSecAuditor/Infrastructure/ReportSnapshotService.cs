@@ -369,10 +369,11 @@ namespace SqlSecAuditor.Infrastructure
                         execution.Tables.Add(table);
                     }
 
-                    ApplyHighAvailabilityContextForViewer(execution);
                     viewerCategory.Scripts.Add(execution);
                 }
 
+                // Mirror the audit view: HA/DR results are evaluated in the context of the whole category.
+                AuditScoringService.ApplyHighAvailabilityContext(viewerCategory.Scripts);
                 result.Add(viewerCategory);
             }
 
@@ -385,22 +386,6 @@ namespace SqlSecAuditor.Infrastructure
             var scripts = snapshot.Categories.Sum(c => c.Scripts.Count);
             var tables = snapshot.Categories.Sum(c => c.Scripts.Sum(s => s.Tables.Count));
             return $"Snapshot: {snapshot.ServerName} [{snapshot.DatabaseName}] | Kategorie: {categories}, Skrypty: {scripts}, Tabele: {tables}";
-        }
-
-        private static void ApplyHighAvailabilityContextForViewer(ScriptExecutionResult script)
-        {
-            var allTables = script.Tables.Cast<DataTable>().ToList();
-            var hasAnyEnabled = allTables.Any(table =>
-                table.Rows.Cast<DataRow>().Any(row =>
-                    row.ItemArray.Any(cell =>
-                        cell != null &&
-                        cell != DBNull.Value &&
-                        string.Equals(cell.ToString()?.Trim(), "1", StringComparison.OrdinalIgnoreCase))));
-
-            foreach (var table in allTables)
-            {
-                table.ExtendedProperties["HaDrAnyEnabled"] = hasAnyEnabled;
-            }
         }
 
         private static void AddCategory(ReportSnapshot snapshot, string categoryName, IEnumerable<ScriptExecutionResult> results, string? error)
