@@ -1,3 +1,4 @@
+using SqlSecAuditor.Infrastructure;
 using SqlSecAuditor.Models;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,6 +34,7 @@ namespace SqlSecAuditor.Views
             var panel = new Grid();
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
@@ -44,8 +46,23 @@ namespace SqlSecAuditor.Views
             var sqlLabel = new TextBlock { Text = "TREŚĆ SQL", FontWeight = FontWeights.SemiBold, Foreground = Application.Current.TryFindResource("AppMutedTextBrush") as System.Windows.Media.Brush, Margin = new Thickness(0, 0, 0, 5) };
             Grid.SetRow(sqlLabel, 2);
             panel.Children.Add(sqlLabel);
-            _sqlBox = new TextBox { AcceptsReturn = true, AcceptsTab = true, FontFamily = new System.Windows.Media.FontFamily("Consolas"), VerticalScrollBarVisibility = ScrollBarVisibility.Auto, TextWrapping = TextWrapping.NoWrap, Margin = new Thickness(0, 24, 0, 14) };
-            Grid.SetRow(_sqlBox, 2);
+            _sqlBox = new TextBox
+            {
+                AcceptsReturn = true,
+                AcceptsTab = true,
+                FontFamily = new System.Windows.Media.FontFamily("Consolas"),
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                TextWrapping = TextWrapping.Wrap,
+                Height = double.NaN,
+                MinHeight = 180,
+                VerticalContentAlignment = VerticalAlignment.Top,
+                VerticalAlignment = VerticalAlignment.Stretch,
+                Padding = new Thickness(4, 2, 0, 0),
+                Margin = new Thickness(0, 0, 0, 14),
+                ToolTip = "Wklej lub wpisz zapytanie SQL"
+            };
+            Grid.SetRow(_sqlBox, 3);
             panel.Children.Add(_sqlBox);
 
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
@@ -54,7 +71,7 @@ namespace SqlSecAuditor.Views
             save.Click += Save_Click;
             buttons.Children.Add(cancel);
             buttons.Children.Add(save);
-            Grid.SetRow(buttons, 3);
+            Grid.SetRow(buttons, 4);
             panel.Children.Add(buttons);
 
             shell.Child = panel;
@@ -69,6 +86,16 @@ namespace SqlSecAuditor.Views
             {
                 MessageBox.Show(this, "Podaj nazwę i treść zapytania SQL.", "Własne zapytanie", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
+            }
+
+            var risks = DangerousSqlDetector.FindRisks(sql);
+            if (risks.Count > 0)
+            {
+                var warning = new DangerousQueryWarningDialog(risks) { Owner = this };
+                if (warning.ShowDialog() != true)
+                {
+                    return;
+                }
             }
 
             Query = new CustomQuery { Name = name, Sql = sql };
