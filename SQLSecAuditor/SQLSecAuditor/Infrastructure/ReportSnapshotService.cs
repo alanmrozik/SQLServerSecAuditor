@@ -60,6 +60,8 @@ namespace SqlSecAuditor.Infrastructure
             AddCategory(snapshot, "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
             AddCategory(snapshot, "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
+            AddCategory(snapshot, "Własne zapytania", instance.CustomQueryResults, instance.CustomQueriesError);
+
             return snapshot;
         }
 

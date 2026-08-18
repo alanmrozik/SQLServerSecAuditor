@@ -1669,6 +1669,30 @@
                                             </StackPanel>
                                         </Expander>
                                     </Border>
+                                    <Border Background="#F8F9F9" BorderBrush="#EAEDED" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                                        <Expander IsExpanded="False" HorizontalContentAlignment="Stretch">
+                                            <Expander.Header>
+                                                <Grid Margin="0,0,16,0" HorizontalAlignment="Stretch">
+                                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                                                    <TextBlock Text="Własne" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="+ Dodaj query" Click="AddCustomQuery_Click" Padding="12,4" Margin="12,0,0,0" Background="#566573" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                                                    <Button Grid.Column="2" Content="Uruchom wszystkie" Click="RunCustomQueries_Click" Padding="12,4" Margin="8,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                                                </Grid>
+                                            </Expander.Header>
+                                            <StackPanel Margin="0,10,0,0">
+                                                <TextBlock Text="Dodaj własne zapytania SQL, aby uruchamiać je dla wybranej instancji. Są zapisywane lokalnie w profilu użytkownika." Foreground="#566573" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                <TextBlock Text="Brak zapisanych własnych zapytań." Foreground="#7F8C8D" FontStyle="Italic">
+                                                    <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding DataContext.CustomQueries.Count, RelativeSource={RelativeSource AncestorType=Window}}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
+                                                </TextBlock>
+                                                <ItemsControl ItemsSource="{Binding DataContext.CustomQueries, RelativeSource={RelativeSource AncestorType=Window}}">
+                                                    <ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold"/><Button Grid.Column="1" Content="Uruchom" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Expander}}" Click="RunCustomQuery_Click" Padding="10,3" Margin="8,0,0,0"/><Button Grid.Column="2" Content="Usuń" Click="DeleteCustomQuery_Click" Padding="10,3" Margin="6,0,0,0" Foreground="#C0392B"/></Grid></DataTemplate></ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <TextBlock Text="Wykonywanie zapytań..." Foreground="#566573" FontStyle="Italic" Margin="0,8,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsCustomQueriesRunning}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                                                <TextBlock Text="{Binding CustomQueriesError}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                                <ItemsControl ItemsSource="{Binding CustomQueryResults}" Margin="0,8,0,0"><ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White"><StackPanel><TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/><TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap"/><ItemsControl ItemsSource="{Binding Tables}"><ItemsControl.ItemTemplate><DataTemplate><views:ScriptResultsControl Results="{Binding}"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
+                                            </StackPanel>
+                                        </Expander>
+                                    </Border>
                                 </StackPanel>
                             </ScrollViewer>
                         </Grid>

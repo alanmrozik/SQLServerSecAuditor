@@ -26,6 +26,8 @@ namespace SqlSecAuditor.Models
         private string? _databaseSecurityError;
         private bool _isHighAvailabilityDisasterRecoveryRunning;
         private string? _highAvailabilityDisasterRecoveryError;
+        private bool _isCustomQueriesRunning;
+        private string? _customQueriesError;
         private double _scoringPoints;
         private double _scoringRawPoints;
         private double _scoringMaxPoints;
@@ -61,6 +63,8 @@ namespace SqlSecAuditor.Models
         public ObservableCollection<ScriptExecutionResult> DatabaseSecurityResults { get; } = new();
 
         public ObservableCollection<ScriptExecutionResult> HighAvailabilityDisasterRecoveryResults { get; } = new();
+
+        public ObservableCollection<ScriptExecutionResult> CustomQueryResults { get; } = new();
 
         public double ScoringPoints
         {
@@ -265,6 +269,18 @@ namespace SqlSecAuditor.Models
             set => SetProperty(ref _highAvailabilityDisasterRecoveryError, value);
         }
 
+        public bool IsCustomQueriesRunning
+        {
+            get => _isCustomQueriesRunning;
+            set => SetProperty(ref _isCustomQueriesRunning, value);
+        }
+
+        public string? CustomQueriesError
+        {
+            get => _customQueriesError;
+            set => SetProperty(ref _customQueriesError, value);
+        }
+
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
         {
             if (Equals(field, value))
@@ -288,6 +304,8 @@ namespace SqlSecAuditor.Models
     public sealed class ScriptExecutionResult
     {
         public string ScriptName { get; set; } = string.Empty;
+
+        public Guid? CustomQueryId { get; set; }
 
         public ObservableCollection<string> Rows { get; } = new();
 

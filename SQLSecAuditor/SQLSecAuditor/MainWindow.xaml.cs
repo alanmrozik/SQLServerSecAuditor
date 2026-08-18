@@ -169,6 +169,35 @@ namespace SqlSecAuditor
             await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
         }
 
+        private void AddCustomQuery_Click(object sender, RoutedEventArgs e)
+        {
+            if (DataContext is not MainViewModel viewModel) return;
+            var dialog = new CustomQueryDialog { Owner = this };
+            if (dialog.ShowDialog() == true && dialog.Query is not null)
+                viewModel.AddCustomQuery(dialog.Query);
+        }
+
+        private async void RunCustomQueries_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is not Button { DataContext: SqlInstance instance } || DataContext is not MainViewModel viewModel) return;
+            await viewModel.RunCustomQueriesAsync(instance);
+        }
+
+        private async void RunCustomQuery_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is not Button { DataContext: CustomQuery query, Tag: SqlInstance instance } || DataContext is not MainViewModel viewModel) return;
+            await viewModel.RunCustomQueryAsync(instance, query);
+        }
+
+        private void DeleteCustomQuery_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is not Button { DataContext: CustomQuery query } || DataContext is not MainViewModel viewModel) return;
+            viewModel.DeleteCustomQuery(query);
+        }
+
         private async void RunMultipleCategories_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement { DataContext: SqlInstance instance })
@@ -192,6 +221,8 @@ namespace SqlSecAuditor
                 new RunCategoryOption { Key = "database", Name = "Bezpieczeństwo baz danych" },
                 new RunCategoryOption { Key = "hadr", Name = "Wysoka dostępność i odzyskiwanie po awarii" }
             };
+
+            options.Add(new RunCategoryOption { Key = "custom", Name = "Własne zapytania" });
 
             var dialog = new RunMultipleCategoriesDialog(options)
             {
@@ -231,6 +262,9 @@ namespace SqlSecAuditor
                         break;
                     case "hadr":
                         await viewModel.RunHighAvailabilityDisasterRecoveryAsync(instance);
+                        break;
+                    case "custom":
+                        await viewModel.RunCustomQueriesAsync(instance);
                         break;
                 }
             }
@@ -463,6 +497,8 @@ namespace SqlSecAuditor
             AddIfExecuted(options, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults.Count > 0);
             AddIfExecuted(options, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults.Count > 0);
             AddIfExecuted(options, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults.Count > 0);
+
+            AddIfExecuted(options, "custom_queries", "Własne zapytania", instance.CustomQueryResults.Count > 0);
 
             return options;
         }
