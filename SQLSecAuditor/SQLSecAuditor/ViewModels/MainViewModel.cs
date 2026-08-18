@@ -93,7 +93,7 @@ namespace SqlSecAuditor.ViewModels
             return null;
         }
 
-        private void ExecuteConnectNewDatabase(object obj)
+        private void ExecuteConnectNewDatabase(object? obj)
         {
             var dialog = new ConnectionWindow
             {
@@ -523,19 +523,6 @@ namespace SqlSecAuditor.ViewModels
             foreach (var result in instance.HighAvailabilityDisasterRecoveryResults) yield return result;
         }
 
-        private static string FormatReaderRow(SqlDataReader reader)
-        {
-            var values = new string[reader.FieldCount];
-            for (var i = 0; i < reader.FieldCount; i++)
-            {
-                var columnName = reader.GetName(i);
-                var value = reader.IsDBNull(i) ? "N/A" : reader.GetValue(i)?.ToString() ?? "N/A";
-                values[i] = $"{columnName}: {value}";
-            }
-
-            return string.Join(" | ", values);
-        }
-
         private static async Task<DataTable> ReadDataTableAsync(SqlDataReader reader)
         {
             var table = new DataTable();
@@ -553,11 +540,7 @@ namespace SqlSecAuditor.ViewModels
                     // ignore and use object
                 }
 
-                var columnName = reader.GetName(i);
-                if (string.IsNullOrWhiteSpace(columnName))
-                {
-                    columnName = $"Column{ i + 1 }";
-                }
+                var columnName = GetUniqueColumnName(table, reader.GetName(i), i);
                 table.Columns.Add(columnName, columnType);
             }
 
@@ -574,6 +557,20 @@ namespace SqlSecAuditor.ViewModels
             }
 
             return table;
+        }
+
+        private static string GetUniqueColumnName(DataTable table, string? proposedName, int ordinal)
+        {
+            var baseName = string.IsNullOrWhiteSpace(proposedName) ? $"Column{ordinal + 1}" : proposedName;
+            var name = baseName;
+            var suffix = 2;
+
+            while (table.Columns.Contains(name))
+            {
+                name = $"{baseName}_{suffix++}";
+            }
+
+            return name;
         }
 
         private static string RemoveBatchSeparators(string script)

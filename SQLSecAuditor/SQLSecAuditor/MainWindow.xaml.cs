@@ -18,6 +18,10 @@ namespace SqlSecAuditor
             DataContext = new MainViewModel();
         }
 
+        private void ShowAuditTab_Click(object sender, RoutedEventArgs e) => TopLevelTabControl.SelectedIndex = 0;
+
+        private void ShowSnapshotsTab_Click(object sender, RoutedEventArgs e) => TopLevelTabControl.SelectedIndex = 1;
+
         private async void GeneralInfoExpander_Expanded(object sender, RoutedEventArgs e)
         {
             if (sender is not Expander { DataContext: SqlInstance instance })
