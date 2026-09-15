@@ -29,7 +29,7 @@ namespace SqlSecAuditor.Views
             var panel = new StackPanel();
             panel.Children.Add(new TextBlock
             {
-                Text = "⚠ Potencjalnie niebezpieczne zapytanie",
+                Text = "⚠ Potentially dangerous query",
                 FontSize = 19,
                 FontWeight = FontWeights.SemiBold,
                 Foreground = new SolidColorBrush(Color.FromRgb(0xB4, 0x53, 0x09)),

@@ -220,7 +220,7 @@
             </Border>
             <!-- Top-level tabs: Audit (per instance) and Snapshots (global) -->
             <TabControl x:Name="TopLevelTabControl" Grid.Row="1" SelectedIndex="0" Style="{StaticResource PrimaryTabControlStyle}">
-                <!-- === TAB: AUDIT (per instancja) === -->
+                <!-- === TAB: AUDIT (per instance) === -->
                 <TabItem Header="Audit">
                     <Grid>
                         <Grid.ColumnDefinitions>

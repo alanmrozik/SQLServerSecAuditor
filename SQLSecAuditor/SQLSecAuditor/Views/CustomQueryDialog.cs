@@ -38,7 +38,7 @@ namespace SqlSecAuditor.Views
             panel.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             panel.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            panel.Children.Add(new TextBlock { Text = "NAZWA ZAPYTANIA", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = Application.Current.TryFindResource("AppMutedTextBrush") as System.Windows.Media.Brush, Margin = new Thickness(0, 0, 0, 5) });
+            panel.Children.Add(new TextBlock { Text = "QUERY NAME", FontSize = 12, FontWeight = FontWeights.SemiBold, Foreground = Application.Current.TryFindResource("AppMutedTextBrush") as System.Windows.Media.Brush, Margin = new Thickness(0, 0, 0, 5) });
             _nameBox = new TextBox { Margin = new Thickness(0, 0, 0, 14), ToolTip = "Query name" };
             Grid.SetRow(_nameBox, 1);
             panel.Children.Add(_nameBox);
@@ -60,7 +60,7 @@ namespace SqlSecAuditor.Views
                 VerticalAlignment = VerticalAlignment.Stretch,
                 Padding = new Thickness(4, 2, 0, 0),
                 Margin = new Thickness(0, 0, 0, 14),
-                ToolTip = "Wklej lub wpisz zapytanie SQL"
+                ToolTip = "Paste or enter the SQL query"
             };
             Grid.SetRow(_sqlBox, 3);
             panel.Children.Add(_sqlBox);
