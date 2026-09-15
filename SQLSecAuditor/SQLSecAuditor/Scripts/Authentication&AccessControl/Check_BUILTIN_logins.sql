@@ -1,7 +1,7 @@
 /*
 Description:
-Grupy wbudowane (BUILTIN), takie jak Administrators, Everyone, Authenticated Users, Guests itp., zazwyczaj obejmują bardzo szeroki krąg członków, co jest niezgodne z zasadą najlepszych praktyk, zakładającą przyznawanie dostępu do instancji programu SQL Server wyłącznie niezbędnym użytkownikom. 
-Grup tych nie należy wykorzystywać do nadawania jakiegokolwiek poziomu dostępu do instancji aparatu bazy danych SQL Server.
+Built-in groups such as Administrators, Everyone, Authenticated Users, and Guests often contain a broad membership, which conflicts with the least-privilege practice of granting SQL Server access only to users who need it.
+These groups should not be used to grant any level of access to a SQL Server Database Engine instance.
 */
 IF EXISTS
 (
@@ -23,7 +23,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Brak uprawnień przypisanych do grup wbudowanych BUILTIN' AS [Status];
+    SELECT 'No permissions are assigned to BUILTIN groups' AS [Status];
 END;
 /*Rationale:
 The	BUILTIN groups	(Administrators,	Everyone,	Authenticated	Users,	Guests,	etc.)	generally	

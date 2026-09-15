@@ -1,6 +1,6 @@
 /*
 Description:
-Dedykowane połączenie administratora (DAC) umożliwia administratorowi uzyskanie dostępu do działającego serwera w celu wykonania funkcji diagnostycznych lub instrukcji języka Transact-SQL, bądź też rozwiązania problemów z serwerem – nawet jeśli jest on zablokowany, działa w nietypowym stanie lub nie odpowiada na standardowe próby nawiązania połączenia z aparatem bazy danych SQL Server. 
+A dedicated administrator connection (DAC) lets an administrator access a running server for diagnostics, Transact-SQL commands, and troubleshooting even when the server is locked, in an unusual state, or not responding to standard Database Engine connections.
 */
 USE master;
 GO

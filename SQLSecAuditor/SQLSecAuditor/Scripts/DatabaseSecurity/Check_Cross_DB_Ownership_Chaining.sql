@@ -1,7 +1,7 @@
 /*
 Description:
-Opcja Cross DB Ownership Chaining steruje łańcuchowaniem własności między bazami danych na poziomie całej instancji (lub serwera).
-Po włączeniu ta opcja umożliwia członkowi roli db_owner w danej bazie danych uzyskanie dostępu do obiektów, których właścicielem jest login w dowolnej innej bazie danych, co prowadzi do niepotrzebnego ujawnienia informacji.
+Cross DB Ownership Chaining controls cross-database ownership chaining at the instance level.
+When enabled, a db_owner member in one database may access objects owned by the same login in another database, which can expose information unnecessarily.
 */
 IF EXISTS
 (
@@ -22,7 +22,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Żadna baza nie ma włączonego Cross DB Ownership Chaining' AS [Status];
+    SELECT 'Cross DB Ownership Chaining is disabled for all databases' AS [Status];
 END;
 /*Rationale:
 When	enabled,	this	option	allows	a	member	of	the	db_owner role	in	a	database	to	gain	

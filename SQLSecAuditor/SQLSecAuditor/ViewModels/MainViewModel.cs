@@ -21,6 +21,7 @@ namespace SqlSecAuditor.ViewModels
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public ObservableCollection<SqlInstance> Instances { get; set; }
+        public ObservableCollection<SavedConnection> SavedConnections { get; } = new();
         public ObservableCollection<CustomQuery> CustomQueries { get; } = new();
 
         public ObservableCollection<SnapshotComparisonRow> SnapshotComparisonRows { get; } = new();
@@ -45,14 +46,21 @@ namespace SqlSecAuditor.ViewModels
         }
 
         public ICommand ConnectNewDatabaseCommand { get; }
+        public ICommand OpenSavedConnectionCommand { get; }
+        public ICommand EditSavedConnectionCommand { get; }
+        public ICommand DeleteSavedConnectionCommand { get; }
 
         public MainViewModel(IConnectionDialogService connectionDialogService)
         {
             _connectionDialogService = connectionDialogService ?? throw new ArgumentNullException(nameof(connectionDialogService));
             Instances = new ObservableCollection<SqlInstance>();
             foreach (var query in CustomQueriesStore.Load()) CustomQueries.Add(query);
+            RefreshSavedConnections();
 
             ConnectNewDatabaseCommand = new RelayCommand(ExecuteConnectNewDatabase);
+            OpenSavedConnectionCommand = new RelayCommand(ExecuteOpenSavedConnection);
+            EditSavedConnectionCommand = new RelayCommand(ExecuteEditSavedConnection);
+            DeleteSavedConnectionCommand = new RelayCommand(ExecuteDeleteSavedConnection);
         }
 
         private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)
@@ -66,9 +74,52 @@ namespace SqlSecAuditor.ViewModels
         private void ExecuteConnectNewDatabase(object? obj)
         {
             var instance = _connectionDialogService.ShowConnectionDialog();
+            RefreshSavedConnections();
             if (instance is not null)
             {
                 Instances.Add(instance);
+                SelectedInstance = instance;
+            }
+        }
+
+        private void ExecuteOpenSavedConnection(object? parameter)
+        {
+            if (parameter is not SavedConnection savedConnection)
+            {
+                return;
+            }
+
+            var instance = _connectionDialogService.ShowConnectionDialog(savedConnection);
+            RefreshSavedConnections();
+            if (instance is not null)
+            {
+                Instances.Add(instance);
+                SelectedInstance = instance;
+            }
+        }
+
+        private void ExecuteEditSavedConnection(object? parameter)
+        {
+            ExecuteOpenSavedConnection(parameter);
+        }
+
+        private void ExecuteDeleteSavedConnection(object? parameter)
+        {
+            if (parameter is not SavedConnection savedConnection)
+            {
+                return;
+            }
+
+            RecentConnectionsStore.Delete(savedConnection.Id);
+            RefreshSavedConnections();
+        }
+
+        private void RefreshSavedConnections()
+        {
+            SavedConnections.Clear();
+            foreach (var connection in RecentConnectionsStore.Load())
+            {
+                SavedConnections.Add(connection);
             }
         }
 
@@ -112,14 +163,14 @@ namespace SqlSecAuditor.ViewModels
 
                 if (instance.GeneralInfoEntries.Count == 0)
                 {
-                    instance.GeneralInfoError = "Brak danych dla kategorii Informacje Ogólne.";
+                    instance.GeneralInfoError = "No data was returned for the General Information category.";
                 }
 
                 instance.IsGeneralInfoLoaded = true;
             }
             catch (Exception ex)
             {
-                instance.GeneralInfoError = $"Nie udało się pobrać informacji ogólnych: {ex.Message}";
+                instance.GeneralInfoError = $"Could not load general information: {ex.Message}";
             }
             finally
             {
@@ -229,7 +280,7 @@ namespace SqlSecAuditor.ViewModels
                                 {
                                     // Add an error table for this database
                                     var errTable = new DataTable { TableName = dbName };
-                                    errTable.Columns.Add("Błąd");
+                                    errTable.Columns.Add("Error");
                                     errTable.Rows.Add(dbEx.Message);
                                     perDbResult.Tables.Add(errTable);
                                 }

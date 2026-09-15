@@ -23,5 +23,5 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Brak replikacji' AS [Status];
+    SELECT 'No replication' AS [Status];
 END;

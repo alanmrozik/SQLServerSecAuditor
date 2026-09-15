@@ -1,6 +1,6 @@
 /*
 Description:
-Funkcja ta może zostać wykorzystana do zdalnego uzyskiwania dostępu i eksploatacji luk w zabezpieczeniach zdalnych instancji serwera SQL oraz do uruchamiania niebezpiecznych funkcji języka Visual Basic for Applications.
+This feature can be used to access and exploit vulnerabilities in remote SQL Server instances and to run unsafe Visual Basic for Applications functions.
 */
 SELECT 
     name, 

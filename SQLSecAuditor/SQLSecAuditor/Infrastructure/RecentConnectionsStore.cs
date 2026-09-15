@@ -2,15 +2,12 @@ using SqlSecAuditor.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 
 namespace SqlSecAuditor.Infrastructure
 {
     public static class RecentConnectionsStore
     {
-        private const int MaxEntries = 10;
-
         private static readonly string FilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "SQLServerSecAuditor",
@@ -24,7 +21,23 @@ namespace SqlSecAuditor.Infrastructure
                     return new List<SavedConnection>();
 
                 var json = File.ReadAllText(FilePath);
-                return JsonSerializer.Deserialize<List<SavedConnection>>(json) ?? new List<SavedConnection>();
+                var connections = JsonSerializer.Deserialize<List<SavedConnection>>(json) ?? new List<SavedConnection>();
+                var requiresMigration = false;
+                foreach (var connection in connections)
+                {
+                    if (connection.Id == Guid.Empty)
+                    {
+                        connection.Id = Guid.NewGuid();
+                        requiresMigration = true;
+                    }
+                }
+
+                if (requiresMigration)
+                {
+                    Write(connections);
+                }
+
+                return connections;
             }
             catch
             {
@@ -38,26 +51,56 @@ namespace SqlSecAuditor.Infrastructure
             {
                 var list = Load();
 
-                // Remove duplicate (same server+port+db+auth mode+user)
-                list.RemoveAll(c =>
-                    string.Equals(c.ServerName, entry.ServerName, StringComparison.OrdinalIgnoreCase) &&
-                    c.Port == entry.Port &&
-                    string.Equals(c.DatabaseName, entry.DatabaseName, StringComparison.OrdinalIgnoreCase) &&
-                    c.UseWindowsAuthentication == entry.UseWindowsAuthentication &&
-                    string.Equals(c.SqlUserName, entry.SqlUserName, StringComparison.OrdinalIgnoreCase));
+                if (entry.Id == Guid.Empty)
+                {
+                    entry.Id = Guid.NewGuid();
+                }
 
-                list.Insert(0, entry);
+                var existing = list.Find(c => c.Id == entry.Id) ?? list.Find(c => IsEquivalent(c, entry));
+                if (existing is not null)
+                {
+                    entry.Id = existing.Id;
+                }
 
-                if (list.Count > MaxEntries)
-                    list = list.Take(MaxEntries).ToList();
+                // Keep saved connections unique and order them by most recent save/use.
+                list.RemoveAll(c => c.Id == entry.Id || IsEquivalent(c, entry));
+                list.Insert(0, entry.Copy());
 
-                Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-                File.WriteAllText(FilePath, JsonSerializer.Serialize(list, new JsonSerializerOptions { WriteIndented = true }));
+                Write(list);
             }
             catch
             {
-                // Silently ignore persistence errors — not critical
+                // Persistence is helpful but must never prevent connecting.
             }
+        }
+
+        public static void Delete(Guid id)
+        {
+            try
+            {
+                var list = Load();
+                list.RemoveAll(c => c.Id == id);
+                Write(list);
+            }
+            catch
+            {
+                // Persistence failures are non-fatal for the running application.
+            }
+        }
+
+        private static bool IsEquivalent(SavedConnection left, SavedConnection right) =>
+            string.Equals(left.ServerName, right.ServerName, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(left.Port, right.Port, StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(left.DatabaseName, right.DatabaseName, StringComparison.OrdinalIgnoreCase) &&
+            left.UseWindowsAuthentication == right.UseWindowsAuthentication &&
+            string.Equals(left.SqlUserName, right.SqlUserName, StringComparison.OrdinalIgnoreCase);
+
+        private static void Write(IEnumerable<SavedConnection> connections)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+            File.WriteAllText(
+                FilePath,
+                JsonSerializer.Serialize(connections, new JsonSerializerOptions { WriteIndented = true }));
         }
     }
 }

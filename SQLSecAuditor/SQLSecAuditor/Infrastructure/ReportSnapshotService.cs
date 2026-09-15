@@ -39,7 +39,7 @@ namespace SqlSecAuditor.Infrastructure
 
             if (instance.IsGeneralInfoLoaded)
             {
-                var general = new SnapshotCategory { Name = "Informacje Ogólne" };
+                var general = new SnapshotCategory { Name = "General Information" };
                 var script = new SnapshotScript { Name = "GeneralInfoAboutServer" };
                 var table = new SnapshotTable { Name = "General" };
                 table.Columns.Add("Label");
@@ -51,16 +51,16 @@ namespace SqlSecAuditor.Infrastructure
                 snapshot.Categories.Add(general);
             }
 
-            AddCategory(snapshot, "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
-            AddCategory(snapshot, "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
-            AddCategory(snapshot, "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
-            AddCategory(snapshot, "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
-            AddCategory(snapshot, "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
-            AddCategory(snapshot, "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
-            AddCategory(snapshot, "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
-            AddCategory(snapshot, "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
+            AddCategory(snapshot, "Maintenance and Integrity", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
+            AddCategory(snapshot, "Network and Connectivity", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
+            AddCategory(snapshot, "Surface Area Reduction", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
+            AddCategory(snapshot, "Auditing and Monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
+            AddCategory(snapshot, "Authentication and Access Control", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
+            AddCategory(snapshot, "Authorization and Permissions", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
+            AddCategory(snapshot, "Database Security", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
+            AddCategory(snapshot, "High Availability and Disaster Recovery", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
-            AddCategory(snapshot, "Własne zapytania", instance.CustomQueryResults, instance.CustomQueriesError);
+            AddCategory(snapshot, "Custom Queries", instance.CustomQueryResults, instance.CustomQueriesError);
 
             return snapshot;
         }
@@ -218,13 +218,13 @@ namespace SqlSecAuditor.Infrastructure
         public static string BuildComparisonSummary(IReadOnlyCollection<SnapshotComparisonRow> rows)
         {
             if (rows.Count == 0)
-                return "Brak różnic.";
+                return "No differences found.";
 
             var added = rows.Count(r => r.ChangeType == "Added");
             var removed = rows.Count(r => r.ChangeType == "Removed");
             var changed = rows.Count(r => r.ChangeType == "Changed");
 
-            return $"Różnice: +{added} / -{removed} / ~{changed} (razem: {rows.Count})";
+            return $"Differences: +{added} / -{removed} / ~{changed} (total: {rows.Count})";
         }
 
         private static void CompareScripts(List<SnapshotComparisonRow> rows, string categoryName, SnapshotCategory current, SnapshotCategory other)
@@ -385,7 +385,7 @@ namespace SqlSecAuditor.Infrastructure
             var categories = snapshot.Categories.Count;
             var scripts = snapshot.Categories.Sum(c => c.Scripts.Count);
             var tables = snapshot.Categories.Sum(c => c.Scripts.Sum(s => s.Tables.Count));
-            return $"Snapshot: {snapshot.ServerName} [{snapshot.DatabaseName}] | Kategorie: {categories}, Skrypty: {scripts}, Tabele: {tables}";
+            return $"Snapshot: {snapshot.ServerName} [{snapshot.DatabaseName}] | Categories: {categories}, Scripts: {scripts}, Tables: {tables}";
         }
 
         private static void AddCategory(ReportSnapshot snapshot, string categoryName, IEnumerable<ScriptExecutionResult> results, string? error)

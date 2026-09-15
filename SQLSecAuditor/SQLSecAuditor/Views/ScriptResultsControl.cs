@@ -45,7 +45,7 @@ namespace SqlSecAuditor.Views
 
             if (Results == null || Results.Columns.Count == 0)
             {
-                root.Children.Add(new TextBlock { Text = "Brak wyników.", Margin = new Thickness(10) });
+                root.Children.Add(new TextBlock { Text = "No results.", Margin = new Thickness(10) });
                 Content = root;
                 return;
             }
@@ -75,7 +75,7 @@ namespace SqlSecAuditor.Views
 
             if (Results.Rows.Count == 0)
             {
-                root.Children.Add(new TextBlock { Text = "Brak wierszy.", Margin = new Thickness(6, 4, 0, 0), Foreground = Brushes.Gray });
+                root.Children.Add(new TextBlock { Text = "No rows.", Margin = new Thickness(6, 4, 0, 0), Foreground = Brushes.Gray });
             }
 
             Content = root;

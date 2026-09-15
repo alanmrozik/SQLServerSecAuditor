@@ -1,7 +1,7 @@
 /*
 Description:
-Zapewnienie zgodności kont logowania SQL z zasadami dotyczącymi bezpiecznych haseł, określonymi w standardzie Windows Server Benchmark, gwarantuje, że hasła dla kont z uprawnieniami sysadmin będą regularnie zmieniane, co pomoże zapobiec ich przejęciu w wyniku ataku typu brute-force. 
-Uprawnienie CONTROL SERVER jest równoważne uprawnieniu sysadmin, dlatego konta je posiadające również powinny podlegać wymogowi okresowej zmiany hasła.
+Applying the secure-password requirements from the Windows Server Benchmark to SQL logins ensures that passwords for sysadmin accounts are changed regularly and helps protect them from brute-force attacks.
+CONTROL SERVER is equivalent to sysadmin, so accounts with this permission should also require periodic password changes.
 */
 SELECT l.[name] as [Login], 
 'sysadmin membership' AS 'Access Method',

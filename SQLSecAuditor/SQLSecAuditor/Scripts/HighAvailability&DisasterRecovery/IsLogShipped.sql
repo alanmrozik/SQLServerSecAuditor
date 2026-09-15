@@ -22,5 +22,5 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Brak Log shipping' AS [Status];
+    SELECT 'No log shipping' AS [Status];
 END;

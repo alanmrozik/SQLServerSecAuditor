@@ -20,12 +20,22 @@ namespace SqlSecAuditor.Infrastructure
 
         public static void Export(string filePath, SqlInstance instance)
         {
-            Export(filePath, instance, null);
+            Export(filePath, instance, PdfReportType.Audit, null);
         }
 
         public static void Export(string filePath, SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
         {
+            Export(filePath, instance, PdfReportType.Audit, selectedCategoryKeys);
+        }
+
+        public static void Export(
+            string filePath,
+            SqlInstance instance,
+            PdfReportType reportType,
+            IReadOnlyCollection<string>? selectedCategoryKeys)
+        {
             var categories = BuildCategories(instance, selectedCategoryKeys).ToList();
+            var reportDate = DateTime.Now;
 
             Document.Create(container =>
             {
@@ -38,75 +48,113 @@ namespace SqlSecAuditor.Infrastructure
                     page.Header().Column(header =>
                     {
                         header.Spacing(4);
-                        header.Item().Text("Raport Audytu").FontSize(20).SemiBold();
-                        header.Item().Text($"Instancja: {instance.ServerName} | Baza: {instance.DatabaseName}")
+                        header.Item().Text(GetReportTitle(reportType)).FontSize(20).SemiBold();
+                        header.Item().Text($"Instance: {instance.ServerName} | Database: {instance.DatabaseName}")
                             .FontSize(11)
                             .FontColor(Colors.Blue.Darken2);
+                        header.Item().Text($"Report date: {reportDate:yyyy-MM-dd HH:mm:ss}")
+                            .FontSize(9)
+                            .FontColor(Colors.Grey.Darken1);
                     });
 
                     page.Content().Column(content =>
                     {
                         content.Spacing(12);
 
-                        foreach (var category in categories)
+                        if (reportType is PdfReportType.Combined or PdfReportType.Scoring)
                         {
-                            content.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(col =>
+                            content.Item().Element(scoring => RenderScoring(scoring, instance));
+                        }
+
+                        if (reportType is PdfReportType.Combined or PdfReportType.Audit)
+                        {
+                            foreach (var category in categories)
                             {
-                                col.Spacing(8);
-                                col.Item().Text(category.Title).FontSize(14).SemiBold();
-
-                                if (!string.IsNullOrWhiteSpace(category.Error))
+                                content.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Padding(10).Column(col =>
                                 {
-                                    col.Item().Text(category.Error).FontColor(Colors.Red.Darken2);
-                                }
+                                    col.Spacing(8);
+                                    col.Item().Text(category.Title).FontSize(14).SemiBold();
 
-                foreach (var script in category.Scripts)
-                                {
-                                    col.Item().PaddingTop(4).Column(scriptCol =>
+                                    if (!string.IsNullOrWhiteSpace(category.Error))
                                     {
-                                        scriptCol.Spacing(5);
-                        scriptCol.Item().Text(script.ScriptName).SemiBold();
+                                        col.Item().Text(category.Error).FontColor(Colors.Red.Darken2);
+                                    }
 
-                        if (!string.IsNullOrWhiteSpace(script.Error))
-                        {
-                            // leave error handling below
-                        }
-
-                        // include script description if present
-                        if (!string.IsNullOrWhiteSpace(script is ExportScript es ? es.Description : null))
-                        {
-                            scriptCol.Item().Text((script as ExportScript)?.Description ?? string.Empty)
-                                .FontSize(9)
-                                .FontColor(Colors.Grey.Darken2);
-                        }
-
-                                        if (!string.IsNullOrWhiteSpace(script.Error))
+                                    foreach (var script in category.Scripts)
+                                    {
+                                        col.Item().PaddingTop(4).Column(scriptCol =>
                                         {
-                                            scriptCol.Item().Text(script.Error).FontColor(Colors.Red.Darken2);
-                                        }
+                                            scriptCol.Spacing(5);
+                                            scriptCol.Item().Text(script.ScriptName).SemiBold();
 
-                                        foreach (var table in script.Tables)
-                                        {
-                                            scriptCol.Item().Text(table.TableName ?? string.Empty).Italic().FontSize(8).FontColor(Colors.Grey.Darken1);
-                                            foreach (var columns in SplitColumnsForPdf(table))
+                                            if (!string.IsNullOrWhiteSpace(script.Description))
                                             {
-                                                if (table.Columns.Count > MaxColumnsPerTable)
-                                                {
-                                                    var first = table.Columns.IndexOf(columns[0]) + 1;
-                                                    var last = table.Columns.IndexOf(columns[^1]) + 1;
-                                                    scriptCol.Item().Text($"Kolumny {first}-{last} z {table.Columns.Count}").FontSize(8).FontColor(Colors.Grey.Darken1);
-                                                }
-
-                                                scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table, script.ScriptName, columns));
+                                                scriptCol.Item().Text(script.Description)
+                                                    .FontSize(9)
+                                                    .FontColor(Colors.Grey.Darken2);
                                             }
-                                        }
-                                    });
-                                }
-                            });
+
+                                            if (!string.IsNullOrWhiteSpace(script.Error))
+                                            {
+                                                scriptCol.Item().Text(script.Error).FontColor(Colors.Red.Darken2);
+                                            }
+
+                                            foreach (var table in script.Tables)
+                                            {
+                                                scriptCol.Item().Text(table.TableName ?? string.Empty).Italic().FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                foreach (var columns in SplitColumnsForPdf(table))
+                                                {
+                                                    if (table.Columns.Count > MaxColumnsPerTable)
+                                                    {
+                                                        var first = table.Columns.IndexOf(columns[0]) + 1;
+                                                        var last = table.Columns.IndexOf(columns[^1]) + 1;
+                                                        scriptCol.Item().Text($"Columns {first}-{last} of {table.Columns.Count}").FontSize(8).FontColor(Colors.Grey.Darken1);
+                                                    }
+
+                                                    scriptCol.Item().Table(tableDescriptor => RenderDataTable(tableDescriptor, table, script.ScriptName, columns));
+                                                }
+                                            }
+                                        });
+                                    }
+                                });
+                            }
                         }
+                    });
+
+                    page.Footer().AlignCenter().Text(text =>
+                    {
+                        text.Span("Page ");
+                        text.CurrentPageNumber();
+                        text.Span(" of ");
+                        text.TotalPages();
                     });
                 });
             }).GeneratePdf(filePath);
+        }
+
+        private static string GetReportTitle(PdfReportType reportType) => reportType switch
+        {
+            PdfReportType.Audit => "Security Audit Report",
+            PdfReportType.Scoring => "Security Scoring Report",
+            _ => "Security Audit and Scoring Report"
+        };
+
+        private static void RenderScoring(IContainer container, SqlInstance instance)
+        {
+            container.Border(1).BorderColor(Colors.Blue.Lighten3).Background(Colors.Blue.Lighten5).Padding(12).Column(column =>
+            {
+                column.Spacing(6);
+                column.Item().Text("Security Score").FontSize(15).SemiBold();
+                column.Item().Text($"{instance.ScoringPercentDisplay} ({instance.ScoringDisplay})")
+                    .FontSize(20)
+                    .SemiBold()
+                    .FontColor(Colors.Blue.Darken2);
+                column.Item().Text($"Raw score: {instance.ScoringRawPoints:0.##} | Minimum: {instance.ScoringMinPoints:0.##} | Maximum: {instance.ScoringMaxPoints:0.##}");
+                column.Item().Text($"Green results: {instance.ScoringGreenCount}   Yellow results: {instance.ScoringYellowCount}   Red results: {instance.ScoringRedCount}");
+                column.Item().Text("Green results add one point, red results subtract one point, and yellow results require administrator review without changing the score.")
+                    .FontSize(8)
+                    .FontColor(Colors.Grey.Darken1);
+            });
         }
 
         private static IEnumerable<ExportCategory> BuildCategories(SqlInstance instance, IReadOnlyCollection<string>? selectedCategoryKeys)
@@ -130,7 +178,7 @@ namespace SqlSecAuditor.Infrastructure
                 categories.Add(new ExportCategory
                 {
                     Key = "general",
-                    Title = "Informacje Ogólne",
+                    Title = "General Information",
                     Scripts = new[]
                     {
                         new ExportScript
@@ -142,16 +190,16 @@ namespace SqlSecAuditor.Infrastructure
                 });
             }
 
-            AddCategoryIfExecuted(categories, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
-            AddCategoryIfExecuted(categories, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
-            AddCategoryIfExecuted(categories, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
-            AddCategoryIfExecuted(categories, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
-            AddCategoryIfExecuted(categories, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
-            AddCategoryIfExecuted(categories, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
-            AddCategoryIfExecuted(categories, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
-            AddCategoryIfExecuted(categories, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
+            AddCategoryIfExecuted(categories, "maintenance_integrity", "Maintenance and Integrity", instance.MaintenanceIntegrityResults, instance.MaintenanceIntegrityError);
+            AddCategoryIfExecuted(categories, "network_connectivity", "Network and Connectivity", instance.NetworkConnectivityResults, instance.NetworkConnectivityError);
+            AddCategoryIfExecuted(categories, "surface_area_reduction", "Surface Area Reduction", instance.SurfaceAreaReductionResults, instance.SurfaceAreaReductionError);
+            AddCategoryIfExecuted(categories, "auditing_monitoring", "Auditing and Monitoring", instance.AuditingMonitoringResults, instance.AuditingMonitoringError);
+            AddCategoryIfExecuted(categories, "authentication_access_control", "Authentication and Access Control", instance.AuthenticationAccessControlResults, instance.AuthenticationAccessControlError);
+            AddCategoryIfExecuted(categories, "authorization_permissions", "Authorization and Permissions", instance.AuthorizationPermissionsResults, instance.AuthorizationPermissionsError);
+            AddCategoryIfExecuted(categories, "database_security", "Database Security", instance.DatabaseSecurityResults, instance.DatabaseSecurityError);
+            AddCategoryIfExecuted(categories, "high_availability_disaster_recovery", "High Availability and Disaster Recovery", instance.HighAvailabilityDisasterRecoveryResults, instance.HighAvailabilityDisasterRecoveryError);
 
-            AddCategoryIfExecuted(categories, "custom_queries", "Własne zapytania", instance.CustomQueryResults, instance.CustomQueriesError);
+            AddCategoryIfExecuted(categories, "custom_queries", "Custom Queries", instance.CustomQueryResults, instance.CustomQueriesError);
 
             return selected is null ? categories : categories.Where(c => selected.Contains(c.Key));
         }
@@ -211,7 +259,7 @@ namespace SqlSecAuditor.Infrastructure
 
             if (dataTable.Rows.Count == 0)
             {
-                table.Cell().ColumnSpan((uint)(columns.Count + 1)).Padding(4).Text("Brak wierszy.").FontColor(Colors.Grey.Darken1);
+                table.Cell().ColumnSpan((uint)(columns.Count + 1)).Padding(4).Text("No rows.").FontColor(Colors.Grey.Darken1);
                 return;
             }
 

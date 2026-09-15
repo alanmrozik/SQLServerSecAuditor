@@ -99,6 +99,27 @@ namespace SqlSecAuditor
             viewModel.DeleteCustomQuery(query);
         }
 
+        private void DeleteSavedConnection_Click(object sender, RoutedEventArgs e)
+        {
+            e.Handled = true;
+            if (sender is not Button { DataContext: SavedConnection connection } || DataContext is not MainViewModel viewModel)
+            {
+                return;
+            }
+
+            var answer = MessageBox.Show(
+                this,
+                $"Delete the saved connection '{connection.DisplayLabel}'?",
+                "Delete connection",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (answer == MessageBoxResult.Yes)
+            {
+                viewModel.DeleteSavedConnectionCommand.Execute(connection);
+            }
+        }
+
         private async void RunMultipleCategories_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not FrameworkElement { DataContext: SqlInstance instance })
@@ -113,17 +134,17 @@ namespace SqlSecAuditor
 
             var options = new ObservableCollection<RunCategoryOption>
             {
-                new RunCategoryOption { Key = "maintenance", Name = "Utrzymanie i integralność" },
-                new RunCategoryOption { Key = "network", Name = "Sieć i łączność" },
-                new RunCategoryOption { Key = "surface", Name = "Redukcja powierzchni ataku" },
-                new RunCategoryOption { Key = "auditing", Name = "Audyt i monitoring" },
-                new RunCategoryOption { Key = "authentication", Name = "Uwierzytelnianie i kontrola dostępu" },
-                new RunCategoryOption { Key = "authorization", Name = "Autoryzacja i uprawnienia" },
-                new RunCategoryOption { Key = "database", Name = "Bezpieczeństwo baz danych" },
-                new RunCategoryOption { Key = "hadr", Name = "Wysoka dostępność i odzyskiwanie po awarii" }
+                new RunCategoryOption { Key = "maintenance", Name = "Maintenance and Integrity" },
+                new RunCategoryOption { Key = "network", Name = "Network and Connectivity" },
+                new RunCategoryOption { Key = "surface", Name = "Surface Area Reduction" },
+                new RunCategoryOption { Key = "auditing", Name = "Auditing and Monitoring" },
+                new RunCategoryOption { Key = "authentication", Name = "Authentication and Access Control" },
+                new RunCategoryOption { Key = "authorization", Name = "Authorization and Permissions" },
+                new RunCategoryOption { Key = "database", Name = "Database Security" },
+                new RunCategoryOption { Key = "hadr", Name = "High Availability and Disaster Recovery" }
             };
 
-            options.Add(new RunCategoryOption { Key = "custom", Name = "Własne zapytania" });
+            options.Add(new RunCategoryOption { Key = "custom", Name = "Custom Queries" });
 
             var dialog = new RunMultipleCategoriesDialog(options)
             {
@@ -194,7 +215,7 @@ namespace SqlSecAuditor
             }
 
             ReportSnapshotService.SaveSnapshot(dialog.FileName, instance);
-            MessageBox.Show(this, "Snapshot został zapisany.", "Snapshot", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(this, "Snapshot saved successfully.", "Snapshot", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CompareSnapshot_Click(object sender, RoutedEventArgs e)
@@ -205,7 +226,7 @@ namespace SqlSecAuditor
             var instance = viewModel.SelectedInstance;
             if (instance is null)
             {
-                MessageBox.Show(this, "Najpierw wybierz instancję z listy po lewej stronie (zakładka Audit).", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show(this, "Select an instance from the list on the left in the Audit tab first.", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -228,12 +249,12 @@ namespace SqlSecAuditor
                     viewModel.SnapshotComparisonRows.Add(row);
 
                 viewModel.SnapshotComparisonSummary = rows.Count == 0
-                    ? "Brak różnic."
+                    ? "No differences found."
                     : ReportSnapshotService.BuildComparisonSummary(rows);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Nie udało się porównać snapshotu:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"Could not compare the snapshot:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -244,7 +265,7 @@ namespace SqlSecAuditor
 
             var dialogA = new OpenFileDialog
             {
-                Title = "Wybierz pierwszy snapshot (Snapshot A)",
+                Title = "Select the first snapshot (Snapshot A)",
                 Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
             };
 
@@ -253,7 +274,7 @@ namespace SqlSecAuditor
 
             var dialogB = new OpenFileDialog
             {
-                Title = "Wybierz drugi snapshot (Snapshot B)",
+                Title = "Select the second snapshot (Snapshot B)",
                 Filter = "Snapshot files (*.sqlsa.snapshot.json)|*.sqlsa.snapshot.json|JSON files (*.json)|*.json"
             };
 
@@ -271,12 +292,12 @@ namespace SqlSecAuditor
                     viewModel.SnapshotComparisonRows.Add(row);
 
                 viewModel.SnapshotComparisonSummary = rows.Count == 0
-                    ? "Brak różnic między snapshotami."
+                    ? "No differences found between the snapshots."
                     : $"[A: {System.IO.Path.GetFileName(dialogA.FileName)}  vs  B: {System.IO.Path.GetFileName(dialogB.FileName)}]  " + ReportSnapshotService.BuildComparisonSummary(rows);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Nie udało się porównać snapshotów:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"Could not compare the snapshots:\n\n{ex.Message}", "Snapshots", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -288,12 +309,6 @@ namespace SqlSecAuditor
             }
 
             var categoryOptions = GetExecutedCategoryOptions(instance);
-            if (categoryOptions.Count == 0)
-            {
-                MessageBox.Show(this, "Brak uruchomionych kategorii do eksportu.", "PDF", MessageBoxButton.OK, MessageBoxImage.Information);
-                return;
-            }
-
             var selectorDialog = new PdfExportCategoryDialog(categoryOptions)
             {
                 Owner = this
@@ -305,7 +320,7 @@ namespace SqlSecAuditor
             }
 
             var selectedKeys = selectorDialog.SelectedCategoryKeys;
-            if (selectedKeys.Count == 0)
+            if (selectorDialog.ReportType != PdfReportType.Scoring && selectedKeys.Count == 0)
             {
                 return;
             }
@@ -314,10 +329,17 @@ namespace SqlSecAuditor
             var safeServer = SanitizeFileNamePart(instance.ServerName);
             var safeDatabase = SanitizeFileNamePart(instance.DatabaseName);
 
+            var reportName = selectorDialog.ReportType switch
+            {
+                PdfReportType.Audit => "Security_Audit_Report",
+                PdfReportType.Scoring => "Security_Scoring_Report",
+                _ => "Security_Audit_and_Scoring_Report"
+            };
+
             var dialog = new SaveFileDialog
             {
                 Filter = "PDF files (*.pdf)|*.pdf",
-                FileName = $"Raport_Audytu_{safeServer}_{safeDatabase}_{dateStamp}"
+                FileName = $"{reportName}_{safeServer}_{safeDatabase}_{dateStamp}"
             };
 
             if (dialog.ShowDialog(this) != true)
@@ -325,8 +347,8 @@ namespace SqlSecAuditor
                 return;
             }
 
-            PdfReportExporter.Export(dialog.FileName, instance, selectedKeys);
-            MessageBox.Show(this, "Raport PDF został zapisany.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
+            PdfReportExporter.Export(dialog.FileName, instance, selectorDialog.ReportType, selectedKeys);
+            MessageBox.Show(this, "PDF report saved successfully.", "Export", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void LoadSnapshotViewer_Click(object sender, RoutedEventArgs e)
@@ -355,7 +377,7 @@ namespace SqlSecAuditor
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Nie udało się wczytać snapshotu:\n\n{ex.Message}", "Snapshot viewer", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"Could not load the snapshot:\n\n{ex.Message}", "Snapshot viewer", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -387,19 +409,19 @@ namespace SqlSecAuditor
 
             if (instance.IsGeneralInfoLoaded)
             {
-                options.Add(new PdfExportCategoryOption { Key = "general", Name = "Informacje Ogólne" });
+                options.Add(new PdfExportCategoryOption { Key = "general", Name = "General Information" });
             }
 
-            AddIfExecuted(options, "maintenance_integrity", "Utrzymanie i integralność", instance.MaintenanceIntegrityResults.Count > 0);
-            AddIfExecuted(options, "network_connectivity", "Sieć i łączność", instance.NetworkConnectivityResults.Count > 0);
-            AddIfExecuted(options, "surface_area_reduction", "Redukcja powierzchni ataku", instance.SurfaceAreaReductionResults.Count > 0);
-            AddIfExecuted(options, "auditing_monitoring", "Audyt i monitoring", instance.AuditingMonitoringResults.Count > 0);
-            AddIfExecuted(options, "authentication_access_control", "Uwierzytelnianie i kontrola dostępu", instance.AuthenticationAccessControlResults.Count > 0);
-            AddIfExecuted(options, "authorization_permissions", "Autoryzacja i uprawnienia", instance.AuthorizationPermissionsResults.Count > 0);
-            AddIfExecuted(options, "database_security", "Bezpieczeństwo baz danych", instance.DatabaseSecurityResults.Count > 0);
-            AddIfExecuted(options, "high_availability_disaster_recovery", "Wysoka dostępność i odzyskiwanie po awarii", instance.HighAvailabilityDisasterRecoveryResults.Count > 0);
+            AddIfExecuted(options, "maintenance_integrity", "Maintenance and Integrity", instance.MaintenanceIntegrityResults.Count > 0);
+            AddIfExecuted(options, "network_connectivity", "Network and Connectivity", instance.NetworkConnectivityResults.Count > 0);
+            AddIfExecuted(options, "surface_area_reduction", "Surface Area Reduction", instance.SurfaceAreaReductionResults.Count > 0);
+            AddIfExecuted(options, "auditing_monitoring", "Auditing and Monitoring", instance.AuditingMonitoringResults.Count > 0);
+            AddIfExecuted(options, "authentication_access_control", "Authentication and Access Control", instance.AuthenticationAccessControlResults.Count > 0);
+            AddIfExecuted(options, "authorization_permissions", "Authorization and Permissions", instance.AuthorizationPermissionsResults.Count > 0);
+            AddIfExecuted(options, "database_security", "Database Security", instance.DatabaseSecurityResults.Count > 0);
+            AddIfExecuted(options, "high_availability_disaster_recovery", "High Availability and Disaster Recovery", instance.HighAvailabilityDisasterRecoveryResults.Count > 0);
 
-            AddIfExecuted(options, "custom_queries", "Własne zapytania", instance.CustomQueryResults.Count > 0);
+            AddIfExecuted(options, "custom_queries", "Custom Queries", instance.CustomQueryResults.Count > 0);
 
             return options;
         }
@@ -486,11 +508,11 @@ namespace SqlSecAuditor
             try
             {
                 Clipboard.SetText(result.FixScript);
-                MessageBox.Show("Skrypt naprawczy skopiowany do schowka.", "Skopiowano", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Remediation script copied to the clipboard.", "Copied", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Nie udało się skopiować do schowka: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Could not copy to the clipboard: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

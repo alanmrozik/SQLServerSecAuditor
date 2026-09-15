@@ -1,7 +1,7 @@
 /*
 Description:
-To ustawienie powoduje rejestrowanie nieudanych prób uwierzytelniania dla logowań do programu SQL Server w Errorlog.
-Ustawienie to było historycznie dostępne we wszystkich wersjach i edycjach programu SQL Server. Przed wprowadzeniem funkcji SQL Server Audit był to jedyny dostępny mechanizm rejestrowania logowań (zarówno udanych, jak i nieudanych).
+This setting records failed SQL Server login authentication attempts in the error log.
+It has historically been available in every SQL Server version and edition. Before SQL Server Audit, it was the only available mechanism for recording successful and failed logins.
 */
 EXEC xp_loginconfig 'audit level'; 
 /*Rationale:

@@ -1,6 +1,6 @@
 /*
 Description:
-Wyłączenie opcji Database Mail XPs ogranicza powierzchnię ataku na serwer SQL, eliminuje wektor ataku typu DoS oraz kanał służący do eksfiltracji danych z serwera bazy danych na host zdalny.
+Disabling Database Mail XPs reduces the SQL Server attack surface and removes a denial-of-service vector and a channel for exfiltrating database data to a remote host.
 
 */
 SELECT 

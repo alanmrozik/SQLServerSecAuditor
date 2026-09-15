@@ -1,7 +1,7 @@
 /*
 Description:
-Login przyjmuje tożsamość użytkownika typu „guest” (gość), gdy ma dostęp do serwera SQL, ale nie posiada dostępu do konkretnej bazy danych za pośrednictwem własnego konta, a baza ta zawiera konto użytkownika typu „guest”. 
-Odebranie uprawnienia CONNECT użytkownikowi typu „guest” gwarantuje, że login nie uzyska dostępu do informacji w bazie danych bez wyraźnego nadania takich uprawnień.
+A login assumes the guest user identity when it can access SQL Server but has no user account in a database where the guest user exists.
+Revoking CONNECT from guest ensures that a login cannot access database information unless permission is explicitly granted.
 */
 --USE <database_name>;
 --GO
@@ -28,7 +28,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Użytkownik guest nie posiada nadanych uprawnień CONNECT w bazie danych' AS [Status];
+    SELECT 'The guest user has no CONNECT permission in the database' AS [Status];
 END;
 /*
 Rationale:

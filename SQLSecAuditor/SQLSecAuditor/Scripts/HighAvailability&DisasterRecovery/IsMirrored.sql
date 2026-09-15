@@ -14,5 +14,5 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Brak database mirroring' AS [Status];
+    SELECT 'No database mirroring' AS [Status];
 END;

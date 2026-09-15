@@ -1,6 +1,6 @@
 /*
 Description:
-Włączenie tej opcji zwiększy powierzchnię ataku na serwer SQL i umożliwi użytkownikom wykonywanie funkcji w kontekście zabezpieczeń serwera SQL.
+Enabling this option increases the SQL Server attack surface and lets users run functions in the SQL Server security context.
 */
 SELECT 
     name as [Name], 

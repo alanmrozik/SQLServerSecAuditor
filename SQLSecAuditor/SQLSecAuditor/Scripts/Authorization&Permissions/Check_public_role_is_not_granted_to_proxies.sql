@@ -1,6 +1,6 @@
 /*
 Description:
-Przyznanie roli public dostępu do serwerów proxy agenta SQL umożliwiłoby wszystkim użytkownikom korzystanie z proxy, które może dysponować wysokimi uprawnieniami. Prawdopodobnie naruszyłoby to zasadę minimalnych uprawnień.
+Giving the public role access to SQL Server Agent proxies would let every user use a proxy that may have elevated permissions, likely violating the principle of least privilege.
 */
 USE [msdb]
 GO
@@ -26,7 +26,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Użytkownik public nie posiada dostępu do proxy SQL Server Agent' AS [Status];
+    SELECT 'The public role cannot access SQL Server Agent proxies' AS [Status];
 END;
 /*Rationale:
 Granting	access	to	SQL	Agent	proxies	for	the	public role	would	allow	all	users	to	utilize	the	

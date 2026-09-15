@@ -309,16 +309,16 @@ namespace SqlSecAuditor.Models
 
         public ObservableCollection<string> Rows { get; } = new();
 
-        // Kolekcja DataTable — jeden element na każdy zestaw wynikowy zwrócony przez skrypt
+        // One DataTable per result set returned by the script.
         public ObservableCollection<System.Data.DataTable> Tables { get; } = new();
 
-        // Opcjonalny skrypt naprawczy wyciągnięty z pliku .sql (z sekcji /*Fix: ... */)
+        // Optional remediation script extracted from the /*Fix: ... */ section.
         public string? FixScript { get; set; }
 
-        // Czy którykolwiek wiersz tego skryptu został oceniony jako Red
+        // Whether any row returned by this script was evaluated as red.
         public bool HasAnyRed { get; set; }
 
-        // Krótki opis/skrócona notatka wyciągnięta z nagłówka pliku .sql
+        // Short description extracted from the SQL file header.
         public string? Description { get; set; }
 
         public string? Error { get; set; }

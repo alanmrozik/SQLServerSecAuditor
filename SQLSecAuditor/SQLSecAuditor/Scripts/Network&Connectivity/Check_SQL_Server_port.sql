@@ -1,6 +1,6 @@
 /*
 Description:
-Korzystanie z portu innego niż domyślny (1433) pomaga chronić bazę danych przed atakami wymierzonymi w port domyślny.
+Using a port other than the default port 1433 helps protect the database from attacks targeting the default port.
 */
 /*
 Rationale:

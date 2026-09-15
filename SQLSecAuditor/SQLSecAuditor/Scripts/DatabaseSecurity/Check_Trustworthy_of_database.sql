@@ -1,6 +1,6 @@
 /*
 Description:
-Opcja bazy danych TRUSTWORTHY umożliwia obiektom bazy danych uzyskiwanie dostępu do obiektów w innych bazach danych w określonych okolicznościach.
+The TRUSTWORTHY database option allows database objects to access objects in other databases under specific circumstances.
 */
 IF EXISTS
 (
@@ -22,7 +22,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Żadna baza nie jest TRUSTWORTHY' AS [Status];
+    SELECT 'TRUSTWORTHY is disabled for all databases' AS [Status];
 END;
 /*Rationale:
 Provides	protection	from	malicious	CLR	assemblies	or	extended	procedures.

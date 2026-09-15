@@ -1,7 +1,7 @@
 /*
 Description:
-Parametr AUTO_CLOSE określa, czy dana baza danych jest zamykana po zakończeniu połączenia. 
-Jeśli jest on włączony, kolejne połączenia z tą bazą będą wymagały jej ponownego otwarcia oraz odbudowania odpowiednich pamięci podręcznych procedur.
+AUTO_CLOSE determines whether a database closes after the last connection ends.
+When enabled, subsequent connections must reopen the database and rebuild the relevant procedure caches.
 */
 IF EXISTS
 (
@@ -21,7 +21,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Żadna baza danych nie ma włączonego AUTO_CLOSED' AS [Status];
+    SELECT 'AUTO_CLOSE is disabled for all databases' AS [Status];
 END;
     /*Rationale:
 Because	authentication	of	users	for	contained	databases	occurs	within	the	database	not	at	

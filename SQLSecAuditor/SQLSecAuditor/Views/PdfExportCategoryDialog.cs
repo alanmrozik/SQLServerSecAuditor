@@ -11,14 +11,19 @@ namespace SqlSecAuditor.Views
     public class PdfExportCategoryDialog : Window
     {
         private readonly ObservableCollection<PdfExportCategoryOption> _options;
+        private readonly StackPanel _optionsPanel = new();
+        private readonly StackPanel _categoryList = new();
+        private readonly Button _exportButton = new();
+        private PdfReportType _reportType;
 
         public PdfExportCategoryDialog(ObservableCollection<PdfExportCategoryOption> options)
         {
             _options = options;
 
-            Title = "Wybierz kategorie do PDF";
+            _reportType = options.Count > 0 ? PdfReportType.Combined : PdfReportType.Scoring;
+            Title = "Export PDF report";
             Width = 560;
-            Height = 520;
+            Height = 650;
             ResizeMode = ResizeMode.NoResize;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = Application.Current.TryFindResource("AppWindowBackgroundBrush") as System.Windows.Media.Brush ?? System.Windows.Media.Brushes.White;
@@ -29,9 +34,12 @@ namespace SqlSecAuditor.Views
         public IReadOnlyList<string> SelectedCategoryKeys =>
             _options.Where(o => o.IsSelected).Select(o => o.Key).ToList();
 
+        public PdfReportType ReportType => _reportType;
+
         private UIElement BuildLayout()
         {
             var root = new Grid { Margin = new Thickness(16) };
+            root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -39,14 +47,21 @@ namespace SqlSecAuditor.Views
 
             root.Children.Add(new TextBlock
             {
-                Text = "Wybierz uruchomione kategorie, które mają trafić do PDF:",
+                Text = "Choose the report content:",
                 FontSize = 14,
                 FontWeight = FontWeights.SemiBold,
                 Margin = new Thickness(0, 0, 0, 10)
             });
 
+            var reportTypes = new StackPanel { Margin = new Thickness(0, 0, 0, 14) };
+            reportTypes.Children.Add(CreateReportTypeRadio("Combined audit and scoring report", PdfReportType.Combined, _reportType == PdfReportType.Combined));
+            reportTypes.Children.Add(CreateReportTypeRadio("Audit report", PdfReportType.Audit, false));
+            reportTypes.Children.Add(CreateReportTypeRadio("Scoring report", PdfReportType.Scoring, _reportType == PdfReportType.Scoring));
+            root.Children.Add(reportTypes);
+            Grid.SetRow(reportTypes, 1);
+
             var quickActions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
-            var selectAllButton = new Button { Content = "Zaznacz wszystko", Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 0, 8, 0) };
+            var selectAllButton = new Button { Content = "Select all", Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 0, 8, 0) };
             selectAllButton.Click += (_, __) =>
             {
                 foreach (var option in _options)
@@ -55,7 +70,7 @@ namespace SqlSecAuditor.Views
                 }
             };
 
-            var clearAllButton = new Button { Content = "Odznacz wszystko", Padding = new Thickness(10, 4, 10, 4) };
+            var clearAllButton = new Button { Content = "Clear all", Padding = new Thickness(10, 4, 10, 4) };
             clearAllButton.Click += (_, __) =>
             {
                 foreach (var option in _options)
@@ -66,11 +81,17 @@ namespace SqlSecAuditor.Views
 
             quickActions.Children.Add(selectAllButton);
             quickActions.Children.Add(clearAllButton);
-            root.Children.Add(quickActions);
-            Grid.SetRow(quickActions, 1);
+            _optionsPanel.Children.Add(new TextBlock
+            {
+                Text = "Audit categories:",
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+            _optionsPanel.Children.Add(quickActions);
+            root.Children.Add(_optionsPanel);
+            Grid.SetRow(_optionsPanel, 2);
 
             var scroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto };
-            var optionsPanel = new StackPanel();
             foreach (var option in _options)
             {
                 var cb = new CheckBox
@@ -87,24 +108,37 @@ namespace SqlSecAuditor.Views
                     UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
                 });
 
-                optionsPanel.Children.Add(cb);
+                _categoryList.Children.Add(cb);
             }
 
-            scroll.Content = optionsPanel;
+            if (_options.Count == 0)
+            {
+                _categoryList.Children.Add(new TextBlock
+                {
+                    Text = "No audit categories have been run yet. A scoring-only report is still available.",
+                    Foreground = System.Windows.Media.Brushes.Gray,
+                    TextWrapping = TextWrapping.Wrap
+                });
+            }
+
+            scroll.Content = _categoryList;
             root.Children.Add(scroll);
-            Grid.SetRow(scroll, 2);
+            Grid.SetRow(scroll, 3);
 
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
 
-            var cancelButton = new Button { Content = "Anuluj", Width = 100, Margin = new Thickness(0, 0, 8, 0) };
+            var cancelButton = new Button { Content = "Cancel", Width = 100, Margin = new Thickness(0, 0, 8, 0) };
             cancelButton.Click += (_, __) => DialogResult = false;
 
-            var exportButton = new Button { Content = "Eksportuj", Width = 120, Background = System.Windows.Media.Brushes.SteelBlue, Foreground = System.Windows.Media.Brushes.White };
-            exportButton.Click += (_, __) =>
+            _exportButton.Content = "Export";
+            _exportButton.Width = 120;
+            _exportButton.Background = System.Windows.Media.Brushes.SteelBlue;
+            _exportButton.Foreground = System.Windows.Media.Brushes.White;
+            _exportButton.Click += (_, __) =>
             {
-                if (_options.All(o => !o.IsSelected))
+                if (_reportType != PdfReportType.Scoring && _options.All(o => !o.IsSelected))
                 {
-                    MessageBox.Show(this, "Wybierz przynajmniej jedną kategorię.", "PDF", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(this, "Select at least one audit category.", "PDF", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -112,12 +146,44 @@ namespace SqlSecAuditor.Views
             };
 
             buttons.Children.Add(cancelButton);
-            buttons.Children.Add(exportButton);
+            buttons.Children.Add(_exportButton);
 
             root.Children.Add(buttons);
-            Grid.SetRow(buttons, 3);
+            Grid.SetRow(buttons, 4);
+
+            UpdateReportTypeState();
 
             return root;
+        }
+
+        private RadioButton CreateReportTypeRadio(string label, PdfReportType reportType, bool isChecked)
+        {
+            var radio = new RadioButton
+            {
+                Content = label,
+                GroupName = "PdfReportType",
+                IsChecked = isChecked,
+                Margin = new Thickness(0, 0, 0, 7),
+                Tag = reportType
+            };
+            radio.Checked += (_, __) =>
+            {
+                _reportType = reportType;
+                UpdateReportTypeState();
+            };
+            return radio;
+        }
+
+        private void UpdateReportTypeState()
+        {
+            if (_optionsPanel is null || _exportButton is null)
+            {
+                return;
+            }
+
+            _optionsPanel.IsEnabled = _reportType != PdfReportType.Scoring;
+            _categoryList.IsEnabled = _reportType != PdfReportType.Scoring;
+            _exportButton.IsEnabled = _reportType == PdfReportType.Scoring || _options.Count > 0;
         }
     }
 }

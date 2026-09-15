@@ -1,5 +1,5 @@
 /*Description:
-Zalecane jest zaimplementowanie conajmniej jednej z poniższych opcji HA/DR.
+At least one of the following high availability or disaster recovery options should be implemented.
 */
 IF CAST(SERVERPROPERTY('IsHadrEnabled') AS INT) = 1
 BEGIN
@@ -18,5 +18,5 @@ END
 ELSE
 BEGIN
     SELECT
-        'Brak Always On Availability Group' AS [Status];
+        'No Always On Availability Group' AS [Status];
 END;

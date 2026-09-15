@@ -1,6 +1,6 @@
 /*
 Description:
-Weryfikacja konfiguracji MSDTC (Microsoft Distributed Transaction Coordinator) jest istotna dla poprawnego działania mechanizmów wymagających komunikacji pomiędzy serwerami, takich jak Linked Server wykorzystujący transakcje rozproszone.
+Checking Microsoft Distributed Transaction Coordinator configuration is important for features that require communication between servers, such as linked servers using distributed transactions.
 */
 IF EXISTS (
     SELECT 1
@@ -17,5 +17,5 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'xp_cmdshell jest wyłączony' AS [Status];
+    SELECT 'xp_cmdshell is disabled' AS [Status];
 END;

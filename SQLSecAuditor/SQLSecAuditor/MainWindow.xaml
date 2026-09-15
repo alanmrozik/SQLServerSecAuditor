@@ -107,21 +107,21 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Własny systemowy pasek tytułu (Window Chrome) -->
+        <!-- Custom system title bar (Window Chrome) -->
         <Grid Grid.Row="0" Background="{StaticResource AppHeaderBackgroundBrush}" Height="35">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Tytuł aplikacji -->
+            <!-- Application title -->
             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                <!-- Można tu dodać logo/ikonkę, jeśli będzie -->
+                <!-- Application mark -->
                 <Border Width="20" Height="20" CornerRadius="5" Background="#2563EB" Margin="0,0,9,0"><TextBlock Text="S" Foreground="White" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
                 <TextBlock Text="SQLServerSecAuditor" Foreground="White" FontWeight="SemiBold" FontSize="14" VerticalAlignment="Center"/>
             </StackPanel>
 
-            <!-- Przyciski z kontrolkami okna systemowego (z obsługą w Code-Behind) -->
+            <!-- System window controls -->
             <StackPanel Grid.Column="1" Orientation="Horizontal" WindowChrome.IsHitTestVisibleInChrome="True">
                 <Button Content="—" Width="45" FontSize="14" FontFamily="Consolas" Click="Minimize_Click">
                     <Button.Style>
@@ -196,14 +196,14 @@
         </Grid>
 
         <Menu Grid.Row="1" Visibility="Collapsed">
-            <MenuItem Header="_Plik" Padding="10,5">
-                <MenuItem Header="_Połącz z nową bazą..." Command="{Binding ConnectNewDatabaseCommand}" Foreground="Black"/>
+            <MenuItem Header="_File" Padding="10,5">
+                <MenuItem Header="_New connection..." Command="{Binding ConnectNewDatabaseCommand}" Foreground="Black"/>
                 <Separator/>
-                <MenuItem Header="_Zakończ" Foreground="Black" Click="Close_Click"/>
+                <MenuItem Header="E_xit" Foreground="Black" Click="Close_Click"/>
             </MenuItem>
-            <MenuItem Header="_Edycja" Padding="10,5"/>
-            <MenuItem Header="_Widok" Padding="10,5"/>
-            <MenuItem Header="P_omoc" Padding="10,5"/>
+            <MenuItem Header="_Edit" Padding="10,5"/>
+            <MenuItem Header="_View" Padding="10,5"/>
+            <MenuItem Header="_Help" Padding="10,5"/>
         </Menu>
 
         <Grid Grid.Row="2" Background="{StaticResource AppWindowBackgroundBrush}">
@@ -218,7 +218,7 @@
                     </Button>
                 </StackPanel>
             </Border>
-            <!-- Zewnętrzny TabControl: Audit (per instancja) | Snapshots (globalny) -->
+            <!-- Top-level tabs: Audit (per instance) and Snapshots (global) -->
             <TabControl x:Name="TopLevelTabControl" Grid.Row="1" SelectedIndex="0" Style="{StaticResource PrimaryTabControlStyle}">
                 <!-- === TAB: AUDIT (per instancja) === -->
                 <TabItem Header="Audit">
@@ -238,10 +238,10 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <TextBlock Text="INSTANCJE" Foreground="#94A3B8" FontWeight="SemiBold" FontSize="11" Margin="8,12,0,18" HorizontalAlignment="Left"/>
+                                <TextBlock Text="INSTANCES" Foreground="#94A3B8" FontWeight="SemiBold" FontSize="11" Margin="8,12,0,18" HorizontalAlignment="Left"/>
 
-                                <!-- Przycisk do połączeń bazy będzie tu dla wygody użytkownika (oprócz menu) -->
-                                <Button Grid.Row="2" Content="+ Połącz z nową bazą"
+                                <!-- Convenient connection shortcut in addition to the menu command -->
+                                <Button Grid.Row="2" Content="+ New connection"
                                         Command="{Binding ConnectNewDatabaseCommand}"
                                         Background="#27AE60" Foreground="White" FontWeight="Bold"
                                         BorderThickness="0" Padding="10" Cursor="Hand" Margin="0,10,0,10">
@@ -280,7 +280,7 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <!-- Boczna strefa zakładek "nakłada" się na nasz panel w tle -->
+                            <!-- The instance tab strip is layered over the sidebar background -->
                             <StackPanel Grid.Column="0" IsItemsHost="True" Cursor="Arrow" Margin="0,50,0,80"/>
 
                             <Border Grid.Column="1" Background="{StaticResource AppPanelBackgroundBrush}" BorderBrush="{StaticResource AppAccentBorderBrush}" BorderThickness="1" CornerRadius="8" Margin="15" Padding="10">
@@ -343,12 +343,12 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Text="Raport Audytu" FontSize="24" FontFamily="Segoe UI" FontWeight="Light" Foreground="#7F8C8D"/>
+                            <TextBlock Grid.Row="0" Text="Security Audit Report" FontSize="24" FontFamily="Segoe UI" FontWeight="Light" Foreground="#7F8C8D"/>
 
                             <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5,0,20">
-                                <TextBlock Text="Instancja: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50"/>
+                                <TextBlock Text="Instance: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50"/>
                                 <TextBlock Text="{Binding ServerName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#E74C3C"/>
-                                <TextBlock Text="  |  Baza: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50" Margin="8,0,0,0"/>
+                                <TextBlock Text="  |  Database: " FontSize="18" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#2C3E50" Margin="8,0,0,0"/>
                                 <TextBlock Text="{Binding DatabaseName}" FontSize="18" FontFamily="Segoe UI" FontWeight="Bold" Foreground="#2980B9"/>
                             </StackPanel>
 
@@ -368,7 +368,7 @@
                                             </Grid.RowDefinitions>
 
                                             <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,10">
-                                                <Button Content="Uruchom wiele"
+                                                <Button Content="Run multiple"
                                                         Padding="15,8"
                                                         Background="#1F618D" Foreground="White" FontWeight="Bold"
                                                         BorderThickness="0" Cursor="Hand"
@@ -387,11 +387,11 @@
                                         <Expander IsExpanded="False" HorizontalContentAlignment="Stretch" Expanded="GeneralInfoExpander_Expanded">
                                             <Expander.Header>
                                                 <Grid Margin="0,0,16,0" HorizontalAlignment="Stretch">
-                                                    <TextBlock Text="Informacje Ogólne" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Text="General Information" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
                                                 </Grid>
                                             </Expander.Header>
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Ładowanie danych..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Loading data..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -447,17 +447,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Utrzymanie i integralność" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Maintenance and Integrity" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="MaintenanceIntegrityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="MaintenanceIntegrityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsMaintenanceIntegrityRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -467,7 +467,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -501,7 +501,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -573,8 +573,8 @@
                                                                                                             <ColumnDefinition Width="*"/>
                                                                                                             <ColumnDefinition Width="Auto"/>
                                                                                                         </Grid.ColumnDefinitions>
-                                                                                                        <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                                        <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                                        <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                                        <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                                             <Button.Resources>
                                                                                                                 <Style TargetType="Border">
                                                                                                                     <Setter Property="CornerRadius" Value="3"/>
@@ -603,17 +603,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Sieć i łączność" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Network and Connectivity" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="NetworkConnectivityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="NetworkConnectivityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsNetworkConnectivityRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -623,7 +623,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -657,7 +657,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -727,8 +727,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -757,17 +757,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Redukcja powierzchni ataku" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Surface Area Reduction" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="SurfaceAreaReductionRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="SurfaceAreaReductionRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsSurfaceAreaReductionRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -777,7 +777,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -811,7 +811,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -881,8 +881,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -911,17 +911,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Audyt i monitoring" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Auditing and Monitoring" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="AuditingMonitoringRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="AuditingMonitoringRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsAuditingMonitoringRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -931,7 +931,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -965,7 +965,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -1035,8 +1035,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -1065,17 +1065,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Uwierzytelnianie i kontrola dostępu" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Authentication and Access Control" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="AuthenticationAccessControlRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="AuthenticationAccessControlRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsAuthenticationAccessControlRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -1085,7 +1085,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -1119,7 +1119,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -1189,8 +1189,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -1219,17 +1219,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Autoryzacja i uprawnienia" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Authorization and Permissions" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="AuthorizationPermissionsRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="AuthorizationPermissionsRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsAuthorizationPermissionsRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -1239,7 +1239,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -1273,7 +1273,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -1343,8 +1343,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -1373,17 +1373,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Bezpieczeństwo baz danych" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="Database Security" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="DatabaseSecurityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="DatabaseSecurityRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsDatabaseSecurityRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -1393,7 +1393,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -1427,7 +1427,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -1497,8 +1497,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -1527,17 +1527,17 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
 
-                                                    <TextBlock Grid.Column="0" Text="Wysoka dostępność i odzyskiwanie po awarii" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <TextBlock Grid.Column="0" Text="High Availability and Disaster Recovery" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
 
-                                                    <Button Grid.Column="1" Content="Uruchom" Click="HighAvailabilityDisasterRecoveryRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
+                                                    <Button Grid.Column="1" Content="Run" Click="HighAvailabilityDisasterRecoveryRun_Click" Padding="12,4" Margin="12,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand">
                                                         <Button.Style>
                                                             <Style TargetType="Button">
                                                                 <Setter Property="IsEnabled" Value="True"/>
-                                                                <Setter Property="Content" Value="Uruchom"/>
+                                                                <Setter Property="Content" Value="Run"/>
                                                                 <Style.Triggers>
                                                                     <DataTrigger Binding="{Binding IsHighAvailabilityDisasterRecoveryRunning}" Value="True">
                                                                         <Setter Property="IsEnabled" Value="False"/>
-                                                                        <Setter Property="Content" Value="Uruchamianie..."/>
+                                                                        <Setter Property="Content" Value="Running..."/>
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
                                                             </Style>
@@ -1547,7 +1547,7 @@
                                             </Expander.Header>
 
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Wykonywanie skryptów..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
+                                                <TextBlock Text="Running scripts..." Foreground="#566573" FontStyle="Italic" Margin="0,0,0,8">
                                                     <TextBlock.Style>
                                                         <Style TargetType="TextBlock">
                                                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -1581,7 +1581,7 @@
                                                         <DataTemplate>
                                                                     <Border HorizontalAlignment="Stretch" BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White">
                                                                 <StackPanel>
-                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Brak nazwy skryptu], FallbackValue=[Brak nazwy skryptu]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
+                                                                    <TextBlock Text="{Binding ScriptName, TargetNullValue=[Unnamed script], FallbackValue=[Unnamed script]}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/>
                                                                     <Border Background="#E8F4FF" CornerRadius="4" Padding="6" Margin="0,0,0,6">
                                                                         <Border.Style>
                                                                             <Style TargetType="Border">
@@ -1651,8 +1651,8 @@
                                                                                     <ColumnDefinition Width="*"/>
                                                                                     <ColumnDefinition Width="Auto"/>
                                                                                 </Grid.ColumnDefinitions>
-                                                                                <TextBlock Grid.Column="0" Text="Proponowany skrypt poprawiający:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
-                                                                                <Button Grid.Column="1" Content="📋 Kopiuj" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
+                                                                                <TextBlock Grid.Column="0" Text="Suggested remediation script:" FontWeight="SemiBold" Foreground="#2C3E50" VerticalAlignment="Center" />
+                                                                                <Button Grid.Column="1" Content="📋 Copy" Click="CopyFixScript_Click" Padding="8,4" Background="#2980B9" Foreground="White" BorderThickness="0" FontSize="11" Cursor="Hand">
                                                                                     <Button.Resources>
                                                                                         <Style TargetType="Border">
                                                                                             <Setter Property="CornerRadius" Value="3"/>
@@ -1676,20 +1676,20 @@
                                             <Expander.Header>
                                                 <Grid Margin="0,0,16,0" HorizontalAlignment="Stretch">
                                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                                    <TextBlock Text="Własne" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
-                                                    <Button Grid.Column="1" Content="+ Dodaj query" Click="AddCustomQuery_Click" Padding="12,4" Margin="12,0,0,0" Background="#566573" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-                                                    <Button Grid.Column="2" Content="Uruchom wszystkie" Click="RunCustomQueries_Click" Padding="12,4" Margin="8,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                                                    <TextBlock Text="Custom Queries" FontSize="16" FontFamily="Segoe UI" FontWeight="SemiBold" Foreground="#34495E" VerticalAlignment="Center"/>
+                                                    <Button Grid.Column="1" Content="+ Add query" Click="AddCustomQuery_Click" Padding="12,4" Margin="12,0,0,0" Background="#566573" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+                                                    <Button Grid.Column="2" Content="Run all" Click="RunCustomQueries_Click" Padding="12,4" Margin="8,0,0,0" Background="#2980B9" Foreground="White" BorderThickness="0" Cursor="Hand"/>
                                                 </Grid>
                                             </Expander.Header>
                                             <StackPanel Margin="0,10,0,0">
-                                                <TextBlock Text="Dodaj własne zapytania SQL, aby uruchamiać je dla wybranej instancji. Są zapisywane lokalnie w profilu użytkownika." Foreground="#566573" TextWrapping="Wrap" Margin="0,0,0,8"/>
-                                                <TextBlock Text="Brak zapisanych własnych zapytań." Foreground="#7F8C8D" FontStyle="Italic">
+                                                <TextBlock Text="Add custom SQL queries to run against the selected instance. They are saved locally in your user profile." Foreground="#566573" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                                                <TextBlock Text="No custom queries have been saved." Foreground="#7F8C8D" FontStyle="Italic">
                                                     <TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding DataContext.CustomQueries.Count, RelativeSource={RelativeSource AncestorType=Window}}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style>
                                                 </TextBlock>
                                                 <ItemsControl ItemsSource="{Binding DataContext.CustomQueries, RelativeSource={RelativeSource AncestorType=Window}}">
-                                                    <ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold"/><Button Grid.Column="1" Content="Uruchom" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Expander}}" Click="RunCustomQuery_Click" Padding="10,3" Margin="8,0,0,0"/><Button Grid.Column="2" Content="Usuń" Click="DeleteCustomQuery_Click" Padding="10,3" Margin="6,0,0,0" Foreground="#C0392B"/></Grid></DataTemplate></ItemsControl.ItemTemplate>
+                                                    <ItemsControl.ItemTemplate><DataTemplate><Grid Margin="0,0,0,6"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold"/><Button Grid.Column="1" Content="Run" Tag="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Expander}}" Click="RunCustomQuery_Click" Padding="10,3" Margin="8,0,0,0"/><Button Grid.Column="2" Content="Delete" Click="DeleteCustomQuery_Click" Padding="10,3" Margin="6,0,0,0" Foreground="#C0392B"/></Grid></DataTemplate></ItemsControl.ItemTemplate>
                                                 </ItemsControl>
-                                                <TextBlock Text="Wykonywanie zapytań..." Foreground="#566573" FontStyle="Italic" Margin="0,8,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsCustomQueriesRunning}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+                                                <TextBlock Text="Running queries..." Foreground="#566573" FontStyle="Italic" Margin="0,8,0,0"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsCustomQueriesRunning}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
                                                 <TextBlock Text="{Binding CustomQueriesError}" Foreground="#C0392B" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                                 <ItemsControl ItemsSource="{Binding CustomQueryResults}" Margin="0,8,0,0"><ItemsControl.ItemTemplate><DataTemplate><Border BorderBrush="#D5DBDB" BorderThickness="1" CornerRadius="4" Padding="10" Margin="0,0,0,8" Background="White"><StackPanel><TextBlock Text="{Binding ScriptName}" FontWeight="SemiBold" Foreground="#2C3E50" Margin="0,0,0,6"/><TextBlock Text="{Binding Error}" Foreground="#C0392B" TextWrapping="Wrap"/><ItemsControl ItemsSource="{Binding Tables}"><ItemsControl.ItemTemplate><DataTemplate><views:ScriptResultsControl Results="{Binding}"/></DataTemplate></ItemsControl.ItemTemplate></ItemsControl></StackPanel></Border></DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
                                             </StackPanel>
@@ -1700,7 +1700,7 @@
                         </Grid>
 
                             <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
-                                <Button Content="Zapisz snapshot"
+                                <Button Content="Save snapshot"
                                         Padding="15,8" 
                                         Background="#16A085" Foreground="White" FontWeight="Bold" 
                                         BorderThickness="0" Cursor="Hand" Margin="0,0,10,0"
@@ -1712,7 +1712,7 @@
                                     </Button.Resources>
                                 </Button>
 
-                                <Button Content="Eksportuj raport PDF"
+                                <Button Content="Export PDF report"
                                         Padding="15,8" 
                                         Background="#2980B9" Foreground="White" FontWeight="Bold" 
                                         BorderThickness="0" Cursor="Hand"
@@ -1786,7 +1786,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Zielone (+1)" Foreground="#27AE60" FontSize="14"/>
+                                            <TextBlock Text="Green (+1)" Foreground="#27AE60" FontSize="14"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ScoringGreenCount}" Foreground="#27AE60" FontWeight="SemiBold" FontSize="14"/>
                                         </Grid>
 
@@ -1795,7 +1795,7 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Żółte" Foreground="#F39C12" FontSize="14"/>
+                                            <TextBlock Text="Yellow" Foreground="#F39C12" FontSize="14"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ScoringYellowCount}" Foreground="#F39C12" FontWeight="SemiBold" FontSize="14"/>
                                         </Grid>
 
@@ -1804,19 +1804,19 @@
                                                 <ColumnDefinition Width="*"/>
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="Czerwone (-1)" Foreground="#E74C3C" FontSize="14"/>
+                                            <TextBlock Text="Red (-1)" Foreground="#E74C3C" FontSize="14"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ScoringRedCount}" Foreground="#E74C3C" FontWeight="SemiBold" FontSize="14"/>
                                         </Grid>
 
                                         <Border Background="#F8F9F9" BorderBrush="#E5E7E9" BorderThickness="1" CornerRadius="8" Padding="12">
-                                            <TextBlock Text="Scoring liczony jest na podstawie reguł kolorowania wyników: zielone = +1 punkt, czerwone = -1 punkt. Żółte nie wpływają na scoring (wymagają weryfikacji administratora)." TextWrapping="Wrap" Foreground="#566573"/>
+                                            <TextBlock Text="The score uses the result colors: green = +1 point, red = -1 point. Yellow results do not change the score and require administrator review." TextWrapping="Wrap" Foreground="#566573"/>
                                         </Border>
                                     </StackPanel>
                                 </Border>
                             </Grid>
 
                             <TextBlock Grid.Row="1" Margin="0,12,0,0" Foreground="#7F8C8D"
-                                       Text="Uruchom kategorie w zakładce Audit, aby zaktualizować scoring."/>
+                                       Text="Run categories in the Audit tab to update the score."/>
                         </Grid>
                     </TabItem>
                 </TabControl>
@@ -1824,6 +1824,78 @@
         </DataTemplate>
     </TabControl.ContentTemplate>
 </TabControl>
+
+                        <Border Grid.Column="2" Panel.ZIndex="5" Margin="15" Padding="28"
+                                Background="#F8FAFC" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Instances.Count}" Value="0">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <StackPanel>
+                                    <TextBlock Text="Saved connections" FontSize="26" FontWeight="SemiBold" Foreground="#1E293B"/>
+                                    <TextBlock Text="Select a server to open the connection window with its details, or create a new connection. Passwords are never stored."
+                                               Margin="0,7,0,24" Foreground="#64748B" TextWrapping="Wrap"/>
+
+                                    <TextBlock Text="No saved connections yet." Foreground="#94A3B8" FontStyle="Italic" Margin="0,0,0,16">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding SavedConnections.Count}" Value="0">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+
+                                    <ItemsControl ItemsSource="{Binding SavedConnections}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Width="270" MinHeight="150" Margin="0,0,14,14" Padding="16"
+                                                        Background="White" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="10">
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Button Command="{Binding DataContext.OpenSavedConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                CommandParameter="{Binding}" Background="Transparent" BorderThickness="0"
+                                                                HorizontalContentAlignment="Stretch" Cursor="Hand" Padding="0">
+                                                            <StackPanel>
+                                                                <TextBlock Text="{Binding DisplayLabel}" FontSize="16" FontWeight="SemiBold" Foreground="#1E3A5F" TextWrapping="Wrap"/>
+                                                                <TextBlock Text="{Binding AuthenticationLabel}" Margin="0,8,0,0" Foreground="#64748B" TextWrapping="Wrap"/>
+                                                                <TextBlock Text="Open connection details →" Margin="0,12,0,0" Foreground="#2563EB" FontWeight="SemiBold"/>
+                                                            </StackPanel>
+                                                        </Button>
+                                                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+                                                            <Button Content="Edit" Padding="10,4" Margin="0,0,7,0"
+                                                                    Command="{Binding DataContext.EditSavedConnectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                            <Button Content="Delete" Padding="10,4" Foreground="#B91C1C" Click="DeleteSavedConnection_Click"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+
+                                    <Button Content="+ New connection" Width="160" Padding="14,9" HorizontalAlignment="Left"
+                                            Command="{Binding ConnectNewDatabaseCommand}" Background="#27AE60" Foreground="White"
+                                            FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                                </StackPanel>
+                            </ScrollViewer>
+                        </Border>
                     </Grid>
                 </TabItem>
 
@@ -1835,7 +1907,7 @@
                         </TabControl.ItemContainerStyle>
 
                         <!-- Comparer -->
-                        <TabItem Header="Porównania">
+                        <TabItem Header="Compare">
                             <Border Background="{StaticResource AppPanelBackgroundBrush}"
                                     BorderBrush="{StaticResource AppAccentBorderBrush}"
                                     BorderThickness="1" CornerRadius="8" Margin="15" Padding="16">
@@ -1847,11 +1919,11 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Text="Porównanie Snapshotów" FontSize="18" FontWeight="Bold"
+                                    <TextBlock Grid.Row="0" Text="Snapshot Comparison" FontSize="18" FontWeight="Bold"
                                                Foreground="#2C3E50" Margin="0,0,0,16"/>
 
                                     <WrapPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,12">
-                                        <Button Content="PORÓWNAJ BIEŻĄCY AUDIT ZE SNAPSHOTEM"
+                                        <Button Content="COMPARE CURRENT AUDIT WITH SNAPSHOT"
                                                 Padding="14,9" Margin="0,0,10,8"
                                                 Background="#8E44AD" Foreground="White" FontWeight="Bold"
                                                 BorderThickness="0" Cursor="Hand"
@@ -1862,7 +1934,7 @@
                                                 </Style>
                                             </Button.Resources>
                                         </Button>
-                                        <Button Content="PORÓWNAJ DWA SNAPSHOTY"
+                                        <Button Content="COMPARE TWO SNAPSHOTS"
                                                 Padding="14,9" Margin="0,0,0,8"
                                                 Background="#2980B9" Foreground="White" FontWeight="Bold"
                                                 BorderThickness="0" Cursor="Hand"
@@ -1884,9 +1956,9 @@
                                         <ListView.View>
                                             <GridView>
                                                 <GridViewColumn Header="Path" Width="320" DisplayMemberBinding="{Binding Path}"/>
-                                                <GridViewColumn Header="Wartość A" Width="280" DisplayMemberBinding="{Binding CurrentValue}"/>
+                                                <GridViewColumn Header="Value A" Width="280" DisplayMemberBinding="{Binding CurrentValue}"/>
                                                 <GridViewColumn Header="" Width="40" DisplayMemberBinding="{Binding Marker}"/>
-                                                <GridViewColumn Header="Wartość B" Width="280" DisplayMemberBinding="{Binding SnapshotValue}"/>
+                                                <GridViewColumn Header="Value B" Width="280" DisplayMemberBinding="{Binding SnapshotValue}"/>
                                             </GridView>
                                         </ListView.View>
                                     </ListView>
@@ -1895,7 +1967,7 @@
                         </TabItem>
 
                         <!-- Viewer -->
-                        <TabItem Header="Przegląd">
+                        <TabItem Header="Viewer">
                             <Border Background="{StaticResource AppPanelBackgroundBrush}"
                                     BorderBrush="{StaticResource AppAccentBorderBrush}"
                                     BorderThickness="1" CornerRadius="8" Margin="15" Padding="16">
@@ -1907,10 +1979,10 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <TextBlock Grid.Row="0" Text="Przeglądarka Snapshotów" FontSize="18" FontWeight="Bold"
+                                    <TextBlock Grid.Row="0" Text="Snapshot Viewer" FontSize="18" FontWeight="Bold"
                                                Foreground="#2C3E50" Margin="0,0,0,16"/>
 
-                                    <Button Grid.Row="1" Content="WCZYTAJ SNAPSHOT"
+                                    <Button Grid.Row="1" Content="LOAD SNAPSHOT"
                                             HorizontalAlignment="Left"
                                             Padding="14,9" Margin="0,0,0,12"
                                             Background="#27AE60" Foreground="White" FontWeight="Bold"
