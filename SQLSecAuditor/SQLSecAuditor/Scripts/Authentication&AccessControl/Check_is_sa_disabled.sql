@@ -1,7 +1,7 @@
 /*
 Description:
-Konto „sa” to powszechnie znane i często używane konto w programie SQL Server, posiadające uprawnienia administratora systemu (sysadmin). 
-Jest to domyślny login utworzony podczas instalacji, który zawsze ma przypisane wartości principal_id=1 oraz sid=0x01.
+The "sa" account is a widely known SQL Server account with sysadmin permissions.
+It is the default login created during installation and always has principal_id=1 and sid=0x01.
 */
 SELECT 
     name as [Name], 

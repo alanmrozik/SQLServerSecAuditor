@@ -16,7 +16,7 @@ namespace SqlSecAuditor.Views
         {
             _options = options;
 
-            Title = "Uruchom wiele kategorii";
+            Title = "Run multiple categories";
             Width = 540;
             Height = 500;
             ResizeMode = ResizeMode.NoResize;
@@ -39,14 +39,14 @@ namespace SqlSecAuditor.Views
 
             root.Children.Add(new TextBlock
             {
-                Text = "Wybierz kategorie, które chcesz uruchomić:",
+                Text = "Select the categories to run:",
                 FontSize = 14,
                 FontWeight = FontWeights.SemiBold,
                 Margin = new Thickness(0, 0, 0, 10)
             });
 
             var quickActions = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 0, 0, 10) };
-            var selectAllButton = new Button { Content = "Zaznacz wszystko", Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 0, 8, 0) };
+            var selectAllButton = new Button { Content = "Select all", Padding = new Thickness(10, 4, 10, 4), Margin = new Thickness(0, 0, 8, 0) };
             selectAllButton.Click += (_, __) =>
             {
                 foreach (var option in _options)
@@ -55,7 +55,7 @@ namespace SqlSecAuditor.Views
                 }
             };
 
-            var clearAllButton = new Button { Content = "Odznacz wszystko", Padding = new Thickness(10, 4, 10, 4) };
+            var clearAllButton = new Button { Content = "Clear all", Padding = new Thickness(10, 4, 10, 4) };
             clearAllButton.Click += (_, __) =>
             {
                 foreach (var option in _options)
@@ -96,15 +96,15 @@ namespace SqlSecAuditor.Views
 
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
 
-            var cancelButton = new Button { Content = "Anuluj", Width = 100, Margin = new Thickness(0, 0, 8, 0) };
+            var cancelButton = new Button { Content = "Cancel", Width = 100, Margin = new Thickness(0, 0, 8, 0) };
             cancelButton.Click += (_, __) => DialogResult = false;
 
-            var runButton = new Button { Content = "Uruchom", Width = 120, Background = System.Windows.Media.Brushes.SteelBlue, Foreground = System.Windows.Media.Brushes.White };
+            var runButton = new Button { Content = "Run", Width = 120, Background = System.Windows.Media.Brushes.SteelBlue, Foreground = System.Windows.Media.Brushes.White };
             runButton.Click += (_, __) =>
             {
                 if (_options.All(o => !o.IsSelected))
                 {
-                    MessageBox.Show(this, "Wybierz przynajmniej jedną kategorię.", "Uruchom wiele", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show(this, "Select at least one category.", "Run multiple categories", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 

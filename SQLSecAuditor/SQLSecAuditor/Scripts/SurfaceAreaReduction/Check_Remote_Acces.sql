@@ -1,6 +1,6 @@
 /*
 Description:
-Funkcjonalność ta może zostać wykorzystana do przeprowadzenia ataku typu Denial-of-Service (DoS) na zdalne serwery poprzez przeniesienie procesu przetwarzania zapytań na system docelowy.
+This feature can be abused to conduct a denial-of-service attack against remote servers by moving query processing to the target system.
 */
 SELECT 
     name as [Name], 

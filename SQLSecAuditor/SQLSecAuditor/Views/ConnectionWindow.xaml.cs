@@ -17,17 +17,19 @@ namespace SqlSecAuditor.Views
     {
         private FrameworkElement? _interactiveRoot;
         private ComboBox? _recentCombo;
+        private readonly SavedConnection? _originalConnection;
 
-        public ConnectionWindow()
+        public ConnectionWindow(SavedConnection? savedConnection = null)
         {
-            Title = "New Connection";
+            _originalConnection = savedConnection?.Copy();
+            Title = savedConnection is null ? "New Connection" : "Edit Connection";
             Height = 600;
             Width = 760;
             ResizeMode = ResizeMode.NoResize;
             WindowStyle = WindowStyle.None;
             WindowStartupLocation = WindowStartupLocation.CenterOwner;
             Background = GetBrush("AppWindowBackgroundBrush", Color.FromRgb(0xEC, 0xF0, 0xF1));
-            DataContext = new ConnectionWindowViewModel();
+            DataContext = CreateViewModel(savedConnection);
 
             Content = BuildLayout();
         }
@@ -123,7 +125,7 @@ namespace SqlSecAuditor.Views
 
             content.Children.Add(new TextBlock
             {
-                Text = "Add a new SQL Server connection",
+                Text = _originalConnection is null ? "Add a SQL Server connection" : "Edit SQL Server connection",
                 Style = (Style)Application.Current.FindResource("AppPageTitleStyle")
             });
 
@@ -175,7 +177,7 @@ namespace SqlSecAuditor.Views
             }
             else
             {
-                _recentCombo.Items.Add("(Brak zapisanych połączeń)");
+                _recentCombo.Items.Add("(No saved connections)");
                 _recentCombo.SelectedIndex = 0;
             }
 
@@ -200,6 +202,7 @@ namespace SqlSecAuditor.Views
             vm.UseWindowsAuthentication = saved.UseWindowsAuthentication;
             vm.UseSqlAuthentication = !saved.UseWindowsAuthentication;
             vm.SqlUserName = saved.SqlUserName;
+            vm.Password = string.Empty;
             vm.EncryptConnection = saved.EncryptConnection;
             vm.TrustServerCertificate = saved.TrustServerCertificate;
         }
@@ -333,20 +336,40 @@ namespace SqlSecAuditor.Views
             var cancelButton = new Button
             {
                 Content = "Cancel",
-                Width = 100,
+                Width = 90,
                 Margin = new Thickness(0, 0, 12, 0)
             };
             cancelButton.Click += Close_Click;
 
-            var addButton = new Button
+            var saveButton = new Button
             {
-                Content = "Add connection",
-                Width = 130
+                Content = "Save",
+                Width = 90,
+                Margin = new Thickness(0, 0, 12, 0)
             };
-            addButton.Click += Confirm_Click;
+            saveButton.Click += Save_Click;
+
+            var testButton = new Button
+            {
+                Content = "Test connection",
+                Width = 125,
+                Margin = new Thickness(0, 0, 12, 0)
+            };
+            testButton.Click += Test_Click;
+
+            var connectButton = new Button
+            {
+                Content = "Connect",
+                Width = 100,
+                Background = GetBrush("AppPrimaryButtonBrush", Color.FromRgb(0x29, 0x80, 0xB9)),
+                Foreground = Brushes.White
+            };
+            connectButton.Click += Confirm_Click;
 
             panel.Children.Add(cancelButton);
-            panel.Children.Add(addButton);
+            panel.Children.Add(saveButton);
+            panel.Children.Add(testButton);
+            panel.Children.Add(connectButton);
             return panel;
         }
 
@@ -458,101 +481,169 @@ namespace SqlSecAuditor.Views
             }
         }
 
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            if (!TryGetViewModel(requireCredentials: false, out var viewModel))
+            {
+                return;
+            }
+
+            RecentConnectionsStore.Save(CreateSavedConnection(viewModel));
+            MessageBox.Show(this, "Connection details have been saved.", "Saved connections", MessageBoxButton.OK, MessageBoxImage.Information);
+            Close();
+        }
+
+        private async void Test_Click(object sender, RoutedEventArgs e)
+        {
+            if (!TryGetViewModel(requireCredentials: true, out var viewModel))
+            {
+                return;
+            }
+
+            await RunConnectionActionAsync(async builder =>
+            {
+                await using var connection = new SqlConnection(builder.ConnectionString);
+                await connection.OpenAsync();
+                MessageBox.Show(this, "Connection test succeeded.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
+            }, viewModel);
+        }
+
         private async void Confirm_Click(object sender, RoutedEventArgs e)
         {
-            if (DataContext is not ConnectionWindowViewModel viewModel)
+            if (!TryGetViewModel(requireCredentials: true, out var viewModel))
             {
                 return;
             }
 
-            if (viewModel.UseSqlAuthentication && string.IsNullOrWhiteSpace(viewModel.SqlUserName))
+            await RunConnectionActionAsync(async builder =>
             {
-                MessageBox.Show(this, "Podaj nazwę użytkownika dla logowania SQL.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                await using var connection = new SqlConnection(builder.ConnectionString);
+                await connection.OpenAsync();
 
-            if (viewModel.UseSqlAuthentication && string.IsNullOrWhiteSpace(viewModel.Password))
-            {
-                MessageBox.Show(this, "Podaj hasło dla logowania SQL.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                await using var command = connection.CreateCommand();
+                command.CommandText = "SELECT CAST(@@SERVERNAME AS nvarchar(128))";
+                var resolvedServerName = await command.ExecuteScalarAsync() as string;
+
+                var databaseName = string.IsNullOrWhiteSpace(viewModel.DatabaseName)
+                    ? "master"
+                    : viewModel.DatabaseName.Trim();
+
+                ResultInstance = new SqlInstance
+                {
+                    ServerName = string.IsNullOrWhiteSpace(resolvedServerName) ? viewModel.ServerName.Trim() : resolvedServerName,
+                    DatabaseName = databaseName,
+                    ConnectionString = builder.ConnectionString
+                };
+
+                RecentConnectionsStore.Save(CreateSavedConnection(viewModel));
+                MessageBox.Show(this, "Connection established successfully.", "Connect", MessageBoxButton.OK, MessageBoxImage.Information);
+                DialogResult = true;
+            }, viewModel);
+        }
+
+        private async Task RunConnectionActionAsync(Func<SqlConnectionStringBuilder, Task> action, ConnectionWindowViewModel viewModel)
+        {
 
             _interactiveRoot!.IsEnabled = false;
             Cursor = Cursors.Wait;
 
             try
             {
-                var dataSource = string.IsNullOrWhiteSpace(viewModel.Port)
-                    ? viewModel.ServerName
-                    : $"{viewModel.ServerName},{viewModel.Port}";
-
-                var builder = new SqlConnectionStringBuilder
-                {
-                    DataSource = dataSource,
-                    InitialCatalog = string.IsNullOrWhiteSpace(viewModel.DatabaseName) ? "master" : viewModel.DatabaseName,
-                    Encrypt = viewModel.EncryptConnection,
-                    TrustServerCertificate = viewModel.TrustServerCertificate,
-                    ConnectTimeout = 5
-                };
-
-                if (viewModel.UseSqlAuthentication)
-                {
-                    builder.IntegratedSecurity = false;
-                    builder.UserID = viewModel.SqlUserName;
-                    builder.Password = viewModel.Password;
-                }
-                else
-                {
-                    builder.IntegratedSecurity = true;
-                }
-
-                await using var connection = new SqlConnection(builder.ConnectionString);
-                await connection.OpenAsync();
-
-                await using var command = connection.CreateCommand();
-                command.CommandText = "SELECT CAST(@@SERVERNAME AS nvarchar(128))";
-                var serverNameResult = await command.ExecuteScalarAsync();
-                var resolvedServerName = serverNameResult as string;
-
-                if (string.IsNullOrWhiteSpace(resolvedServerName))
-                {
-                    resolvedServerName = viewModel.ServerName;
-                }
-
-                var databaseName = string.IsNullOrWhiteSpace(viewModel.DatabaseName)
-                    ? "master"
-                    : viewModel.DatabaseName;
-
-                ResultInstance = new SqlInstance
-                {
-                    ServerName = resolvedServerName,
-                    DatabaseName = databaseName,
-                    ConnectionString = builder.ConnectionString
-                };
-
-                RecentConnectionsStore.Save(new SavedConnection
-                {
-                    ServerName = viewModel.ServerName,
-                    Port = viewModel.Port,
-                    DatabaseName = viewModel.DatabaseName,
-                    UseWindowsAuthentication = viewModel.UseWindowsAuthentication,
-                    SqlUserName = viewModel.SqlUserName,
-                    EncryptConnection = viewModel.EncryptConnection,
-                    TrustServerCertificate = viewModel.TrustServerCertificate
-                });
-
-                MessageBox.Show(this, "Połączenie zostało nawiązane.", "Connection test", MessageBoxButton.OK, MessageBoxImage.Information);
-                DialogResult = true;
+                await action(BuildConnectionString(viewModel));
             }
             catch (Exception ex)
             {
-                MessageBox.Show(this, $"Nie udało się nawiązać połączenia:\n\n{ex.Message}", "Connection test", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(this, $"Could not connect to SQL Server:\n\n{ex.Message}", "Connection", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
                 Cursor = Cursors.Arrow;
                 _interactiveRoot.IsEnabled = true;
             }
+        }
+
+        private bool TryGetViewModel(bool requireCredentials, out ConnectionWindowViewModel viewModel)
+        {
+            viewModel = (DataContext as ConnectionWindowViewModel)!;
+            if (viewModel is null)
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(viewModel.ServerName))
+            {
+                MessageBox.Show(this, "Enter a server name.", "Connection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (viewModel.UseSqlAuthentication && string.IsNullOrWhiteSpace(viewModel.SqlUserName))
+            {
+                MessageBox.Show(this, "Enter a user name for SQL Server authentication.", "Connection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            if (requireCredentials && viewModel.UseSqlAuthentication && string.IsNullOrWhiteSpace(viewModel.Password))
+            {
+                MessageBox.Show(this, "Enter a password for SQL Server authentication.", "Connection", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return false;
+            }
+
+            return true;
+        }
+
+        private SavedConnection CreateSavedConnection(ConnectionWindowViewModel viewModel) => new()
+        {
+            Id = _originalConnection?.Id ?? Guid.NewGuid(),
+            ServerName = viewModel.ServerName.Trim(),
+            Port = viewModel.Port.Trim(),
+            DatabaseName = viewModel.DatabaseName.Trim(),
+            UseWindowsAuthentication = viewModel.UseWindowsAuthentication,
+            SqlUserName = viewModel.SqlUserName.Trim(),
+            EncryptConnection = viewModel.EncryptConnection,
+            TrustServerCertificate = viewModel.TrustServerCertificate
+        };
+
+        private static SqlConnectionStringBuilder BuildConnectionString(ConnectionWindowViewModel viewModel)
+        {
+            var serverName = viewModel.ServerName.Trim();
+            var port = viewModel.Port.Trim();
+            var builder = new SqlConnectionStringBuilder
+            {
+                DataSource = string.IsNullOrWhiteSpace(port) ? serverName : $"{serverName},{port}",
+                InitialCatalog = string.IsNullOrWhiteSpace(viewModel.DatabaseName) ? "master" : viewModel.DatabaseName.Trim(),
+                Encrypt = viewModel.EncryptConnection,
+                TrustServerCertificate = viewModel.TrustServerCertificate,
+                ConnectTimeout = 5,
+                IntegratedSecurity = viewModel.UseWindowsAuthentication
+            };
+
+            if (viewModel.UseSqlAuthentication)
+            {
+                builder.UserID = viewModel.SqlUserName.Trim();
+                builder.Password = viewModel.Password;
+            }
+
+            return builder;
+        }
+
+        private static ConnectionWindowViewModel CreateViewModel(SavedConnection? connection)
+        {
+            if (connection is null)
+            {
+                return new ConnectionWindowViewModel();
+            }
+
+            return new ConnectionWindowViewModel
+            {
+                ServerName = connection.ServerName,
+                Port = connection.Port,
+                DatabaseName = connection.DatabaseName,
+                UseWindowsAuthentication = connection.UseWindowsAuthentication,
+                UseSqlAuthentication = !connection.UseWindowsAuthentication,
+                SqlUserName = connection.SqlUserName,
+                EncryptConnection = connection.EncryptConnection,
+                TrustServerCertificate = connection.TrustServerCertificate
+            };
         }
 
         private void Minimize_Click(object sender, RoutedEventArgs e)

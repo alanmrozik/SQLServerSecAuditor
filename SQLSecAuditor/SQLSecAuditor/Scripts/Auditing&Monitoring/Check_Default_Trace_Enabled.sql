@@ -1,6 +1,6 @@
 /*
 Description:
-Default trace zapewnia rejestrowanie działań w bazie danych na potrzeby audytu, w tym tworzenia kont, podnoszenia uprawnień oraz wykonywania poleceń DBCC.
+The default trace records database activity for auditing, including account creation, privilege escalation, and DBCC command execution.
 */
 SELECT 
     name, 

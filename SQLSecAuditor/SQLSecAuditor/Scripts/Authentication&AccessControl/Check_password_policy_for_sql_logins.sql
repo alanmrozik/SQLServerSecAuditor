@@ -1,6 +1,6 @@
 /*
 Description:
-Zaleca się stosowanie do haseł używanych w programie SQL Server tych samych zasad złożoności haseł, które są stosowane w systemie Windows.
+SQL Server passwords should follow the same password complexity policy used by Windows.
 */
 IF EXISTS
 (
@@ -24,7 +24,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'Wszystkie konta SQL mają wdrożone systemowe polityki haseł' AS [Status];
+    SELECT 'All SQL accounts enforce the system password policy' AS [Status];
 END;
     /*Rationale:
 Ensure	SQL	authenticated	login	passwords	comply	with	the	secure	password	policy	applied	

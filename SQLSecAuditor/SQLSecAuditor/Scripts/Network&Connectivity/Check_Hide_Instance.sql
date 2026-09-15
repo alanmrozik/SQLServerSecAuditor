@@ -1,6 +1,6 @@
 /*
 Description:
-Instancje SQL Server niebędące częścią klastra w środowiskach produkcyjnych powinny być oznaczone jako ukryte, aby zapobiec ich rozgłaszaniu przez usługę SQL Server Browser.
+Non-clustered SQL Server instances in production environments should be marked as hidden to prevent SQL Server Browser from broadcasting them.
 */
 /*
 Non-clustered	SQL	Server	instances	within	production	environments should	be	designated	
@@ -19,7 +19,7 @@ EXEC master.sys.xp_instance_regread
 
 IF @getValue IS NULL or @getValue = 0
 BEGIN
-    SELECT 'Instancja nie jest ukryta' AS [Status];
+    SELECT 'The instance is not hidden' AS [Status];
 END
 ELSE
 BEGIN

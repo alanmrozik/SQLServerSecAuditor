@@ -1,6 +1,6 @@
 /*
 Description:
-Włączenie obsługi zestawów CLR zwiększa powierzchnię ataku serwera SQL Server i naraża go na zagrożenia związane zarówno z przypadkowymi, jak i złośliwymi zestawami.
+Enabling CLR assemblies increases the SQL Server attack surface and exposes it to risks from both accidental and malicious assemblies.
 
 */
 --USE [<database_name>]
@@ -19,7 +19,7 @@ BEGIN
 END
 ELSE
 BEGIN
-    SELECT 'CLR nie jest włączony' AS [Status];
+    SELECT 'CLR is disabled' AS [Status];
 END;
 /*
 Rationale:

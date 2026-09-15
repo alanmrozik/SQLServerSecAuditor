@@ -1,6 +1,6 @@
 /*
 Description:
-Użytkownik bazy danych, dla którego odpowiadający mu login programu SQL Server jest niezdefiniowany lub niepoprawnie zdefiniowany w instancji serwera, nie może zalogować się do tej instancji - jest on określany mianem "użytkownika osieroconego" i powinien zostać usunięty.
+A database user whose corresponding SQL Server login is missing or incorrectly defined cannot log in to the instance. This is an orphaned user and should be removed.
 */
 --USE <database_name>;
 --GO
@@ -19,7 +19,7 @@ IF NOT EXISTS
     ) x
 )
 BEGIN
-    PRINT 'Brak orphaned users';
+    PRINT 'No orphaned users';
 END
 ELSE
 BEGIN
@@ -74,7 +74,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM #OrphanedUsers)
     BEGIN
-        SELECT 'Brak orphaned users' AS Status;
+        SELECT 'No orphaned users' AS Status;
     END
     ELSE
     BEGIN

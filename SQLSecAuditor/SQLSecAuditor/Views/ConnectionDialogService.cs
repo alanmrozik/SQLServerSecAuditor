@@ -6,9 +6,9 @@ namespace SqlSecAuditor.Views
 {
     public sealed class ConnectionDialogService(Window owner) : IConnectionDialogService
     {
-        public SqlInstance? ShowConnectionDialog()
+        public SqlInstance? ShowConnectionDialog(SavedConnection? savedConnection = null)
         {
-            var dialog = new ConnectionWindow { Owner = owner };
+            var dialog = new ConnectionWindow(savedConnection) { Owner = owner };
             return dialog.ShowDialog() == true ? dialog.ResultInstance : null;
         }
     }

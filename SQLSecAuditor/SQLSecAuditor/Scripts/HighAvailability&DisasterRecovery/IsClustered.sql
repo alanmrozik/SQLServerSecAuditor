@@ -18,5 +18,5 @@ FROM sys.dm_os_cluster_properties;
 END
 ELSE
 BEGIN
-	SELECT 'Brak SQL Server Failvoer Cluster' as [Status];
+	SELECT 'No SQL Server Failover Cluster' as [Status];
 END;

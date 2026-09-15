@@ -8,7 +8,7 @@ namespace SqlSecAuditor.Views
     {
         public DangerousQueryWarningDialog(IReadOnlyList<string> risks)
         {
-            Title = "Ostrzeżenie bezpieczeństwa";
+            Title = "Security warning";
             Width = 560;
             SizeToContent = SizeToContent.Height;
             MinHeight = 270;
@@ -37,7 +37,7 @@ namespace SqlSecAuditor.Views
             });
             panel.Children.Add(new TextBlock
             {
-                Text = "Zapytanie zawiera elementy, które mogą modyfikować dane, strukturę bazy, uprawnienia lub uruchamiać polecenia administracyjne.",
+                Text = "This query contains statements that may modify data, database structure or permissions, or run administrative commands.",
                 TextWrapping = TextWrapping.Wrap,
                 Margin = new Thickness(0, 0, 0, 10)
             });
@@ -51,17 +51,17 @@ namespace SqlSecAuditor.Views
 
             panel.Children.Add(new TextBlock
             {
-                Text = "Aplikacja zapisze zapytanie i może je później wykonać z uprawnieniami aktualnie użytego konta SQL Server.",
+                Text = "The application will save this query and may later run it with the permissions of the current SQL Server account.",
                 TextWrapping = TextWrapping.Wrap,
                 FontWeight = FontWeights.SemiBold,
                 Margin = new Thickness(0, 0, 0, 18)
             });
 
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
-            var cancel = new Button { Content = "Anuluj", IsCancel = true, Margin = new Thickness(0, 0, 8, 0) };
+            var cancel = new Button { Content = "Cancel", IsCancel = true, Margin = new Thickness(0, 0, 8, 0) };
             var confirm = new Button
             {
-                Content = "Wiem, co robię",
+                Content = "I understand the risk",
                 IsDefault = true,
                 Background = new SolidColorBrush(Color.FromRgb(0xDC, 0x26, 0x26)),
                 Foreground = Brushes.White,

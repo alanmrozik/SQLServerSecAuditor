@@ -1,6 +1,6 @@
 /*
 Description:
-Regularne wykonywanie polecenia DBCC CHECKDB pozwala wykrywać uszkodzenia fizyczne i logiczne struktur baz danych oraz zapobiegać utracie spójności danych.
+Running DBCC CHECKDB regularly detects physical and logical damage to database structures and helps prevent loss of data integrity.
 
 */
 SET NOCOUNT ON;
