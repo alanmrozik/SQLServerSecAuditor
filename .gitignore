@@ -4,6 +4,7 @@
 # Build output
 **/bin/
 **/obj/
+/release/
 
 #agents
 .github/
