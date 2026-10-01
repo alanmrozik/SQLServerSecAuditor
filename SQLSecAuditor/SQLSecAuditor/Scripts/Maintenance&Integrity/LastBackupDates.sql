@@ -42,7 +42,3 @@ WHERE d.state_desc = 'ONLINE'
 
 GROUP BY d.name
 ORDER BY d.name;
-
-/*Fix:
-SELECT * FROM test;
-*/
